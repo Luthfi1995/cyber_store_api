@@ -9,8 +9,10 @@ ENV PHP_ERRORS_STDERR 1
 ENV RUN_SCRIPTS 1
 ENV REAL_IP_HEADER 1
 
-# Nonaktifkan Composer install otomatis di runtime jika kita ingin Docker membangunnya,
-# atau biarkan base image menjalankannya secara otomatis. Kita atur agar otomatis menginstall composer dependencies:
+# KUNCI UNTUK CLOUD RUN: Beritahu image richarvey untuk mengubah port Nginx ke 8080
+ENV PORT 8080
+
+# Otomatis menginstall composer dependencies saat build/runtime:
 ENV SKIP_COMPOSER 0
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
@@ -19,8 +21,8 @@ ENV APP_ENV production
 ENV APP_DEBUG false
 ENV LOG_CHANNEL stderr
 
-# Buka port 80 untuk lalu lintas web
-EXPOSE 80
+# Buka port 8080 sesuai standar Google Cloud Run
+EXPOSE 8080
 
 # Jalankan perintah startup default dari image
 CMD ["/start.sh"]
