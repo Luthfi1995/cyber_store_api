@@ -51,8 +51,10 @@
                                 {{ $cat->is_active?'🚫':'✅' }}
                             </button>
                         </form>
-                        <button type="button" class="btn btn-danger btn-sm btn-icon"
-                            onclick="confirmDelete('{{ route('admin.categories.destroy',$cat) }}','{{ addslashes($cat->name) }}')" title="Hapus">🗑️</button>
+                        <button type="button" class="btn btn-danger btn-sm btn-icon" title="Hapus"
+                            data-url="{{ route('admin.categories.destroy',$cat) }}"
+                            data-name="{{ $cat->name }}"
+                            onclick="confirmDelete(this.dataset.url, this.dataset.name)">🗑️</button>
                     </div>
                 </td>
             </tr>

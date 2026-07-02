@@ -53,26 +53,18 @@
                     @error('name')<div class="form-error">{{ $message }}</div>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="nim">NIM / Nomor Alumni</label>
-                    <input type="text" id="nim" name="nim" class="form-control"
-                        value="{{ old('nim') }}" placeholder="Opsional">
-                    @error('nim')<div class="form-error">{{ $message }}</div>@enderror
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="email">Email <span style="color:var(--danger)">*</span></label>
-                    <input type="email" id="email" name="email" class="form-control"
-                        value="{{ old('email') }}" placeholder="user@example.com" required>
-                    @error('email')<div class="form-error">{{ $message }}</div>@enderror
-                </div>
-                <div class="form-group">
                     <label class="form-label" for="phone">Nomor Telepon</label>
                     <input type="text" id="phone" name="phone" class="form-control"
                         value="{{ old('phone') }}" placeholder="08xxxxxxxxxx">
                     @error('phone')<div class="form-error">{{ $message }}</div>@enderror
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email <span style="color:var(--danger)">*</span></label>
+                <input type="email" id="email" name="email" class="form-control"
+                    value="{{ old('email') }}" placeholder="user@example.com" required>
+                @error('email')<div class="form-error">{{ $message }}</div>@enderror
             </div>
 
             <div class="form-group">

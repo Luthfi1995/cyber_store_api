@@ -36,6 +36,33 @@ class StockMovementController extends Controller
         return view('admin.stock-movements.index', compact('movements', 'products'));
     }
 
+    public function downloadPdf(Request $request)
+    {
+        $query = StockMovement::with(['product', 'user'])->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('reference', 'like', "%{$search}%")
+                  ->orWhere('note', 'like', "%{$search}%")
+                  ->orWhereHas('product', fn ($p) => $p->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('product_id')) {
+            $query->where('product_id', $request->product_id);
+        }
+
+        $movements = $query->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.stock-movements.pdf', compact('movements'));
+        return $pdf->download('Laporan_Mutasi_Stok_' . now()->format('YmdHis') . '.pdf');
+    }
+
     public function store(Request $request)
     {
         $request->validate([

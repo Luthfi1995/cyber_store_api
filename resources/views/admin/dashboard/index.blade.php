@@ -118,7 +118,7 @@
                                 <div style="font-size:12px; color:var(--text-muted);">{{ $product->sku }}</div>
                             </td>
                             <td>
-                                <span style="color:{{ $product->stock <= 5 ? 'var(--danger)' : 'var(--warning)' }}; font-weight:600;">
+                                <span style="font-weight:600;" class="{{ $product->stock <= 5 ? 'text-danger' : 'text-warning' }}">
                                     {{ $product->stock }}
                                 </span>
                             </td>

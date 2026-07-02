@@ -21,10 +21,10 @@ class UserSeeder extends Seeder
 
          // Superadmin
         $superadmin = User::updateOrCreate(
-            ['email' => 'superadmin@ubsistore.test'],
+            ['email' => 'superadmin@bsi.ac.id'],
             [
                 'name'     => 'Superadmin ubsiStore',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('bs10k3'),
                 'role'     => User::ROLE_SUPERADMIN,
                 'phone'    => '081111111111',
                 'is_active'=> true,
@@ -33,10 +33,10 @@ class UserSeeder extends Seeder
 
         // Admin
         $admin = User::updateOrCreate(
-            ['email' => 'admin@ubsistore.test'],
+            ['email' => 'admin@bsi.ac.id'],
             [
                 'name'     => 'Admin ubsiStore',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('bs10k3'),
                 'role'     => User::ROLE_ADMIN,
                 'phone'    => '082222222222',
                 'is_active'=> true,
@@ -45,10 +45,10 @@ class UserSeeder extends Seeder
 
         // Admin kedua
         User::updateOrCreate(
-            ['email' => 'admin2@ubsistore.test'],
+            ['email' => 'admin2@bsi.ac.id'],
             [
                 'name'     => 'Admin Dua ubsiStore',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('bs10k3'),
                 'role'     => User::ROLE_ADMIN,
                 'phone'    => '082233334444',
                 'is_active'=> true,
@@ -60,7 +60,6 @@ class UserSeeder extends Seeder
             [
                 'name'    => 'Budi Santoso',
                 'email'   => 'customer@ubsistore.test',
-                
                 'phone'   => '083333333333',
                 'address' => [
                     'label'          => 'Rumah',
@@ -79,7 +78,7 @@ class UserSeeder extends Seeder
             [
                 'name'    => 'Siti Rahayu',
                 'email'   => 'siti@ubsistore.test',
-               
+
                 'phone'   => '084444444444',
                 'address' => [
                     'label'          => 'Kos',
@@ -98,7 +97,7 @@ class UserSeeder extends Seeder
             [
                 'name'    => 'Ahmad Fauzan',
                 'email'   => 'ahmad@ubsistore.test',
-               
+
                 'phone'   => '085555555555',
                 'address' => [
                     'label'          => 'Kampus',
@@ -117,7 +116,7 @@ class UserSeeder extends Seeder
             [
                 'name'    => 'Dewi Permata',
                 'email'   => 'dewi@ubsistore.test',
-               
+
                 'phone'   => '086666666666',
                 'address' => [
                     'label'          => 'Rumah',
@@ -136,7 +135,7 @@ class UserSeeder extends Seeder
             [
                 'name'    => 'Rizky Pratama',
                 'email'   => 'rizky@ubsistore.test',
-                
+
                 'phone'   => '087777777777',
                 'address' => [
                     'label'          => 'Apartemen',
@@ -161,7 +160,7 @@ class UserSeeder extends Seeder
                     'name'      => $cData['name'],
                     'password'  => Hash::make('password123'),
                     'role'      => User::ROLE_CUSTOMER,
-                    
+
                     'phone'     => $cData['phone'],
                     'is_active' => true,
                 ]
@@ -174,5 +173,7 @@ class UserSeeder extends Seeder
                 array_merge($cData['address'], ['phone' => $cData['phone']])
             );
         }
+
+        $this->command->info('   👤 Users: 1 Superadmin, 2 Admin, ' . count($customers) . ' Customer');
     }
 }

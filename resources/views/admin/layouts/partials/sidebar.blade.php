@@ -1,0 +1,125 @@
+<!-- ─── SIDEBAR ─────────────────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+    <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
+        <div class="sidebar-brand">
+            @php
+                $sidebarLogoSetting = \App\Models\Setting::get('store_logo');
+                $sidebarLogoUrl = $sidebarLogoSetting ? Storage::disk('public')->url($sidebarLogoSetting) : asset('/assets/img/logo.png');
+            @endphp
+            <img src="{{ $sidebarLogoUrl }}" alt="Logo">
+        </div>
+        <div class="sidebar-brand-text">
+            <div class="store-name">{{ \App\Models\Setting::get('store_name', 'UBSI Store') }}</div>
+            <div class="store-sub">Admin Panel</div>
+        </div>
+    </a>
+
+    <nav class="sidebar-nav">
+        {{-- Dashboard --}}
+        <div class="nav-section-label">Utama</div>
+        <a href="{{ route('admin.dashboard') }}"
+            class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="10" rx="1"/><rect width="7" height="5" x="3" y="14" rx="1"/></svg>
+            </span> Dashboard
+        </a>
+
+        {{-- Catalog --}}
+        <div class="nav-section-label">Katalog</div>
+        <a href="{{ route('admin.categories.index') }}"
+            class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M6 6h.01"/></svg>
+            </span> Kategori
+        </a>
+        <a href="{{ route('admin.products.index') }}"
+            class="nav-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.27 6.96 8.73 5 8.73-5"/><path d="M12 22.08V12"/></svg>
+            </span> Produk
+        </a>
+        <a href="{{ route('admin.stock-movements.index') }}"
+            class="nav-link {{ request()->routeIs('admin.stock-movements.*') ? 'active' : '' }}">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            </span> Mutasi Stok
+        </a>
+
+        {{-- Transaksi --}}
+        <div class="nav-section-label">Transaksi</div>
+        <a href="{{ route('admin.orders.index') }}"
+            class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+            </span> Pesanan
+        </a>
+        <a href="{{ route('admin.payments.index') }}"
+            class="nav-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-credit-card"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+            </span> Pembayaran
+        </a>
+
+
+        {{-- Master Data --}}
+        <div class="nav-section-label">Master Data</div>
+        <a href="{{ route('admin.expeditions.index') }}"
+            class="nav-link {{ request()->routeIs('admin.expeditions.*') ? 'active' : '' }}">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><rect x="1" y="3" width="15" height="13" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            </span> Ekspedisi
+        </a>
+
+        {{-- Pengaturan --}}
+        <div class="nav-section-label">Pengaturan</div>
+        <a href="{{ route('admin.settings.index') }}"
+            class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </span> Pengaturan Toko
+        </a>
+
+{{-- Banner Management --}}
+<div class="nav-section-label">Banner</div>
+<a href="{{ route('admin.banners.index') }}" class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
+    <span class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image"><rect width="18" height="12" x="3" y="6" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+    </span> Banner
+</a>
+
+        {{-- User --}}
+        <div class="nav-section-label">Pengguna</div>
+        <a href="{{ route('admin.users.index') }}"
+            class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span> Pengguna
+        </a>
+    </nav>
+
+    {{-- User Card --}}
+    <div class="sidebar-footer">
+        <div class="user-card">
+            <div class="user-avatar">
+                @if (auth()->user()->photo)
+                    <img src="{{ Storage::disk('public')->url(auth()->user()->photo) }}"
+                        alt="{{ auth()->user()->name }}">
+                @else
+                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                @endif
+            </div>
+            <div class="user-info">
+                <div class="user-name">{{ auth()->user()->name }}</div>
+                <div class="user-role">{{ ucfirst(auth()->user()->role) }}</div>
+            </div>
+            <button type="button" class="logout-btn" title="Logout" onclick="confirmLogout()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" class="lucide lucide-power-icon lucide-power">
+                    <path d="M12 2v10" />
+                    <path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</aside>

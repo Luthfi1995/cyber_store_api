@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\EncryptsRouteKey;
 
 class Payment extends Model
 {
-    use HasFactory;
+    use HasFactory, EncryptsRouteKey;
 
     public const STATUS_WAITING_PAYMENT = 'waiting_payment';
 

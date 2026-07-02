@@ -8,8 +8,11 @@
 
     {{-- Tabel Mutasi --}}
     <div class="card">
-        <div class="card-header">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
             <span class="card-title">📈 Riwayat Mutasi Stok</span>
+            <a href="{{ route('admin.stock-movements.pdf', request()->query()) }}" class="btn btn-secondary" style="font-size:12px;padding:6px 12px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+                📄 Download PDF
+            </a>
         </div>
 
         <div style="padding:14px 20px;border-bottom:1px solid var(--border);">
@@ -59,7 +62,7 @@
                         </span>
                     </td>
                     <td>
-                        <span style="font-size:15px;font-weight:700;color:{{ $mov->type==='in'?'var(--success)':'var(--danger)' }};">
+                        <span style="font-size:15px;font-weight:700;" class="{{ $mov->type==='in'?'text-success':'text-danger' }}">
                             {{ $mov->type==='in'?'+':'-' }}{{ $mov->quantity }}
                         </span>
                     </td>

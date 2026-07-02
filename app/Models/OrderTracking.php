@@ -15,6 +15,7 @@ class OrderTracking extends Model
         'status',
         'description',
         'location',
+        'proof_photo',
     ];
 
     public function order(): BelongsTo

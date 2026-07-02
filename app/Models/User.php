@@ -7,10 +7,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
+use App\Traits\EncryptsRouteKey;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, EncryptsRouteKey;
 
     public const ROLE_SUPERADMIN = 'superadmin';
     public const ROLE_ADMIN = 'admin';
@@ -20,13 +21,14 @@ class User extends Authenticatable
         'name',
         'email',
         'google_id',
-        'nim',
         'password',
         'role',
         'phone',
         'address',
         'photo',
         'is_active',
+        'otp_code',
+        'otp_expires_at',
         'push_notifications_enabled',
         'email_notifications_enabled',
         'biometric_login_enabled',
@@ -41,11 +43,12 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_active' => 'boolean',
-            'push_notifications_enabled' => 'boolean',
+            'otp_expires_at'    => 'datetime',
+            'password'          => 'hashed',
+            'is_active'         => 'boolean',
+            'push_notifications_enabled'  => 'boolean',
             'email_notifications_enabled' => 'boolean',
-            'biometric_login_enabled' => 'boolean',
+            'biometric_login_enabled'     => 'boolean',
         ];
     }
 

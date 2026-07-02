@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\EncryptsRouteKey;
 
+/**
+ * @method bool|null delete()
+ */
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, EncryptsRouteKey;
 
     protected $fillable = [
         'category_id',
@@ -69,5 +73,20 @@ class Product extends Model
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(fn ($product) => static::clearCache($product));
+        static::deleted(fn ($product) => static::clearCache($product));
+    }
+
+    public static function clearCache($product = null): void
+    {
+        \Illuminate\Support\Facades\Cache::store('redis')->tags(['products-list'])->flush();
+
+        if ($product) {
+            \Illuminate\Support\Facades\Cache::store('redis')->forget("product:detail:{$product->id}");
+        }
     }
 }

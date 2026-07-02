@@ -2,15 +2,15 @@
 @section('title', 'Detail Pesanan — ' . $order->invoice_number)
 @section('page-title', 'Detail Pesanan')
 @section('breadcrumb')
-    <span class="breadcrumb-sep">›</span><a href="{{ route('admin.orders.index') }}">Pesanan</a>
-    <span class="breadcrumb-sep">›</span><span>{{ $order->invoice_number }}</span>
+<span class="breadcrumb-sep">›</span><a href="{{ route('admin.orders.index') }}">Pesanan</a>
+<span class="breadcrumb-sep">›</span><span>{{ $order->invoice_number }}</span>
 @endsection
 
 @section('content')
 @php
 $statusColors = [
-    'pending_payment'=>'badge-warning','paid'=>'badge-paid','packed'=>'badge-info',
-    'shipped'=>'badge-purple','arrived'=>'badge-recommended','completed'=>'badge-active','cancelled'=>'badge-inactive',
+'pending_payment'=>'badge-warning','paid'=>'badge-paid','packed'=>'badge-info',
+'shipped'=>'badge-purple','arrived'=>'badge-recommended','completed'=>'badge-active','cancelled'=>'badge-inactive',
 ];
 @endphp
 
@@ -59,28 +59,36 @@ $statusColors = [
             <div class="card-header"><span class="card-title">📦 Item Pesanan ({{ $order->items->count() }})</span></div>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>Produk</th><th>Varian</th><th>Harga</th><th>Qty</th><th>Total</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th>Varian</th>
+                            <th>Harga</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                    @foreach($order->items as $item)
-                    <tr>
-                        <td>
-                            <div style="font-weight:500;color:var(--text-primary);">{{ $item->product_name }}</div>
-                            @if($item->product_id && !$item->product)
+                        @foreach($order->items as $item)
+                        <tr>
+                            <td>
+                                <div style="font-weight:500;color:var(--text-primary);">{{ $item->product_name }}</div>
+                                @if($item->product_id && !$item->product)
                                 <div style="font-size:11px;color:var(--danger);">(Produk dihapus)</div>
-                            @endif
-                        </td>
-                        <td>
-                            <div style="font-size:12px;color:var(--text-muted);">
-                                @if($item->size) <span>📏 {{ $item->size }}</span> @endif
-                                @if($item->color) <span style="margin-left:6px;">🎨 {{ $item->color }}</span> @endif
-                                @if(!$item->size && !$item->color) — @endif
-                            </div>
-                        </td>
-                        <td>Rp {{ number_format($item->price,0,',','.') }}</td>
-                        <td style="font-weight:600;color:var(--text-primary);">{{ $item->quantity }}</td>
-                        <td style="font-weight:600;color:var(--text-primary);">Rp {{ number_format($item->total,0,',','.') }}</td>
-                    </tr>
-                    @endforeach
+                                @endif
+                            </td>
+                            <td>
+                                <div style="font-size:12px;color:var(--text-muted);">
+                                    @if($item->size) <span>📏 {{ $item->size }}</span> @endif
+                                    @if($item->color) <span style="margin-left:6px;">🎨 {{ $item->color }}</span> @endif
+                                    @if(!$item->size && !$item->color) — @endif
+                                </div>
+                            </td>
+                            <td>Rp {{ number_format($item->price,0,',','.') }}</td>
+                            <td style="font-weight:600;color:var(--text-primary);">{{ $item->quantity }}</td>
+                            <td style="font-weight:600;color:var(--text-primary);">Rp {{ number_format($item->total,0,',','.') }}</td>
+                        </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -105,23 +113,30 @@ $statusColors = [
             <div class="card-header"><span class="card-title">📍 Riwayat Tracking</span></div>
             <div class="card-body">
                 <div style="display:flex;flex-direction:column;gap:0;">
-                @foreach($order->trackings as $i => $track)
-                <div style="display:flex;gap:14px;">
-                    <div style="display:flex;flex-direction:column;align-items:center;">
-                        <div style="width:12px;height:12px;border-radius:50%;background:{{ $i===0?'var(--accent)':'var(--border)' }};flex-shrink:0;margin-top:4px;"></div>
-                        @if(!$loop->last)
+                    @foreach($order->trackings as $i => $track)
+                    <div style="display:flex;gap:14px;">
+                        <div style="display:flex;flex-direction:column;align-items:center;">
+                            <div style="width:12px;height:12px;border-radius:50%;background:{{ $i===0?'var(--accent)':'var(--border)' }};flex-shrink:0; margin-top:4px;"></div>
+                            @if(!$loop->last)
                             <div style="width:2px;flex:1;background:var(--border);margin:4px 0;"></div>
-                        @endif
-                    </div>
-                    <div style="padding-bottom:16px;">
-                        <div style="font-size:12px;color:var(--text-muted);">{{ $track->created_at->format('d M Y H:i') }}</div>
-                        <div style="font-weight:500;color:var(--text-primary);margin-top:2px;">{{ $track->description }}</div>
-                        @if($track->location)
+                            @endif
+                        </div>
+                        <div style="padding-bottom:16px;">
+                            <div style="font-size:12px;color:var(--text-muted);">{{ $track->created_at->format('d M Y H:i') }}</div>
+                            <div style="font-weight:500;color:var(--text-primary);margin-top:2px;">{{ $track->description }}</div>
+                            @if($track->location)
                             <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">📍 {{ $track->location }}</div>
-                        @endif
+                            @endif
+                            @if($track->proof_photo)
+                            <div style="margin-top:8px;">
+                                <a href="{{ Storage::disk('public')->url($track->proof_photo) }}" target="_blank">
+                                    <img src="{{ Storage::disk('public')->url($track->proof_photo) }}" style="max-width:200px; max-height: 150px; border-radius: var(--radius-sm); border: 1px solid var(--border); display: block; object-fit: cover;">
+                                </a>
+                            </div>
+                            @endif
+                        </div>
                     </div>
-                </div>
-                @endforeach
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -138,11 +153,11 @@ $statusColors = [
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
                     <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;">
                         @if($order->user?->photo)
-                            <img src="{{ Storage::disk('public')->url($order->user->photo) }}" style="width:100%;height:100%;object-fit:cover;">
+                        <img src="{{ Storage::disk('public')->url($order->user->photo) }}" style="width:100%;height:100%;object-fit:cover;">
                         @else
-                            <div style="width:100%;height:100%;background:linear-gradient(135deg,#4f6ef7,#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:18px;">
-                                {{ strtoupper(substr($order->user?->name??'?',0,1)) }}
-                            </div>
+                        <div style="width:100%;height:100%;background:linear-gradient(135deg,#4f6ef7,#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:18px;">
+                            {{ strtoupper(substr($order->user?->name??'?',0,1)) }}
+                        </div>
                         @endif
                     </div>
                     <div>
@@ -157,22 +172,22 @@ $statusColors = [
                     <div>{{ $order->address->address }}</div>
                     <div>{{ $order->address->district }}, {{ $order->address->city }}</div>
                     <div>{{ $order->address->province }} {{ $order->address->postal_code }}</div>
-                    
+
                     @if($order->address->latitude && $order->address->longitude)
                     <div style="margin-top: 12px;">
-                        <iframe 
-                            width="100%" 
-                            height="180" 
-                            frameborder="0" 
-                            style="border:0; border-radius: var(--radius-sm); display: block;" 
-                            src="https://maps.google.com/maps?q={{ $order->address->latitude }},{{ $order->address->longitude }}&hl=id&z=15&output=embed" 
+                        <iframe
+                            width="100%"
+                            height="180"
+                            frameborder="0"
+                            style="border:0; border-radius: var(--radius-sm); display: block;"
+                            src="https://maps.google.com/maps?q={{ $order->address->latitude }},{{ $order->address->longitude }}&hl=id&z=15&output=embed"
                             allowfullscreen>
                         </iframe>
                         <div style="margin-top: 6px; text-align: right;">
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ $order->address->latitude }},{{ $order->address->longitude }}" 
-                               target="_blank" 
-                               style="color: var(--accent); font-size: 11px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                               🌐 Buka di Google Maps
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ $order->address->latitude }},{{ $order->address->longitude }}"
+                                target="_blank"
+                                style="color: var(--accent); font-size: 11px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                🌐 Buka di Google Maps
                             </a>
                         </div>
                     </div>
@@ -196,7 +211,7 @@ $statusColors = [
                     <div>🔢 {{ $order->payment->virtual_account_number }}</div>
                     <div>💰 Rp {{ number_format($order->payment->amount,0,',','.') }}</div>
                     @if($order->payment->paid_at)
-                        <div>✅ Dibayar: {{ $order->payment->paid_at->format('d M Y H:i') }}</div>
+                    <div>✅ Dibayar: {{ $order->payment->paid_at->format('d M Y H:i') }}</div>
                     @endif
                 </div>
             </div>
@@ -207,20 +222,38 @@ $statusColors = [
         <div class="card">
             <div class="card-header"><span class="card-title">🔄 Ubah Status</span></div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.orders.status',$order) }}">
+                <form method="POST" action="{{ route('admin.orders.status',$order) }}" enctype="multipart/form-data">
                     @csrf @method('PATCH')
                     <div class="form-group">
                         <label class="form-label">Status Baru</label>
-                        <select name="status" class="form-control" required>
+                        <select name="status" id="status-select" class="form-control" required onchange="toggleProofInput()">
                             @foreach($statusLabels as $val => $label)
-                                <option value="{{ $val }}" {{ $order->status===$val?'selected':'' }}>{{ $label }}</option>
+                            <option value="{{ $val }}" {{ $order->status===$val?'selected':'' }}>{{ $label }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="form-group" id="proof-photo-group" style="display:none; margin-top: 12px; margin-bottom: 12px;">
+                        <label class="form-label">📷 Bukti Pengiriman (Foto Kurir)</label>
+                        <input type="file" name="proof_photo" class="form-control" accept="image/*">
+                        <small style="color: var(--text-muted); display: block; margin-top: 4px;">Upload foto kurir/bukti penerimaan saat paket tiba.</small>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width:100%;">💾 Perbarui Status</button>
                 </form>
             </div>
         </div>
+
+        <script>
+            function toggleProofInput() {
+                var status = document.getElementById('status-select').value;
+                var group = document.getElementById('proof-photo-group');
+                if (status === 'arrived') {
+                    group.style.display = 'block';
+                } else {
+                    group.style.display = 'none';
+                }
+            }
+            document.addEventListener('DOMContentLoaded', toggleProofInput);
+        </script>
 
         {{-- Update Resi --}}
         <div class="card">
@@ -235,6 +268,14 @@ $statusColors = [
                     </div>
                     <button type="submit" class="btn btn-success" style="width:100%;">📋 Simpan Resi</button>
                 </form>
+                @if($order->resi_number)
+                <form method="POST" action="{{ route('admin.orders.track', $order) }}" style="margin-top: 10px;">
+                    @csrf
+                    <button type="submit" class="btn btn-secondary" style="width:100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        🔄 Cek Resi via RajaOngkir
+                    </button>
+                </form>
+                @endif
             </div>
         </div>
 
@@ -243,6 +284,10 @@ $statusColors = [
 </div>
 
 <style>
-@media (max-width: 900px) { .order-grid { grid-template-columns: 1fr !important; } }
+    @media (max-width: 900px) {
+        .order-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
 </style>
 @endsection

@@ -90,26 +90,18 @@
                     @error('name')<div class="form-error">{{ $message }}</div>@enderror
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="nim">NIM / Nomor Alumni</label>
-                    <input type="text" id="nim" name="nim" class="form-control"
-                        value="{{ old('nim', $user->nim) }}" placeholder="Opsional">
-                    @error('nim')<div class="form-error">{{ $message }}</div>@enderror
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label" for="email">Email <span style="color:var(--danger)">*</span></label>
-                    <input type="email" id="email" name="email" class="form-control"
-                        value="{{ old('email', $user->email) }}" required>
-                    @error('email')<div class="form-error">{{ $message }}</div>@enderror
-                </div>
-                <div class="form-group">
                     <label class="form-label" for="phone">Nomor Telepon</label>
                     <input type="text" id="phone" name="phone" class="form-control"
                         value="{{ old('phone', $user->phone) }}">
                     @error('phone')<div class="form-error">{{ $message }}</div>@enderror
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email <span style="color:var(--danger)">*</span></label>
+                <input type="email" id="email" name="email" class="form-control"
+                    value="{{ old('email', $user->email) }}" required>
+                @error('email')<div class="form-error">{{ $message }}</div>@enderror
             </div>
 
             <div class="form-group">

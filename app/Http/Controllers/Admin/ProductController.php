@@ -7,39 +7,50 @@ use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Cache;
 class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('category');
+        // Buat cache key berdasarkan parameter request
+        $cacheKey = 'admin:products:index:page_' . $request->input('page', 1) .
+            ':search_' . md5($request->input('search', '')) .
+            ':category_' . $request->input('category', '') .
+            ':status_' . $request->input('status', '');
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+        $products = Cache::store('redis')
+            ->tags(['admin-products'])
+            ->remember($cacheKey, now()->addHours(6), function () use ($request) {
+                $query = Product::with('category');
+
+                if ($request->filled('search')) {
+                    $search = $request->search;
+                    $query->where(function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%")
+                            ->orWhere('description', 'like', "%{$search}%");
+                    });
+                }
+
+                if ($request->filled('category')) {
+                    $query->where('category_id', $request->category);
+                }
+
+                if ($request->filled('status')) {
+                    $query->where('is_active', $request->status === 'active');
+                }
+
+                return $query->latest()->paginate(15)->withQueryString();
             });
-        }
 
-        if ($request->filled('category')) {
-            $query->where('category_id', $request->category);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->status === 'active');
-        }
-
-        $products   = $query->latest()->paginate(15)->withQueryString();
-        $categories = Category::where('is_active', true)->get();
+        $categories = Category::query()->where('is_active', true)->get();
 
         return view('admin.products.index', compact('products', 'categories'));
     }
 
     public function create()
     {
-        $categories = Category::where('is_active', true)->get();
+        $categories = Category::query()->where('is_active', true)->get();
         return view('admin.products.create', compact('categories'));
     }
 
@@ -54,32 +65,47 @@ class ProductController extends Controller
             'original_price' => ['nullable', 'numeric', 'min:0'],
             'stock'          => ['required', 'integer', 'min:0'],
             'weight'         => ['required', 'integer', 'min:1'],
-            'sizes'          => ['nullable', 'string'],
-            'colors'         => ['nullable', 'string'],
+            'sizes'          => ['nullable'],
+            'colors'         => ['nullable'],
             'is_active'      => ['boolean'],
             'is_recommended' => ['boolean'],
             'main_photo'     => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo_2'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo_3'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $slug = Str::slug($validated['name']);
         $baseSlug = $slug;
         $counter = 1;
-        while (Product::where('slug', $slug)->exists()) {
+        while (Product::query()->where('slug', $slug)->exists()) {
             $slug = $baseSlug . '-' . $counter++;
         }
 
-        // Parse sizes & colors dari comma-separated string
+        // Parse sizes & colors dari input form (array atau comma-separated string)
         $sizes = [];
         if (!empty($validated['sizes'])) {
-            $sizes = array_map('trim', explode(',', $validated['sizes']));
-            $sizes = array_filter($sizes);
+            $sizeInput = is_array($validated['sizes']) ? $validated['sizes'] : explode(',', $validated['sizes']);
+            $sizes = array_filter(array_map(function ($item) {
+                return is_string($item) ? trim($item) : (is_array($item) ? ($item['name'] ?? '') : '');
+            }, $sizeInput));
         }
 
         $colors = [];
         if (!empty($validated['colors'])) {
-            $colorInput = array_map('trim', explode(',', $validated['colors']));
-            foreach (array_filter($colorInput) as $color) {
-                $colors[] = ['name' => $color, 'hex' => '#000000'];
+            $colorInput = is_array($validated['colors']) ? $validated['colors'] : explode(',', $validated['colors']);
+            foreach ($colorInput as $item) {
+                if (is_string($item)) {
+                    $colorName = trim($item);
+                    if ($colorName !== '') {
+                        $colors[] = ['name' => $colorName, 'hex' => '#000000'];
+                    }
+                } elseif (is_array($item)) {
+                    $colorName = trim($item['name'] ?? '');
+                    $colorHex = $item['hex'] ?? '#000000';
+                    if ($colorName !== '') {
+                        $colors[] = ['name' => $colorName, 'hex' => $colorHex];
+                    }
+                }
             }
         }
 
@@ -88,7 +114,7 @@ class ProductController extends Controller
             $mainPhotoPath = $request->file('main_photo')->store('products', 'public');
         }
 
-        Product::create([
+        $product = Product::create([
             'category_id'    => $validated['category_id'],
             'name'           => $validated['name'],
             'slug'           => $slug,
@@ -107,12 +133,32 @@ class ProductController extends Controller
             'reviews_count'  => 0,
         ]);
 
+        if ($request->hasFile('photo_2')) {
+            $path2 = $request->file('photo_2')->store('products', 'public');
+            $product->images()->create([
+                'image' => $path2,
+                'sort_order' => 1,
+            ]);
+        }
+
+        if ($request->hasFile('photo_3')) {
+            $path3 = $request->file('photo_3')->store('products', 'public');
+            $product->images()->create([
+                'image' => $path3,
+                'sort_order' => 2,
+            ]);
+        }
+
+        Product::clearCache($product);
+        // Flush cache tag untuk list produk admin
+        Cache::store('redis')->tags(['admin-products'])->flush();
+
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
     public function edit(Product $product)
     {
-        $categories = Category::where('is_active', true)->get();
+        $categories = Category::query()->where('is_active', true)->get();
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
@@ -127,11 +173,15 @@ class ProductController extends Controller
             'original_price' => ['nullable', 'numeric', 'min:0'],
             'stock'          => ['required', 'integer', 'min:0'],
             'weight'         => ['required', 'integer', 'min:1'],
-            'sizes'          => ['nullable', 'string'],
-            'colors'         => ['nullable', 'string'],
+            'sizes'          => ['nullable'],
+            'colors'         => ['nullable'],
             'is_active'      => ['boolean'],
             'is_recommended' => ['boolean'],
             'main_photo'     => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo_2'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo_3'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_photo_2' => ['nullable', 'boolean'],
+            'remove_photo_3' => ['nullable', 'boolean'],
         ]);
 
         // Update slug hanya jika nama berubah
@@ -140,22 +190,36 @@ class ProductController extends Controller
             $slug = Str::slug($validated['name']);
             $baseSlug = $slug;
             $counter = 1;
-            while (Product::where('slug', $slug)->where('id', '!=', $product->id)->exists()) {
+            while (Product::query()->where('slug', $slug)->where('id', '!=', $product->id)->exists()) {
                 $slug = $baseSlug . '-' . $counter++;
             }
         }
 
+        // Parse sizes & colors dari input form (array atau comma-separated string)
         $sizes = [];
         if (!empty($validated['sizes'])) {
-            $sizes = array_map('trim', explode(',', $validated['sizes']));
-            $sizes = array_filter($sizes);
+            $sizeInput = is_array($validated['sizes']) ? $validated['sizes'] : explode(',', $validated['sizes']);
+            $sizes = array_filter(array_map(function ($item) {
+                return is_string($item) ? trim($item) : (is_array($item) ? ($item['name'] ?? '') : '');
+            }, $sizeInput));
         }
 
         $colors = [];
         if (!empty($validated['colors'])) {
-            $colorInput = array_map('trim', explode(',', $validated['colors']));
-            foreach (array_filter($colorInput) as $color) {
-                $colors[] = ['name' => $color, 'hex' => '#000000'];
+            $colorInput = is_array($validated['colors']) ? $validated['colors'] : explode(',', $validated['colors']);
+            foreach ($colorInput as $item) {
+                if (is_string($item)) {
+                    $colorName = trim($item);
+                    if ($colorName !== '') {
+                        $colors[] = ['name' => $colorName, 'hex' => '#000000'];
+                    }
+                } elseif (is_array($item)) {
+                    $colorName = trim($item['name'] ?? '');
+                    $colorHex = $item['hex'] ?? '#000000';
+                    if ($colorName !== '') {
+                        $colors[] = ['name' => $colorName, 'hex' => $colorHex];
+                    }
+                }
             }
         }
 
@@ -188,12 +252,62 @@ class ProductController extends Controller
         }
 
         $product->update($data);
+        // Flush cache tag untuk list produk admin setelah update
+        Cache::store('redis')->tags(['admin-products'])->flush();
+
+        // Handle Photo 2
+        if ($request->boolean('remove_photo_2')) {
+            $oldImage = $product->images()->where('sort_order', 1)->first();
+            if ($oldImage) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage->image);
+                $oldImage->delete();
+            }
+        } elseif ($request->hasFile('photo_2')) {
+            $oldImage = $product->images()->where('sort_order', 1)->first();
+            if ($oldImage) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage->image);
+                $oldImage->delete();
+            }
+
+            $path2 = $request->file('photo_2')->store('products', 'public');
+            $product->images()->create([
+                'image' => $path2,
+                'sort_order' => 1,
+            ]);
+        }
+
+        // Handle Photo 3
+        if ($request->boolean('remove_photo_3')) {
+            $oldImage = $product->images()->where('sort_order', 2)->first();
+            if ($oldImage) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage->image);
+                $oldImage->delete();
+            }
+        } elseif ($request->hasFile('photo_3')) {
+            $oldImage = $product->images()->where('sort_order', 2)->first();
+            if ($oldImage) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage->image);
+                $oldImage->delete();
+            }
+
+            $path3 = $request->file('photo_3')->store('products', 'public');
+            $product->images()->create([
+                'image' => $path3,
+                'sort_order' => 2,
+            ]);
+        }
+
+        Product::clearCache($product);
 
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui.');
     }
 
     public function destroy(Product $product)
     {
+        if ($product->orderItems()->exists()) {
+            return back()->with('error', 'Produk tidak dapat dihapus karena sudah memiliki riwayat transaksi/order. Anda dapat menonaktifkan produk ini saja.');
+        }
+
         if ($product->main_photo) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($product->main_photo);
         }

@@ -21,7 +21,6 @@ class UserController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('nim', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%");
             });
         }
@@ -49,7 +48,6 @@ class UserController extends Controller
         $validated = $request->validate([
             'name'      => ['required', 'string', 'max:100'],
             'email'     => ['required', 'email', 'max:150', 'unique:users,email'],
-            'nim'       => ['nullable', 'string', 'max:50', 'unique:users,nim'],
             'phone'     => ['nullable', 'string', 'max:30'],
             'role'      => ['required', Rule::in(['superadmin', 'admin', 'customer'])],
             'password'  => ['required', 'string', 'min:8', 'confirmed'],
@@ -70,7 +68,6 @@ class UserController extends Controller
         User::create([
             'name'      => $validated['name'],
             'email'     => $validated['email'],
-            'nim'       => $validated['nim'] ?? null,
             'phone'     => $validated['phone'] ?? null,
             'role'      => $validated['role'],
             'password'  => Hash::make($validated['password']),
@@ -91,7 +88,6 @@ class UserController extends Controller
         $validated = $request->validate([
             'name'      => ['required', 'string', 'max:100'],
             'email'     => ['required', 'email', 'max:150', Rule::unique('users')->ignore($user->id)],
-            'nim'       => ['nullable', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
             'phone'     => ['nullable', 'string', 'max:30'],
             'role'      => ['required', Rule::in(['superadmin', 'admin', 'customer'])],
             'password'  => ['nullable', 'string', 'min:8', 'confirmed'],
@@ -107,7 +103,6 @@ class UserController extends Controller
         $data = [
             'name'      => $validated['name'],
             'email'     => $validated['email'],
-            'nim'       => $validated['nim'] ?? null,
             'phone'     => $validated['phone'] ?? null,
             'role'      => $validated['role'],
             'is_active' => $request->boolean('is_active'),
@@ -159,5 +154,20 @@ class UserController extends Controller
         $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
         return back()->with('success', "User {$user->name} berhasil {$status}.");
+    }
+
+    public function resetPassword(User $user)
+    {
+        $currentUser = Auth::guard('web')->user();
+
+        if ($user->role === 'superadmin' && $currentUser->role !== 'superadmin') {
+            return back()->with('error', 'Hanya Superadmin yang dapat me-reset password akun Superadmin.');
+        }
+
+        $user->update([
+            'password' => Hash::make('password')
+        ]);
+
+        return back()->with('success', "Password untuk user {$user->name} berhasil di-reset menjadi 'password'.");
     }
 }

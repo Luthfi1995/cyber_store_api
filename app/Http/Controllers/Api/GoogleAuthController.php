@@ -38,10 +38,19 @@ class GoogleAuthController extends Controller
             $name = $request->input('name', 'Mock Google User');
             $googleId = $request->input('google_id', 'mock-google-id-123456');
         } else {
-            // Call Google's tokeninfo API to verify the integrity and decode the ID token
-            $response = Http::get('https://oauth2.googleapis.com/tokeninfo', [
-                'id_token' => $idToken,
-            ]);
+            try {
+                // Call Google's tokeninfo API to verify the integrity and decode the ID token with timeout
+                $response = Http::timeout(5)->connectTimeout(3)->get('https://oauth2.googleapis.com/tokeninfo', [
+                    'id_token' => $idToken,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Google Token Verification Connection Timeout/Error', [
+                    'message' => $e->getMessage(),
+                ]);
+                throw ValidationException::withMessages([
+                    'id_token' => ['Gagal memverifikasi token Google karena masalah koneksi. Silakan coba beberapa saat lagi.'],
+                ]);
+            }
 
             if (!$response->successful()) {
                 Log::error('Google Token Verification Failed', [

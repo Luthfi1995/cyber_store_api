@@ -21,6 +21,8 @@ class OrderItem extends Model
         'total',
     ];
 
+    protected $appends = ['is_reviewed'];
+
     protected function casts(): array
     {
         return [
@@ -28,6 +30,13 @@ class OrderItem extends Model
             'quantity' => 'integer',
             'total' => 'decimal:2',
         ];
+    }
+
+    public function getIsReviewedAttribute(): bool
+    {
+        return ProductReview::where('order_id', $this->order_id)
+            ->where('product_id', $this->product_id)
+            ->exists();
     }
 
     public function order(): BelongsTo

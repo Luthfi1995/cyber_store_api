@@ -10,20 +10,20 @@ class InfoController extends Controller
     public function about(): JsonResponse
     {
         return response()->json([
-            'app_name' => 'Alumni BSI University App',
+            'app_name' => 'Aplikasi Mahasiswa Baru Universitas Bina Sarana Informatika',
             'version' => 'v1.2.0',
-            'description' => 'Aplikasi Resmi Toko Merchandise dan Jejaring Alumni BSI University. Menghubungkan seluruh alumni dan menyediakan berbagai merchandise resmi berkualitas tinggi.',
+            'description' => 'Aplikasi Resmi Mahasiswa Baru Universitas Bina Sarana Informatika. Untuk pembelian atribut dan keperluan Semot dan Ormik mahasiswa baru Universitas Bina Sarana Infromatika.',
             'terms_and_conditions' => [
                 'title' => 'Syarat & Ketentuan',
-                'content' => '1. Penggunaan aplikasi ini ditujukan khusus untuk alumni, civitas akademika, dan mitra resmi BSI University. 2. Transaksi pembelian merchandise tunduk pada kebijakan pengiriman dan pengembalian barang yang berlaku. 3. Pengguna bertanggung jawab penuh atas kerahasiaan akun dan kata sandi masing-masing.',
+                'content' => '1. Penggunaan aplikasi ini ditujukan khusus untuk mahasiswa baru Universitas Bina Sarana Informatika. 2. Transaksi pembelian produk tunduk pada kebijakan pengiriman dan pengembalian barang yang berlaku. 3. Pengguna bertanggung jawab penuh atas kerahasiaan akun dan kata sandi masing-masing.',
             ],
             'privacy_policy' => [
                 'title' => 'Kebijakan Privasi',
-                'content' => 'Kami menghargai privasi Anda. Informasi pribadi Anda seperti nama, email, nomor telepon, dan nomor alumni (NIM) digunakan hanya untuk kepentingan transaksi di aplikasi dan autentikasi keanggotaan alumni. Kami tidak membagikan data Anda kepada pihak ketiga tanpa persetujuan Anda.',
+                'content' => 'Kami menghargai privasi Anda. Informasi pribadi Anda seperti nama, email, dan nomor telepon digunakan hanya untuk kepentingan transaksi di aplikasi. Kami tidak membagikan data Anda kepada pihak ketiga tanpa persetujuan Anda.',
             ],
             'credits_and_contributors' => [
                 'title' => 'Kredit & Kontributor',
-                'content' => 'Dikembangkan oleh tim IT Alumni BSI University bekerjasama dengan Divisi Merchandise & Kemahasiswaan BSI.',
+                'content' => 'Dikembangkan oleh tim BTI Universitas Bina Sarana Informatika bekerjasama dengan Divisi Kemahasiswaan Universitas Bina Sarana Informatika.',
             ],
         ]);
     }
@@ -34,7 +34,7 @@ class InfoController extends Controller
             'faqs' => [
                 [
                     'question' => 'Bagaimana cara mendaftar akun?',
-                    'answer' => 'Anda dapat mendaftar melalui Halaman Register dengan mengisi nama lengkap, email, nomor telepon, NIM/nomor alumni, dan membuat kata sandi baru.',
+                    'answer' => 'Anda dapat mendaftar melalui Halaman Register dengan mengisi nama lengkap, email, nomor telepon, dan membuat kata sandi baru.',
                 ],
                 [
                     'question' => 'Apakah pembelian merchandise dapat dikirim ke luar kota?',
@@ -42,7 +42,7 @@ class InfoController extends Controller
                 ],
                 [
                     'question' => 'Bagaimana cara melacak pesanan saya?',
-                    'answer' => 'Anda dapat melihat status pelacakan pesanan Anda di tab "Riwayat" pesanan dan memilih pesanan yang ingin dilacak.',
+                    'answer' => 'Anda dapat melihat status pelacakan pesanan Anda di tab "Riwayat Transaksi" dan memilih pesanan yang ingin dilacak.',
                 ],
                 [
                     'question' => 'Bagaimana jika barang yang saya terima cacat/tidak sesuai?',
@@ -57,7 +57,7 @@ class InfoController extends Controller
                 ],
                 'email' => [
                     'label' => 'Email Support',
-                    'value' => 'support@ubsistore.test',
+                    'value' => 'support@bsi.ac.id',
                     'icon' => 'email',
                 ],
                 'telephone' => [
@@ -72,4 +72,18 @@ class InfoController extends Controller
             ],
         ]);
     }
+
+    public function storeInfo(): JsonResponse
+    {
+        $logo = \App\Models\Setting::get('store_logo');
+        
+        return response()->json([
+            'store_name' => \App\Models\Setting::get('store_name', 'UBSI Store'),
+            'store_address' => \App\Models\Setting::get('store_address', 'Jl. Kramat Raya No.98, Senen, Jakarta Pusat'),
+            'store_email' => \App\Models\Setting::get('store_email', 'support@bsi.ac.id'),
+            'store_phone' => \App\Models\Setting::get('store_phone', '(021) 7867868'),
+            'store_logo' => $logo ? asset('storage/' . $logo) : asset('assets/img/logo.png'),
+        ]);
+    }
 }
+

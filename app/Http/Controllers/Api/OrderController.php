@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $orders = Order::with(['payment', 'expedition'])
+        $orders = Order::with(['payment', 'expedition', 'items.product'])
             ->where('user_id', $request->user()->id)
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->status))
             ->latest()
@@ -27,6 +28,10 @@ class OrderController extends Controller
         return response()->json([
             'order' => $order->load(['items.product', 'payment', 'trackings', 'address', 'expedition']),
             'status_labels' => Order::statuses(),
+            'store_name' => \App\Models\Setting::get('store_name', 'UBSI Store'),
+            'store_address' => \App\Models\Setting::get('store_address', 'Jl. Kramat Raya No.98, Senen, Jakarta Pusat'),
+            'store_email' => \App\Models\Setting::get('store_email', 'support@bsi.ac.id'),
+            'store_phone' => \App\Models\Setting::get('store_phone', '(021) 7867868'),
         ]);
     }
 
@@ -48,5 +53,75 @@ class OrderController extends Controller
             'message' => 'Pesanan selesai.',
             'order' => $order->fresh()->load(['items', 'payment', 'trackings']),
         ]);
+    }
+
+    public function trackWaybill(Request $request, Order $order): JsonResponse
+    {
+        abort_if($order->user_id !== $request->user()->id, 403);
+
+        $result = $order->syncTracking();
+
+        if (!$result['success']) {
+            return response()->json(['message' => $result['message']], 422);
+        }
+
+        return response()->json([
+            'message' => $result['message'],
+            'order' => $order->fresh()->load(['items.product', 'payment', 'trackings', 'address', 'expedition']),
+        ]);
+    }
+
+    public function cancel(Request $request, Order $order): JsonResponse
+    {
+        abort_if($order->user_id !== $request->user()->id, 403);
+
+        if ($order->status !== Order::STATUS_PENDING_PAYMENT) {
+            return response()->json(['message' => 'Hanya pesanan yang belum dibayar yang dapat dibatalkan.'], 422);
+        }
+
+        try {
+            DB::transaction(function () use ($order) {
+                if ($order->payment) {
+                    $order->payment->update([
+                        'status' => \App\Models\Payment::STATUS_FAILED,
+                    ]);
+                }
+
+                $order->update([
+                    'status' => Order::STATUS_CANCELLED,
+                ]);
+
+                $order->trackings()->create([
+                    'status' => Order::STATUS_CANCELLED,
+                    'description' => 'Pesanan dibatalkan oleh pembeli.',
+                    'location' => $order->address?->city ?? 'Sistem',
+                ]);
+
+                foreach ($order->items as $item) {
+                    $product = $item->product;
+                    if ($product) {
+                        $product->increment('stock', $item->quantity);
+                        
+                        $product->stockMovements()->create([
+                            'user_id' => $order->user_id,
+                            'type' => 'in',
+                            'quantity' => $item->quantity,
+                            'reference' => $order->invoice_number,
+                            'note' => 'Restock: Dibatalkan oleh pembeli (Cancel order)',
+                        ]);
+                    }
+                }
+            });
+
+            return response()->json([
+                'message' => 'Pesanan berhasil dibatalkan.',
+                'order' => $order->fresh()->load(['items.product', 'payment', 'trackings', 'address', 'expedition']),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal membatalkan pesanan: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

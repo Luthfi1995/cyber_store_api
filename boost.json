@@ -1,0 +1,9 @@
+{
+    "agents": [
+        "antigravity"
+    ],
+    "cloud": false,
+    "skills": [
+        "laravel-best-practices"
+    ]
+}
