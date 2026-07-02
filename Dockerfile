@@ -21,6 +21,9 @@ ENV APP_ENV production
 ENV APP_DEBUG false
 ENV LOG_CHANNEL stderr
 
+# KUNCI PERBAIKAN: Jalankan composer secara manual saat build image
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
 # Buka port 8080 sesuai standar Google Cloud Run
 EXPOSE 8080
 
