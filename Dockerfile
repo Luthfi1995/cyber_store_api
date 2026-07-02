@@ -1,5 +1,5 @@
-# Menggunakan tag php8.3 agar sesuai dengan kebutuhan Laravel Anda
-FROM richarvey/nginx-php-fpm:php8.3-latest
+# Menggunakan tag stabil yang tersedia di Docker Hub
+FROM richarvey/nginx-php-fpm:3.1.6
 
 # Salin semua file proyek ke direktori web root di container
 COPY . /var/www/html
