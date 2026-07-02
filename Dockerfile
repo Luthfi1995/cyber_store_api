@@ -1,4 +1,4 @@
-FROM richarvey/nginx-php-fpm:latest
+FROM richarvey/nginx-php-fpm:3.1.6
 
 # Salin semua file proyek ke direktori web root di container
 COPY . /var/www/html
