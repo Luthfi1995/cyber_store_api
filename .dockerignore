@@ -12,5 +12,3 @@ yarn-error.log
 fly.toml
 Dockerfile
 .dockerignore
-ubsi_store_api.zip
-vendor.zip
