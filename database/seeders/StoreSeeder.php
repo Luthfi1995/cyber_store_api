@@ -12,32 +12,18 @@ use Illuminate\Support\Str;
 class StoreSeeder extends Seeder
 {
     /**
-     * Download a dummy image from picsum.photos and save it to storage.
-     * Returns the storage path (e.g. "products/topi_1.jpg") or null on failure.
+     * Copy a local image from public/assets/img to storage and return its path.
      */
-    private function downloadDummyPhoto(string $filename, int $picsumId, int $width = 400, int $height = 400): ?string
+    private function getLocalPhoto(string $sourceFilename): ?string
     {
-        $storagePath = 'products/' . $filename;
+        $sourcePath = public_path('assets/img/' . $sourceFilename);
+        $destPath = 'products/' . Str::slug(pathinfo($sourceFilename, PATHINFO_FILENAME)) . '.' . pathinfo($sourceFilename, PATHINFO_EXTENSION);
 
-        // Skip if already exists
-        if (Storage::disk('public')->exists($storagePath)) {
-            return $storagePath;
+        if (!Storage::disk('public')->exists($destPath) && file_exists($sourcePath)) {
+            Storage::disk('public')->put($destPath, file_get_contents($sourcePath));
         }
 
-        try {
-            $url      = "https://picsum.photos/id/{$picsumId}/{$width}/{$height}";
-            $context  = stream_context_create(['http' => ['timeout' => 10]]);
-            $contents = @file_get_contents($url, false, $context);
-
-            if ($contents !== false) {
-                Storage::disk('public')->put($storagePath, $contents);
-                return $storagePath;
-            }
-        } catch (\Throwable $e) {
-            $this->command->warn("   ⚠️  Gagal download foto {$filename}: " . $e->getMessage());
-        }
-
-        return null;
+        return file_exists($sourcePath) ? $destPath : null;
     }
 
     public function run(): void
@@ -65,45 +51,45 @@ class StoreSeeder extends Seeder
         ], ['code'], ['name', 'service', 'base_cost', 'estimated_days', 'is_active', 'updated_at']);
  
         // ============================
-        // DOWNLOAD DUMMY PHOTOS
+        // SETUP LOCAL PHOTOS
         // ============================
-        $this->command->info('📸 Mengunduh foto dummy produk ke storage...');
+        $this->command->info('📸 Menyiapkan foto produk dari local storage...');
         Storage::disk('public')->makeDirectory('products');
 
-        // Picsum IDs: masing-masing kategori pakai 5 ID berbeda, di-rotate
-        // Topi  → ID fashion/accessories: 91,100,119,152,175,169,219,232,247,267,291,321,345,367,398,412,430,450,475,491
-        // Baju  → ID clothing: 103,111,129,140,157,162,177,188,204,215,227,244,256,277,289,302,319,335,358,374,382,401,420,440,465
-        // Tumbler → ID objects/drinks: 106,122,138,160,174,192,208,222,240,258,272,286,312,330,346,362,385,408
-
-        $topiIds    = [91, 100, 119, 152, 175, 169, 219, 232, 247, 267, 291, 321, 345, 367, 398, 412, 430, 450, 475, 491];
-        $bajuIds    = [103, 111, 129, 140, 157, 162, 177, 188, 204, 215, 227, 244, 256, 277, 289, 302, 319, 335, 358, 374, 382, 401, 420, 440, 465];
-        $tumblerIds = [106, 122, 138, 160, 174, 192, 208, 222, 240, 258, 272, 286, 312, 330, 346, 362, 385, 408];
-
-        // Download topi photos (20)
+        $availableTopi = [
+            'topi ubsi kuning.jpg',
+            'topi ubsi kuning1.jpg',
+            'topi ubsi merah.jpg',
+            'topi ubsi merah2.jpg',
+            'topi ubsi putih.jpg',
+            'topi ubsi putih1.jpg',
+        ];
         $topiPhotos = [];
         for ($i = 0; $i < 20; $i++) {
-            $filename = "topi_" . ($i + 1) . ".jpg";
-            $path = $this->downloadDummyPhoto($filename, $topiIds[$i], 400, 400);
-            $topiPhotos[] = $path ?? ('products/topi_' . ($i + 1) . '.jpg');
+            $topiPhotos[] = $this->getLocalPhoto($availableTopi[$i % count($availableTopi)]);
         }
 
-        // Download baju photos (25)
+        $availableBaju = [
+            'baju ubsi hijau.jpg',
+            'baju ubsi kuning.jpg',
+            'baju ubsi putih.jpg',
+        ];
         $bajuPhotos = [];
         for ($i = 0; $i < 25; $i++) {
-            $filename = "baju_" . ($i + 1) . ".jpg";
-            $path = $this->downloadDummyPhoto($filename, $bajuIds[$i], 400, 500);
-            $bajuPhotos[] = $path ?? ('products/baju_' . ($i + 1) . '.jpg');
+            $bajuPhotos[] = $this->getLocalPhoto($availableBaju[$i % count($availableBaju)]);
         }
 
-        // Download tumbler photos (18)
+        $availableTumbler = [
+            'tumbler ubsi biru.jpg',
+            'tumbler ubsi hitam.jpg',
+            'tumbler ubsi.jpg',
+        ];
         $tumblerPhotos = [];
         for ($i = 0; $i < 18; $i++) {
-            $filename = "tumbler_" . ($i + 1) . ".jpg";
-            $path = $this->downloadDummyPhoto($filename, $tumblerIds[$i], 400, 400);
-            $tumblerPhotos[] = $path ?? ('products/tumbler_' . ($i + 1) . '.jpg');
+            $tumblerPhotos[] = $this->getLocalPhoto($availableTumbler[$i % count($availableTumbler)]);
         }
 
-        $this->command->info('   ✅ Download selesai.');
+        $this->command->info('   ✅ Foto berhasil disiapkan.');
 
         // ============================
         // PRODUCTS
@@ -217,10 +203,12 @@ class StoreSeeder extends Seeder
                     'is_active'      => true,
                 ]);
                 $inserted++;
-            } elseif (empty($product->main_photo) && !empty($pData['main_photo'])) {
-                // Update main_photo jika belum ada
-                $product->update(['main_photo' => $pData['main_photo']]);
-                $updated++;
+            } else {
+                // Selalu update foto jika seeder dijalankan ulang
+                if (!empty($pData['main_photo'])) {
+                    $product->update(['main_photo' => $pData['main_photo']]);
+                    $updated++;
+                }
             }
         }
  

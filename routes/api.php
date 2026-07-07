@@ -19,12 +19,17 @@ use App\Http\Controllers\Api\MidtransCallbackController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
-    Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('/auth/google', [GoogleAuthController::class, 'loginWithGoogle']);
+    // ── Auth publik (dengan rate limiting) ───────────────────────────────────
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,5');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:10,10');
+    Route::post('/resend-otp', [AuthController::class, 'resendOtp'])->middleware('throttle:5,5');
+    Route::post('/auth/google', [GoogleAuthController::class, 'loginWithGoogle'])->middleware('throttle:10,1');
+
+    // ── Forgot Password (alur 3 langkah, dengan rate limiting ketat) ─────────
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,60');
+    Route::post('/verify-reset-otp', [AuthController::class, 'verifyResetOtp'])->middleware('throttle:10,10');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,10');
 
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/products', [ProductController::class, 'index']);
@@ -58,14 +63,19 @@ Route::prefix('v1')->group(function () {
         Route::post('/orders/{order}/track', [OrderController::class, 'trackWaybill']);
         Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
 
-        // Khusus testing lokal. Di production, endpoint ini diganti callback payment gateway/VA bank.
-        Route::post('/payments/{payment}/simulate-paid', [PaymentController::class, 'simulatePaid']);
+        // ── Reviews ───────────────────────────────────────────────────────────
+        Route::get('/my-reviews', [ProductReviewController::class, 'myReviews']);
 
         // ── Chat ──────────────────────────────────────────────────────────────
         Route::get('/chats', [ChatController::class, 'index']);
         Route::post('/chats', [ChatController::class, 'store']);
         Route::get('/chats/{chat}/messages', [ChatController::class, 'messages']);
         Route::post('/chats/{chat}/messages', [ChatController::class, 'sendMessage']);
+
+        // ── Testing lokal: simulate pembayaran (HANYA di env local/testing) ──
+        if (app()->environment('local', 'testing')) {
+            Route::post('/payments/{payment}/simulate-paid', [PaymentController::class, 'simulatePaid']);
+        }
     });
 
     // Public Midtrans Callback Webhook

@@ -37,12 +37,19 @@ class MidtransCallbackController extends Controller
         // Retrieve server key for signature verification
         $serverKey = config('services.midtrans.server_key') ?: env('MIDTRANS_SERVER_KEY', '');
 
-        // Verify Signature Key if Server Key is configured
-        if (!empty($serverKey)) {
+        // Verify Signature Key
+        // [SECURITY] Di production, server key WAJIB dikonfigurasi — tolak request jika tidak ada
+        if (empty($serverKey)) {
+            if (! app()->environment('local', 'testing')) {
+                Log::error('Midtrans Webhook rejected: MIDTRANS_SERVER_KEY is not configured in production.');
+                return response()->json(['message' => 'Konfigurasi server tidak lengkap.'], 500);
+            }
+            Log::warning('Midtrans signature verification skipped (local/testing environment, no server key).');
+        } else {
             // Midtrans sends gross_amount as a string (often with decimals like '10000.00' or without).
             // We should ensure it matches what Midtrans passed exactly.
             $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
-            
+
             if ($signatureKey !== $expectedSignature) {
                 Log::warning('Midtrans Webhook Invalid Signature', [
                     'received' => $signatureKey,

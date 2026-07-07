@@ -79,8 +79,10 @@ class OrderController extends Controller
             return response()->json(['message' => 'Hanya pesanan yang belum dibayar yang dapat dibatalkan.'], 422);
         }
 
+        $reason = $request->input('reason', 'Tidak ada alasan khusus');
+
         try {
-            DB::transaction(function () use ($order) {
+            DB::transaction(function () use ($order, $reason) {
                 if ($order->payment) {
                     $order->payment->update([
                         'status' => \App\Models\Payment::STATUS_FAILED,
@@ -89,11 +91,12 @@ class OrderController extends Controller
 
                 $order->update([
                     'status' => Order::STATUS_CANCELLED,
+                    'note' => $order->note ? $order->note . ' | Alasan Batal: ' . $reason : 'Alasan Batal: ' . $reason,
                 ]);
 
                 $order->trackings()->create([
                     'status' => Order::STATUS_CANCELLED,
-                    'description' => 'Pesanan dibatalkan oleh pembeli.',
+                    'description' => 'Pesanan dibatalkan oleh pembeli. Alasan: ' . $reason,
                     'location' => $order->address?->city ?? 'Sistem',
                 ]);
 

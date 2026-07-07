@@ -64,21 +64,29 @@ class GoogleAuthController extends Controller
 
             $payload = $response->json();
 
-            // Optionally verify client ID (audience) if set
-            $clientId = config('services.google.client_id') ?: env('GOOGLE_CLIENT_ID');
-            if ($clientId && isset($payload['aud']) && $payload['aud'] !== $clientId) {
-                Log::error('Google Token Client ID Mismatch', [
-                    'expected' => $clientId,
-                    'actual' => $payload['aud'],
-                ]);
-                throw ValidationException::withMessages([
-                    'id_token' => ['Client ID tidak sesuai.'],
-                ]);
+            // Verifikasi audience (client ID) dari token
+            // PENTING: Android menghasilkan token dengan Android Client ID atau Web Client ID sebagai audience.
+            // Kita perlu menerima KEDUANYA.
+            $webClientId     = config('services.google.client_id')     ?: env('GOOGLE_CLIENT_ID');
+            $androidClientId = config('services.google.android_client_id') ?: env('GOOGLE_ANDROID_CLIENT_ID');
+
+            $allowedAudiences = array_filter([$webClientId, $androidClientId]);
+
+            if (!empty($allowedAudiences) && isset($payload['aud'])) {
+                if (!in_array($payload['aud'], $allowedAudiences, true)) {
+                    Log::error('Google Token Client ID Mismatch', [
+                        'expected_any_of' => $allowedAudiences,
+                        'actual'          => $payload['aud'],
+                    ]);
+                    throw ValidationException::withMessages([
+                        'id_token' => ['Client ID tidak sesuai.'],
+                    ]);
+                }
             }
 
-            $email = $payload['email'] ?? null;
-            $name = $payload['name'] ?? null;
-            $googleId = $payload['sub'] ?? null; // 'sub' is Google's unique identifier for the user
+            $email    = $payload['email']  ?? null;
+            $name     = $payload['name']   ?? null;
+            $googleId = $payload['sub']    ?? null; // 'sub' is Google's unique identifier for the user
         }
 
         if (empty($email) || empty($googleId)) {

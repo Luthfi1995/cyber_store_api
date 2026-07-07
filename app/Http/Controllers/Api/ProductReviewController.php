@@ -88,4 +88,17 @@ class ProductReviewController extends Controller
             'review' => $review->load('user:id,name,photo'),
         ], 201);
     }
+
+    /**
+     * Get all reviews written by the authenticated user.
+     */
+    public function myReviews(Request $request): JsonResponse
+    {
+        $reviews = ProductReview::with(['product:id,name,images', 'product.images'])
+            ->where('user_id', $request->user()->id)
+            ->latest()
+            ->paginate($request->integer('per_page', 10));
+
+        return response()->json($reviews);
+    }
 }

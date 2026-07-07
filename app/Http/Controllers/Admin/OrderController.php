@@ -20,31 +20,22 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        // Buat cache key untuk halaman admin order
-        $cacheKey = 'admin:orders:index:page_' . $request->input('page', 1) .
-            ':search_' . md5($request->input('search', '')) .
-            ':status_' . $request->input('status', '');
+        $query = Order::with(['user', 'expedition'])->latest();
 
-        $orders = Cache::store('redis')
-            ->tags(['admin-orders'])
-            ->remember($cacheKey, now()->addHours(6), function () use ($request) {
-                $query = Order::with(['user', 'expedition'])->latest();
-
-                if ($request->filled('search')) {
-                    $search = $request->search;
-                    $query->where(function ($q) use ($search) {
-                        $q->where('invoice_number', 'like', "%{$search}%")
-                          ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")
-                                                          ->orWhere('email', 'like', "%{$search}%"));
-                    });
-                }
-
-                if ($request->filled('status')) {
-                    $query->where('status', $request->status);
-                }
-
-                return $query->paginate(15)->withQueryString();
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")
+                                                  ->orWhere('email', 'like', "%{$search}%"));
             });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $orders = $query->paginate(15)->withQueryString();
         $statusLabels = $this->statusLabels;
 
         return view('admin.orders.index', compact('orders', 'statusLabels'));

@@ -100,7 +100,7 @@ class CheckoutController extends Controller
                 }
 
                 try {
-                    $response = Http::withoutVerifying()->timeout(3)->withHeaders([
+                    $response = Http::timeout(3)->withHeaders([
                         'key' => env('RAJAONGKIR_API_KEY')
                     ])->post(env('RAJAONGKIR_BASE_URL') . '/cost', [
                         'origin' => $originCityId,

@@ -53,6 +53,8 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
 
     // ── Products ──────────────────────────────────────────────────────────────
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::post('/products/import', [ProductController::class, 'import'])->name('products.import');
+    Route::get('/products/import-template', [ProductController::class, 'downloadTemplate'])->name('products.import-template');
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
@@ -92,8 +94,9 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
 
     Route::get('/list-ongkir', function () {
         try {
-            $response = Http::withoutVerifying()->timeout(5)->withHeaders([
-                'key' => '4TSna80Qc7b078835126723c6Prhqa8C'
+            $response = Http::timeout(5)->withHeaders([
+                // [SECURITY] API key diambil dari environment variable, tidak hardcoded
+                'key' => env('RAJAONGKIR_API_KEY')
             ])->get('https://api.rajaongkir.com/starter/province');
             if ($response->failed()) {
                 throw new \Exception('API request failed');

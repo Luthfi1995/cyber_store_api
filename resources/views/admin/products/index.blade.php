@@ -20,10 +20,52 @@
                     <path d="m3.27 6.96 8.73 5 8.73-5" />
                     <path d="M12 22.08V12" />
                 </svg> Daftar Produk</span>
-            <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
-                ＋ Tambah Produk
-            </a>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('import-section').style.display = document.getElementById('import-section').style.display === 'none' ? 'block' : 'none'" style="display: inline-flex; align-items: center; gap: 6px;">
+                    📥 Impor Massal (CSV)
+                </button>
+                <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
+                    ＋ Tambah Produk
+                </a>
+            </div>
         </div>
+
+        <div id="import-section" style="display: none; padding: 20px; background: #f8fafc; border-bottom: 1px solid var(--border);">
+            <form action="{{ route('admin.products.import') }}" method="POST" enctype="multipart/form-data" class="filter-bar" style="align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                @csrf
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-weight: bold; font-size: 13px;">Pilih File CSV (.csv)</label>
+                    <input type="file" name="file" accept=".csv" required class="form-control" style="background: white;">
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button type="submit" class="btn btn-success" style="background-color: #10B981; border-color: #10B981; color: white;">
+                        🚀 Proses Impor
+                    </button>
+                    <a href="{{ route('admin.products.import-template') }}" class="btn btn-link" style="font-size: 13px; text-decoration: underline; color: #0D47A1; font-weight: bold;">
+                        📥 Unduh Template Excel (.xls)
+                    </a>
+                </div>
+            </form>
+            <div style="margin-top: 10px; font-size: 11px; color: #64748b; line-height: 1.6;">
+                * <strong>Langkah Penggunaan:</strong> <br>
+                1. Klik <strong>"Unduh Template Excel (.xls)"</strong> di atas. File ini sudah terformat rapi dengan garis tabel dan warna header.<br>
+                2. Buka dan isi data produk Anda menggunakan Microsoft Excel atau Google Sheets.<br>
+                3. Setelah selesai mengisi, pilih <strong>File -> Save As (Simpan Sebagai)</strong> lalu pilih format <strong>CSV (Comma Delimited) (*.csv)</strong>.<br>
+                4. Upload file <strong>.csv</strong> hasil ekspor tersebut di sini, lalu klik <strong>"Proses Impor"</strong>.<br>
+                * <em>Catatan: Pisahkan beberapa ukuran/warna dengan tanda titik koma (<code>;</code>) pada sel yang sama.</em>
+            </div>
+        </div>
+
+        @if (session('import_errors'))
+            <div style="margin: 15px 20px; padding: 15px; background-color: #FEF2F2; border: 1px solid #FEE2E2; border-radius: 8px;">
+                <h4 style="color: #991B1B; margin-top: 0; margin-bottom: 8px; font-size: 13px; font-weight: bold;">⚠️ Beberapa baris memiliki kesalahan data dan dilewati:</h4>
+                <ul style="color: #B91C1C; margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.6;">
+                    @foreach (session('import_errors') as $err)
+                        <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <div style="padding: 16px 20px; border-bottom: 1px solid var(--border);">
             <form method="GET" action="{{ route('admin.products.index') }}" class="filter-bar">

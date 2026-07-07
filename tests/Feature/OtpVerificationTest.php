@@ -36,12 +36,12 @@ class OtpVerificationTest extends TestCase
         $user = User::where('email', 'johndoe@ubsistore.test')->first();
         $this->assertNotNull($user);
         $this->assertFalse($user->is_active);
+        // OTP sekarang disimpan sebagai bcrypt hash — hanya perlu memastikan tidak null
         $this->assertNotNull($user->otp_code);
-        $this->assertEquals(6, strlen($user->otp_code));
         $this->assertNotNull($user->otp_expires_at);
 
-        // Verify OTP is sent via Mail
-        Mail::assertSent(\App\Mail\OtpVerificationMail::class, function ($mail) {
+        // Verify OTP is sent via Mail (queue)
+        Mail::assertQueued(\App\Mail\OtpVerificationMail::class, function ($mail) {
             return $mail->hasTo('johndoe@ubsistore.test');
         });
     }
@@ -49,18 +49,19 @@ class OtpVerificationTest extends TestCase
     public function test_otp_verification_activates_user()
     {
         $user = User::create([
-            'name' => 'Verification Test',
-            'email' => 'verify@ubsistore.test',
-            'password' => bcrypt('password123'),
-            'role' => User::ROLE_CUSTOMER,
-            'is_active' => false,
-            'otp_code' => '123456',
+            'name'           => 'Verification Test',
+            'email'          => 'verify@ubsistore.test',
+            'password'       => bcrypt('password123'),
+            'role'           => User::ROLE_CUSTOMER,
+            'is_active'      => false,
+            // [TEST] Simpan OTP sebagai hash agar Hash::check() berhasil di AuthController
+            'otp_code'       => \Illuminate\Support\Facades\Hash::make('123456'),
             'otp_expires_at' => now()->addMinutes(10),
         ]);
 
         $response = $this->postJson('/api/v1/verify-otp', [
             'email' => 'verify@ubsistore.test',
-            'otp' => '123456',
+            'otp'   => '123456',
         ]);
 
         $response->assertStatus(200)
