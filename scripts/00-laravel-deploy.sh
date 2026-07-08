@@ -17,3 +17,14 @@ php artisan migrate --force
 echo "Running database seeders..."
 php artisan db:seed --force
 
+# ─── Jalankan Laravel Scheduler sebagai background process ───────────
+# Railway tidak memiliki cron daemon, sehingga kita menjalankan scheduler
+# dalam loop setiap 60 detik menggunakan 'while true' di background.
+# Laravel Schedule::command('orders:sync-tracking')->hourly() akan
+# memastikan perintah sebenarnya hanya dieksekusi satu kali per jam.
+echo "Starting Laravel Scheduler in background..."
+while true; do
+    php artisan schedule:run --no-interaction >> /dev/null 2>&1
+    sleep 60
+done &
+echo "Laravel Scheduler started (PID: $!)."
