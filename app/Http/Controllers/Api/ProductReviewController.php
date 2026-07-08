@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductReview;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ProductReviewController extends Controller
 {
@@ -16,10 +17,17 @@ class ProductReviewController extends Controller
      */
     public function index(Product $product): JsonResponse
     {
-        $reviews = ProductReview::with('user:id,name,photo')
-            ->where('product_id', $product->id)
-            ->latest()
-            ->get();
+        $reviews = Cache::store('redis')->remember(
+            "reviews:product:{$product->id}",
+            now()->addMinutes(30),
+            function () use ($product) {
+                return ProductReview::with('user:id,name,photo')
+                    ->where('product_id', $product->id)
+                    ->latest()
+                    ->get()
+                    ->toArray();
+            }
+        );
 
         return response()->json($reviews);
     }
@@ -82,6 +90,10 @@ class ProductReviewController extends Controller
             'rating' => round($avgRating, 1),
             'reviews_count' => $reviewsCount,
         ]);
+
+        // Hapus cache review dan detail produk agar data terbaru langsung tampil
+        Cache::store('redis')->forget("reviews:product:{$product->id}");
+        Cache::store('redis')->forget("product:detail:{$product->id}");
 
         return response()->json([
             'message' => 'Ulasan berhasil dikirim.',

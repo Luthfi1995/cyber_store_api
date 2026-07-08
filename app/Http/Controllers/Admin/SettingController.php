@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 
 class SettingController extends Controller
@@ -65,6 +66,9 @@ class SettingController extends Controller
             }
         }
         Setting::set('store_city_name', $cityName);
+
+        // Hapus cache store info agar API Flutter segera mendapat data terbaru
+        Cache::store('redis')->forget('store:info');
 
         return back()->with('success', 'Pengaturan toko berhasil diperbarui.');
     }

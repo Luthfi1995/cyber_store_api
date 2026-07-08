@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
@@ -106,6 +107,9 @@ class BannerController extends Controller
         $data['image_path'] = $path;
         Banner::create($data);
 
+        // Hapus cache banner agar API menampilkan data terbaru
+        Cache::store('redis')->forget('banners:active');
+
         return redirect()->route('admin.banners.index')->with('success', 'Banner berhasil ditambahkan.');
     }
 
@@ -138,6 +142,9 @@ class BannerController extends Controller
 
         $banner->update($data);
 
+        // Hapus cache banner agar API menampilkan data terbaru
+        Cache::store('redis')->forget('banners:active');
+
         return redirect()->route('admin.banners.index')->with('success', 'Banner berhasil diperbarui.');
     }
 
@@ -148,6 +155,10 @@ class BannerController extends Controller
     {
         Storage::disk('public')->delete($banner->image_path);
         $banner->delete();
+
+        // Hapus cache banner agar API menampilkan data terbaru
+        Cache::store('redis')->forget('banners:active');
+
         return redirect()->route('admin.banners.index')->with('success', 'Banner berhasil dihapus.');
     }
 }

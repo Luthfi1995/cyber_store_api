@@ -7,6 +7,7 @@ use App\Models\Expedition;
 use App\Models\CustomerAddress;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\File;
 
@@ -50,7 +51,7 @@ class ExpeditionController extends Controller
             
             $cacheKey = "rajaongkir_costs_{$originCityId}_{$destinationCityId}_{$weight}";
             
-            $rajaOngkirCosts = cache()->remember($cacheKey, now()->addHours(1), function () use ($originCityId, $destinationCityId, $weight, $quantity) {
+            $rajaOngkirCosts = Cache::store('redis')->remember($cacheKey, now()->addHours(1), function () use ($originCityId, $destinationCityId, $weight, $quantity) {
                 $costsData = [];
                 // 1. Query JNE cost
                 try {
