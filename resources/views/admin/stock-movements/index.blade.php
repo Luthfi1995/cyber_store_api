@@ -91,7 +91,7 @@
     <div class="card" style="height:fit-content;">
         <div class="card-header"><span class="card-title">➕ Input Mutasi Manual</span></div>
         <div class="card-body">
-            <form method="POST" action="{{ route('admin.stock-movements.store') }}">
+            <form id="stockMutationForm" method="POST" action="{{ route('admin.stock-movements.store') }}">
                 @csrf
                 <div class="form-group">
                     <label class="form-label" for="product_id">Produk <span style="color:var(--danger)">*</span></label>
@@ -137,7 +137,7 @@
                     @error('note')<div class="form-error">{{ $message }}</div>@enderror
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width:100%;">📊 Catat Mutasi</button>
+                <button type="button" class="btn btn-primary" style="width:100%;" onclick="confirmCreate('stockMutationForm', 'Konfirmasi Catat Mutasi', 'Apakah Anda yakin ingin mencatat mutasi stok ini?')">📊 Catat Mutasi</button>
             </form>
         </div>
     </div>

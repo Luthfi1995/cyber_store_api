@@ -59,6 +59,26 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-credit-card"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
             </span> Pembayaran
         </a>
+        <a href="{{ route('admin.chats.index') }}"
+            class="nav-link {{ request()->routeIs('admin.chats.*') ? 'active' : '' }}">
+            <span class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span> Chat Customer
+            @php
+                $chatUnread = \App\Models\Chat::whereHas('messages', fn($q) =>
+                    $q->where('sender_type','customer')->where('is_read', false)
+                )->count();
+            @endphp
+            @if($chatUnread > 0)
+                <span id="sidebar-chat-badge" style="margin-left: auto; background-color: #ef4444; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; display: inline-block; line-height: 1;">
+                    {{ $chatUnread }}
+                </span>
+            @else
+                <span id="sidebar-chat-badge" style="margin-left: auto; background-color: #ef4444; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; display: none; line-height: 1;">
+                    0
+                </span>
+            @endif
+        </a>
 
 
         {{-- Master Data --}}

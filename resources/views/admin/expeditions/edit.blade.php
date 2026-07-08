@@ -13,7 +13,7 @@
         <a href="{{ route('admin.expeditions.index') }}" class="btn btn-secondary">← Kembali</a>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ route('admin.expeditions.update', $expedition) }}">
+        <form id="expeditionEditForm" method="POST" action="{{ route('admin.expeditions.update', $expedition) }}">
             @csrf @method('PUT')
             <div class="form-row">
                 <div class="form-group">
@@ -58,7 +58,7 @@
             </div>
             <div style="display:flex;gap:12px;justify-content:flex-end;">
                 <a href="{{ route('admin.expeditions.index') }}" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
+                <button type="button" class="btn btn-primary" onclick="confirmUpdate('expeditionEditForm', 'Konfirmasi Edit Ekspedisi', 'Apakah Anda yakin ingin menyimpan perubahan ekspedisi ini?')">💾 Simpan Perubahan</button>
             </div>
         </form>
     </div>

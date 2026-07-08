@@ -15,7 +15,7 @@
         <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">← Kembali</a>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ route('admin.users.store') }}" enctype="multipart/form-data">
+        <form id="userCreateForm" method="POST" action="{{ route('admin.users.store') }}" enctype="multipart/form-data">
             @csrf
 
             {{-- Foto Profil --}}
@@ -106,7 +106,7 @@
 
             <div style="display:flex;gap:12px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border);">
                 <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-primary">💾 Simpan Pengguna</button>
+                <button type="button" class="btn btn-primary" onclick="confirmCreate('userCreateForm', 'Konfirmasi Tambah Pengguna', 'Apakah Anda yakin ingin menyimpan pengguna baru ini?')">💾 Simpan Pengguna</button>
             </div>
         </form>
     </div>

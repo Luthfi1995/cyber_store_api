@@ -17,7 +17,7 @@
                 <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">← Kembali</a>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
+                <form id="productCreateForm" method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
                     @csrf
 
                     {{-- Gambar Produk --}}
@@ -256,7 +256,7 @@
 
                     <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:24px;">
                         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">Batal</a>
-                        <button type="submit" class="btn btn-primary">💾 Simpan Produk</button>
+                        <button type="button" class="btn btn-primary" onclick="confirmCreate('productCreateForm', 'Konfirmasi Tambah Produk', 'Apakah Anda yakin ingin menyimpan produk baru ini?')">💾 Simpan Produk</button>
                     </div>
                 </form>
             </div>

@@ -24,7 +24,7 @@
             <a href="{{ route('admin.banners.index') }}" class="btn btn-secondary">← Kembali</a>
         </div>
 
-        <form action="{{ route('admin.banners.store') }}" method="POST" enctype="multipart/form-data"
+        <form id="bannerCreateForm" action="{{ route('admin.banners.store') }}" method="POST" enctype="multipart/form-data"
               style="padding:24px; display:flex; flex-direction:column; gap:20px;">
             @csrf
 
@@ -66,8 +66,6 @@
             {{-- Gambar --}}
             <div class="form-group">
                 <label class="form-label">Gambar Banner <span style="color:var(--danger);">*</span></label>
-
-                {{-- Drop Zone --}}
                 <div id="dropZone"
                      style="border:2px dashed var(--border); border-radius:12px; padding:32px;
                             text-align:center; cursor:pointer; transition:border-color .2s, background .2s;
@@ -87,10 +85,8 @@
                          style="display:none; max-height:200px; width:100%; object-fit:cover;
                                 border-radius:8px; margin-top:12px;">
                 </div>
-
                 <input type="file" id="imageInput" name="image" accept="image/png,image/jpeg,image/webp"
                        style="display:none;" onchange="previewImage(this)">
-
                 @error('image')
                     <div style="color:var(--danger); font-size:13px; margin-top:6px;">{{ $message }}</div>
                 @enderror
@@ -98,13 +94,17 @@
 
             {{-- Submit --}}
             <div style="display:flex; gap:12px; padding-top:4px;">
-                <button type="submit" class="btn btn-primary">💾 Simpan Banner</button>
+                <button type="button" class="btn btn-primary"
+                        onclick="confirmCreate('bannerCreateForm', 'Konfirmasi Tambah Banner', 'Apakah Anda yakin ingin menyimpan banner baru ini?')">
+                    💾 Simpan Banner
+                </button>
                 <a href="{{ route('admin.banners.index') }}" class="btn btn-secondary">Batal</a>
             </div>
         </form>
     </div>
 </div>
 
+@push('scripts')
 <script>
     function previewImage(input) {
         const file = input.files[0];
@@ -137,4 +137,5 @@
         previewImage(document.getElementById('imageInput'));
     }
 </script>
+@endpush
 @endsection

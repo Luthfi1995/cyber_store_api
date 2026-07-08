@@ -222,7 +222,7 @@ $statusColors = [
         <div class="card">
             <div class="card-header"><span class="card-title">🔄 Ubah Status</span></div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.orders.status',$order) }}" enctype="multipart/form-data">
+                <form id="orderStatusForm" method="POST" action="{{ route('admin.orders.status',$order) }}" enctype="multipart/form-data">
                     @csrf @method('PATCH')
                     <div class="form-group">
                         <label class="form-label">Status Baru</label>
@@ -237,7 +237,7 @@ $statusColors = [
                         <input type="file" name="proof_photo" class="form-control" accept="image/*">
                         <small style="color: var(--text-muted); display: block; margin-top: 4px;">Upload foto kurir/bukti penerimaan saat paket tiba.</small>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;">💾 Perbarui Status</button>
+                    <button type="button" class="btn btn-primary" style="width:100%;" onclick="confirmUpdate('orderStatusForm', 'Konfirmasi Perbarui Status', 'Apakah Anda yakin ingin memperbarui status order ini?')">💾 Perbarui Status</button>
                 </form>
             </div>
         </div>
@@ -259,14 +259,14 @@ $statusColors = [
         <div class="card">
             <div class="card-header"><span class="card-title">📦 Nomor Resi</span></div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.orders.resi',$order) }}">
+                <form id="orderResiForm" method="POST" action="{{ route('admin.orders.resi',$order) }}">
                     @csrf @method('PATCH')
                     <div class="form-group">
                         <label class="form-label">Nomor Resi Pengiriman</label>
                         <input type="text" name="resi_number" class="form-control"
                             value="{{ $order->resi_number }}" placeholder="Masukkan nomor resi">
                     </div>
-                    <button type="submit" class="btn btn-success" style="width:100%;">📋 Simpan Resi</button>
+                    <button type="button" class="btn btn-success" style="width:100%;" onclick="confirmUpdate('orderResiForm', 'Konfirmasi Simpan Resi', 'Apakah Anda yakin ingin menyimpan nomor resi ini?')">📋 Simpan Resi</button>
                 </form>
                 @if($order->resi_number)
                 <form method="POST" action="{{ route('admin.orders.track', $order) }}" style="margin-top: 10px;">

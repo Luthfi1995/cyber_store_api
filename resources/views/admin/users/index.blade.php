@@ -90,6 +90,11 @@
                     <td style="font-size:12px;color:var(--text-muted);">{{ $user->created_at->format('d M Y') }}</td>
                     <td>
                         <div class="actions">
+                            @if($user->role === 'customer')
+                            <a href="{{ route('admin.chats.index', ['search' => $user->email]) }}" class="btn btn-primary btn-sm btn-icon" title="Chat Customer">
+                                <i class="bi bi-chat-dots"></i>
+                            </a>
+                            @endif
                             <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                                 <i class="bi bi-pencil-square"></i>
                             </a>

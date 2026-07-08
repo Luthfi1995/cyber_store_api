@@ -33,7 +33,7 @@
         <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">← Kembali</a>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ route('admin.users.update', $user) }}" enctype="multipart/form-data">
+        <form id="userEditForm" method="POST" action="{{ route('admin.users.update', $user) }}" enctype="multipart/form-data">
             @csrf @method('PUT')
 
             {{-- ── Foto Profil ── --}}
@@ -154,7 +154,7 @@
 
             <div style="display:flex; gap:12px; justify-content:flex-end; padding-top:8px; border-top:1px solid var(--border);">
                 <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
+                <button type="button" class="btn btn-primary" onclick="confirmUpdate('userEditForm', 'Konfirmasi Edit Pengguna', 'Apakah Anda yakin ingin menyimpan perubahan data pengguna ini?')">💾 Simpan Perubahan</button>
             </div>
         </form>
     </div>

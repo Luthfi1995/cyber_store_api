@@ -17,7 +17,7 @@
                 <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">← Kembali</a>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.products.update', $product) }}" enctype="multipart/form-data">
+                <form id="productEditForm" method="POST" action="{{ route('admin.products.update', $product) }}" enctype="multipart/form-data">
                     @csrf @method('PUT')
 
                     {{-- Gambar Produk --}}
@@ -305,7 +305,7 @@
 
                     <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:24px;">
                         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">Batal</a>
-                        <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
+                        <button type="button" class="btn btn-primary" onclick="confirmUpdate('productEditForm', 'Konfirmasi Edit Produk', 'Apakah Anda yakin ingin menyimpan perubahan produk ini?')">💾 Simpan Perubahan</button>
                     </div>
 
                     {{-- Hidden templates for JavaScript to avoid syntax linter issues --}}

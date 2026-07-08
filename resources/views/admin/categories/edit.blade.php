@@ -13,7 +13,7 @@
         <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">← Kembali</a>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ route('admin.categories.update', $category) }}">
+        <form id="categoryEditForm" method="POST" action="{{ route('admin.categories.update', $category) }}">
             @csrf @method('PUT')
             <div class="form-group">
                 <label class="form-label" for="name">Nama Kategori <span style="color:var(--danger)">*</span></label>
@@ -40,7 +40,7 @@
             </div>
             <div style="display:flex;gap:12px;justify-content:flex-end;">
                 <a href="{{ route('admin.categories.index') }}" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
+                <button type="button" class="btn btn-primary" onclick="confirmUpdate('categoryEditForm', 'Konfirmasi Edit Kategori', 'Apakah Anda yakin ingin menyimpan perubahan kategori ini?')">💾 Simpan Perubahan</button>
             </div>
         </form>
     </div>

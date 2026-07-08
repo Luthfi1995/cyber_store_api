@@ -1,4 +1,21 @@
 <script>
+    // ─── Preview avatar upload ────────────────────────────────────
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            const reader = new window.FileReader();
+            reader.onload = e => {
+                const prev = document.getElementById('avatarPreview');
+                if (prev) prev.src = e.target.result;
+                const wrap = document.getElementById('avatarPreviewWrap');
+                if (wrap) wrap.innerHTML =
+                    `<img id="avatarPreview" src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // ─── Sidebar ──────────────────────────────────────────────────
+
     function toggleSidebar() {
         if (window.innerWidth > 768) {
             document.body.classList.toggle('sidebar-collapsed');
@@ -19,46 +36,87 @@
         updateSidebarToggleIcon();
     }
 
+    // ─── Loading Overlay ─────────────────────────────────────────
+    function showLoading(text) {
+        const el = document.getElementById('globalLoadingOverlay');
+        if (!el) return;
+        const t = document.getElementById('loadingText');
+        if (t) t.textContent = text || 'Memproses, harap tunggu…';
+        el.style.display = 'flex';
+    }
+    function hideLoading() {
+        const el = document.getElementById('globalLoadingOverlay');
+        if (el) el.style.display = 'none';
+    }
+
+    // ─── Helper: close any modal by id ───────────────────────────
+    function _openModal(id)  { const m = document.getElementById(id); if (m) m.classList.add('open'); }
+    function _closeModal(id) { const m = document.getElementById(id); if (m) m.classList.remove('open'); }
+
+    // ─── Delete Confirm ──────────────────────────────────────────
     function confirmDelete(url, name) {
-        document.getElementById('confirmModalBody').textContent =
-            `Apakah Anda yakin ingin menghapus "${name}"? Tindakan ini tidak dapat dibatalkan.`;
-        document.getElementById('confirmForm').action = url;
-        document.getElementById('confirmModal').classList.add('open');
+        const body = document.getElementById('confirmModalBody');
+        if (body) body.textContent = `Apakah Anda yakin ingin menghapus "${name}"? Tindakan ini tidak dapat dibatalkan.`;
+        const form = document.getElementById('confirmForm');
+        if (form) form.action = url;
+        _openModal('confirmModal');
     }
+    function closeConfirm() { _closeModal('confirmModal'); }
 
-    function closeConfirm() {
-        document.getElementById('confirmModal').classList.remove('open');
+    // ─── Create/Tambah Confirm ───────────────────────────────────
+    // formId    : id of the <form> element to submit
+    // title     : (optional) custom modal title
+    // bodyText  : (optional) custom modal body text
+    function confirmCreate(formId, title, bodyText) {
+        window._pendingFormId = formId;
+        const t = document.getElementById('createConfirmTitle');
+        const b = document.getElementById('createConfirmBody');
+        if (t) t.textContent = title || 'Konfirmasi Simpan Data';
+        if (b) b.textContent = bodyText || 'Apakah Anda yakin ingin menyimpan data baru ini?';
+        _openModal('createConfirmModal');
     }
+    function closeCreateConfirm() { _closeModal('createConfirmModal'); }
 
-    function confirmLogout() {
-        document.getElementById('logoutModal').classList.add('open');
+    // ─── Update/Edit Confirm ─────────────────────────────────────
+    function confirmUpdate(formId, title, bodyText) {
+        window._pendingFormId = formId;
+        const t = document.getElementById('updateConfirmTitle');
+        const b = document.getElementById('updateConfirmBody');
+        if (t) t.textContent = title || 'Konfirmasi Perubahan';
+        if (b) b.textContent = bodyText || 'Apakah Anda yakin ingin menyimpan perubahan ini?';
+        _openModal('updateConfirmModal');
     }
+    function closeUpdateConfirm() { _closeModal('updateConfirmModal'); }
 
-    function closeLogoutModal() {
-        document.getElementById('logoutModal').classList.remove('open');
-    }
-    // Preview avatar upload
-    function previewAvatar(input) {
-        if (input.files && input.files[0]) {
-            const reader = new window.FileReader();
-            reader.onload = e => {
-                const prev = document.getElementById('avatarPreview');
-                if (prev) prev.src = e.target.result;
-                const wrap = document.getElementById('avatarPreviewWrap');
-                if (wrap) wrap.innerHTML =
-                    `<img id="avatarPreview" src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
-            };
-            reader.readAsDataURL(input.files[0]);
+    // ─── Submit the pending form (called from modal buttons) ─────
+    function doFormSubmit(modalId) {
+        _closeModal(modalId);
+        const formId = window._pendingFormId;
+        if (!formId) return;
+        const form = document.getElementById(formId);
+        if (form) {
+            showLoading('Menyimpan data…');
+            form.submit();
         }
     }
-    // Auto-hide alerts
-    setTimeout(() => {
-        document.querySelectorAll('.alert').forEach(a => {
-            a.style.transition = 'opacity .5s';
-            a.style.opacity = '0';
-            setTimeout(() => a.remove(), 500);
-        });
-    }, 4500);
+
+    // ─── Logout Confirm ──────────────────────────────────────────
+    function confirmLogout()    { _openModal('logoutModal'); }
+    function closeLogoutModal() { _closeModal('logoutModal'); }
+
+    // Close modal when clicking backdrop
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal-overlay')) {
+            e.target.classList.remove('open');
+        }
+    });
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+        }
+    });
+
 
     // Theme toggle helper functions
     function updateThemeIcons() {
@@ -492,16 +550,45 @@
                             const stickerUrl = msgContent.substring(10);
                             msgContent = `<img src="${stickerUrl}" style="width:70px; height:70px; display:block;" />`;
                             bubbleStyle = 'background:transparent;box-shadow:none;padding:0;';
+                        } else if (msgContent.indexOf('[VOICE]:') === 0) {
+                            const duration = msgContent.substring(8);
+                            const padDuration = duration.padStart(2, '0');
+                            msgContent = `
+                            <div style="display:flex; align-items:center; gap:8px; padding:4px 0; min-width:150px;">
+                                <button type="button" style="background:rgba(255,255,255,0.15); border:none; border-radius:50%; width:28px; height:28px; color:white; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="playMockAudio(this, ${duration})">
+                                    <i class="bi bi-play-fill" style="font-size:14px;"></i>
+                                </button>
+                                <div style="flex:1;">
+                                    <div style="height:3px; background:rgba(255,255,255,0.2); border-radius:1.5px; overflow:hidden;">
+                                        <div class="progress-bar-fill" style="width:0%; height:100%; background:#fff; transition:width 0.1s linear;"></div>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; font-size:9px; color:rgba(255,255,255,0.7); margin-top:3px;">
+                                        <span class="audio-time">0:00</span>
+                                        <span>0:${padDuration}</span>
+                                    </div>
+                                </div>
+                            </div>`;
                         } else {
                             msgContent = msgContent.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
                         }
+
+                        let checkmarksHtml = '';
+                        if (isSelf) {
+                            const isRead = msg.is_read === true || msg.is_read === 1 || msg.is_read === '1';
+                            const color = isRead ? '#3b82f6' : '#94a3b8';
+                            checkmarksHtml = `<i class="bi bi-check-all" style="color: ${color}; font-size: 13px; margin-left: 2px; vertical-align: middle;" title="${isRead ? 'Dibaca' : 'Terkirim'}"></i>`;
+                        }
+                        const justify = isSelf ? 'flex-end' : 'flex-start';
 
                         html += `
                             <div class="widget-msg-wrap ${msg.sender_type}">
                                 <div class="widget-msg-avatar">${avatarChar}</div>
                                 <div class="widget-msg-bubble ${msg.sender_type}" style="${bubbleStyle}">
                                     <div>${msgContent}</div>
-                                    <div class="widget-msg-time">${time}</div>
+                                    <div class="widget-msg-time" style="display: flex; align-items: center; justify-content: ${justify}; gap: 2px;">
+                                        <span>${time}</span>
+                                        ${checkmarksHtml}
+                                    </div>
                                 </div>
                             </div>
                         `;
@@ -534,6 +621,44 @@
             .then(data => {
                 loadWidgetConversation();
             });
+        };
+
+        window.playMockAudio = function(btn, duration) {
+            const icon = btn.querySelector('i');
+            const container = btn.parentElement;
+            const bar = container.querySelector('.progress-bar-fill');
+            const timeLabel = container.querySelector('.audio-time');
+            
+            if (btn.dataset.playing === 'true') {
+                btn.dataset.playing = 'false';
+                icon.className = 'bi bi-play-fill';
+                clearInterval(btn.intervalId);
+            } else {
+                btn.dataset.playing = 'true';
+                icon.className = 'bi bi-pause-fill';
+                let current = 0;
+                
+                if (parseFloat(bar.style.width || '0') >= 100) {
+                    bar.style.width = '0%';
+                    timeLabel.innerText = '0:00';
+                }
+                
+                const step = 0.1;
+                btn.intervalId = setInterval(() => {
+                    current += step;
+                    if (current >= duration) {
+                        current = duration;
+                        btn.dataset.playing = 'false';
+                        icon.className = 'bi bi-play-fill';
+                        clearInterval(btn.intervalId);
+                    }
+                    const pct = (current / duration) * 100;
+                    bar.style.width = pct + '%';
+                    
+                    const secs = Math.floor(current);
+                    timeLabel.innerText = '0:' + String(secs).padStart(2, '0');
+                }, 100);
+            }
         };
 
         // Export local helpers to global window object

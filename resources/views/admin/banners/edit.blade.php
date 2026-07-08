@@ -24,7 +24,7 @@
             <a href="{{ route('admin.banners.index') }}" class="btn btn-secondary">← Kembali</a>
         </div>
 
-        <form action="{{ route('admin.banners.update', $banner) }}" method="POST" enctype="multipart/form-data"
+        <form id="bannerEditForm" action="{{ route('admin.banners.update', $banner) }}" method="POST" enctype="multipart/form-data"
               style="padding:24px; display:flex; flex-direction:column; gap:20px;">
             @csrf
             @method('PUT')
@@ -112,7 +112,10 @@
 
             {{-- Submit --}}
             <div style="display:flex; gap:12px; padding-top:4px; flex-wrap:wrap;">
-                <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
+                <button type="button" class="btn btn-primary"
+                        onclick="confirmUpdate('bannerEditForm', 'Konfirmasi Edit Banner', 'Apakah Anda yakin ingin menyimpan perubahan banner ini?')">
+                    💾 Simpan Perubahan
+                </button>
                 <a href="{{ route('admin.banners.index') }}" class="btn btn-secondary">Batal</a>
 
                 {{-- Quick delete from edit page --}}
@@ -129,6 +132,7 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
     function previewImage(input) {
         const file = input.files[0];
@@ -161,4 +165,5 @@
         previewImage(document.getElementById('imageInput'));
     }
 </script>
+@endpush
 @endsection

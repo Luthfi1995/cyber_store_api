@@ -209,6 +209,11 @@
         background: #2B2E33;
         border-top-left-radius: 2px;
     }
+    .no-bubble-style {
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
     .slack-msg-time {
         font-size: 10px;
         color: #94a3b8;
@@ -410,6 +415,24 @@
                             $stickerUrl = substr($msgText, 10);
                             $msgContent = '<img src="' . e($stickerUrl) . '" style="width:100px; height:100px; display:block;" />';
                             $bubbleStyle = 'background:transparent; box-shadow:none; padding:0;';
+                        } elseif (str_starts_with($msgText, '[VOICE]:')) {
+                            $duration = substr($msgText, 8);
+                            $padDuration = str_pad($duration, 2, '0', STR_PAD_LEFT);
+                            $msgContent = '
+                            <div style="display:flex; align-items:center; gap:10px; padding:4px 0; min-width:180px;">
+                                <button type="button" style="background:rgba(255,255,255,0.15); border:none; border-radius:50%; width:32px; height:32px; color:white; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="playMockAudio(this, ' . e($duration) . ')">
+                                    <i class="bi bi-play-fill" style="font-size:16px;"></i>
+                                </button>
+                                <div style="flex:1;">
+                                    <div style="height:4px; background:rgba(255,255,255,0.2); border-radius:2px; overflow:hidden;">
+                                        <div class="progress-bar-fill" style="width:0%; height:100%; background:#fff; transition:width 0.1s linear;"></div>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; font-size:10px; color:rgba(255,255,255,0.7); margin-top:4px;">
+                                        <span class="audio-time">0:00</span>
+                                        <span>0:' . $padDuration . '</span>
+                                    </div>
+                                </div>
+                            </div>';
                         } else {
                             $msgContent = e($msgText);
                         }
@@ -418,10 +441,19 @@
                     <div class="slack-msg-row {{ $msg->sender_type }}">
                         <div class="slack-msg-avatar">{{ $avatarText }}</div>
                         <div class="slack-msg-body">
-                            <div class="slack-msg-bubble" style="{{ $bubbleStyle }}">
+                            <div class="slack-msg-bubble {{ !empty($bubbleStyle) ? 'no-bubble-style' : '' }}">
                                 {!! $msgContent !!}
                             </div>
-                            <div class="slack-msg-time">{{ $msg->created_at->format('H:i') }}</div>
+                            <div class="slack-msg-time" style="display: flex; align-items: center; gap: 4px;">
+                                {{ $msg->created_at->format('H:i') }}
+                                @if($isSelf)
+                                    @if($msg->is_read)
+                                        <i class="bi bi-check-all" style="color: #3b82f6; font-size: 14px; line-height: 1;" title="Dibaca"></i>
+                                    @else
+                                        <i class="bi bi-check-all" style="color: #64748b; font-size: 14px; line-height: 1;" title="Terkirim"></i>
+                                    @endif
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @empty
@@ -690,6 +722,7 @@ document.querySelectorAll('.emoji-item').forEach(item => {
             messageInput.focus();
         }
     });
+});
 // Handling Three Dots Dropdown Toggle
 const threeDotsBtn = document.getElementById('threeDotsBtn');
 const threeDotsDropdown = document.getElementById('threeDotsDropdown');

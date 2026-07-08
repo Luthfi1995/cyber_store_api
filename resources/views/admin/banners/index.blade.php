@@ -38,7 +38,9 @@
             Banner ditampilkan di aplikasi sesuai urutan (order). Semakin kecil angka, semakin awal tampil.
         </div>
 
+
         {{-- ── Table ──────────────────────────────────────────────── --}}
+
         <div class="table-wrapper">
             @if ($banners->isEmpty())
                 <div class="empty-state">

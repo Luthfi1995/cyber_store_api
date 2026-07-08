@@ -13,7 +13,7 @@
         <a href="{{ route('admin.expeditions.index') }}" class="btn btn-secondary">← Kembali</a>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ route('admin.expeditions.store') }}">
+        <form id="expeditionCreateForm" method="POST" action="{{ route('admin.expeditions.store') }}">
             @csrf
             <div class="form-row">
                 <div class="form-group">
@@ -60,7 +60,7 @@
             </div>
             <div style="display:flex;gap:12px;justify-content:flex-end;">
                 <a href="{{ route('admin.expeditions.index') }}" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-primary">💾 Simpan</button>
+                <button type="button" class="btn btn-primary" onclick="confirmCreate('expeditionCreateForm', 'Konfirmasi Tambah Ekspedisi', 'Apakah Anda yakin ingin menyimpan ekspedisi baru ini?')">💾 Simpan</button>
             </div>
         </form>
     </div>

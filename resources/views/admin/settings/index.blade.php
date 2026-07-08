@@ -14,7 +14,7 @@
                 <span class="card-title">⚙️ Konfigurasi Informasi Toko</span>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
+                <form id="settingsForm" method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
                     @csrf
 
                     {{-- Nama Toko --}}
@@ -92,7 +92,7 @@
                     </div>
 
                     <div style="display:flex; justify-content:flex-end; margin-top:24px;">
-                        <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
+                        <button type="button" class="btn btn-primary" onclick="confirmUpdate('settingsForm', 'Konfirmasi Simpan Pengaturan', 'Apakah Anda yakin ingin menyimpan perubahan pengaturan toko ini?')">💾 Simpan Perubahan</button>
                     </div>
                 </form>
             </div>

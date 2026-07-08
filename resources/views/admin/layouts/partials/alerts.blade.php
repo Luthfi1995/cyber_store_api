@@ -1,183 +1,213 @@
-@if (session('success') || session('error') || $errors->any())
-    <div class="custom-alert-container">
-        @if (session('success'))
-            <div class="custom-alert success">
-                <div class="icon">
-                    <i class="bi bi-check-circle-fill"></i>
-                </div>
-                <div class="content">
-                    <div class="title">Sukses</div>
-                    <div class="message">{{ session('success') }}</div>
-                </div>
-                <button class="close-btn" onclick="this.parentElement.parentElement.remove()">
-                    <i class="bi bi-x"></i>
-                </button>
-            </div>
-        @endif
+@php
+    $hasAlerts = session('success') || session('error') || session('warning') || session('info') || $errors->any();
+@endphp
 
-        @if (session('error'))
-            <div class="custom-alert danger">
-                <div class="icon">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                </div>
-                <div class="content">
-                    <div class="title">Error</div>
-                    <div class="message">{{ session('error') }}</div>
-                </div>
-                <button class="close-btn" onclick="this.parentElement.parentElement.remove()">
-                    <i class="bi bi-x"></i>
-                </button>
-            </div>
-        @endif
+@if ($hasAlerts)
+<div class="toast-container" id="toastContainer">
 
-        @if ($errors->any())
-            <div class="custom-alert danger">
-                <div class="icon">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                </div>
-                <div class="content">
-                    <div class="title">Validasi Gagal</div>
-                    <div class="message">
-                        <ul style="margin: 0; padding-left: 16px;">
-                            @foreach ($errors->all() as $err)
-                                <li>{{ $err }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-                <button class="close-btn" onclick="this.parentElement.parentElement.remove()">
-                    <i class="bi bi-x"></i>
-                </button>
-            </div>
-        @endif
+    @if (session('success'))
+    <div class="toast toast-success" role="alert">
+        <div class="toast-icon"><i class="bi bi-check-circle-fill"></i></div>
+        <div class="toast-body">
+            <div class="toast-title">Berhasil</div>
+            <div class="toast-message">{{ session('success') }}</div>
+        </div>
+        <button class="toast-close" onclick="dismissToast(this.closest('.toast'))"><i class="bi bi-x-lg"></i></button>
+        <div class="toast-progress success-progress"></div>
     </div>
+    @endif
 
-    <style>
-        .custom-alert-container {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-width: 380px;
-            width: 100%;
-            pointer-events: none;
-        }
+    @if (session('error'))
+    <div class="toast toast-danger" role="alert">
+        <div class="toast-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+        <div class="toast-body">
+            <div class="toast-title">Error</div>
+            <div class="toast-message">{{ session('error') }}</div>
+        </div>
+        <button class="toast-close" onclick="dismissToast(this.closest('.toast'))"><i class="bi bi-x-lg"></i></button>
+        <div class="toast-progress danger-progress"></div>
+    </div>
+    @endif
 
-        .custom-alert {
-            pointer-events: auto;
-            display: flex;
-            align-items: flex-start;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            border-left: 4px solid #ccc;
-            animation: slideIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            transition: all 0.3s ease;
-        }
+    @if (session('warning'))
+    <div class="toast toast-warning" role="alert">
+        <div class="toast-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <div class="toast-body">
+            <div class="toast-title">Peringatan</div>
+            <div class="toast-message">{{ session('warning') }}</div>
+        </div>
+        <button class="toast-close" onclick="dismissToast(this.closest('.toast'))"><i class="bi bi-x-lg"></i></button>
+        <div class="toast-progress warning-progress"></div>
+    </div>
+    @endif
 
-        [data-theme="dark"] .custom-alert {
-            background: rgba(30, 41, 59, 0.95);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
+    @if (session('info'))
+    <div class="toast toast-info" role="alert">
+        <div class="toast-icon"><i class="bi bi-info-circle-fill"></i></div>
+        <div class="toast-body">
+            <div class="toast-title">Informasi</div>
+            <div class="toast-message">{{ session('info') }}</div>
+        </div>
+        <button class="toast-close" onclick="dismissToast(this.closest('.toast'))"><i class="bi bi-x-lg"></i></button>
+        <div class="toast-progress info-progress"></div>
+    </div>
+    @endif
 
-        .custom-alert.success {
-            border-left-color: #10B981;
-        }
+    @if ($errors->any())
+    <div class="toast toast-danger" role="alert">
+        <div class="toast-icon"><i class="bi bi-shield-exclamation"></i></div>
+        <div class="toast-body">
+            <div class="toast-title">Validasi Gagal</div>
+            <div class="toast-message">
+                <ul style="margin:4px 0 0; padding-left:16px; line-height:1.7;">
+                    @foreach ($errors->all() as $err)
+                        <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+        <button class="toast-close" onclick="dismissToast(this.closest('.toast'))"><i class="bi bi-x-lg"></i></button>
+        <div class="toast-progress danger-progress"></div>
+    </div>
+    @endif
 
-        .custom-alert.danger {
-            border-left-color: #EF4444;
-        }
+</div>
 
-        .custom-alert .icon {
-            margin-right: 12px;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
+<style>
+/* ─── Toast Container ─────────────────────────────────────── */
+.toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+    width: 100%;
+    pointer-events: none;
+}
 
-        .custom-alert.success .icon {
-            color: #10B981;
-        }
+/* ─── Toast Base ─────────────────────────────────────────── */
+.toast {
+    pointer-events: auto;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 16px 20px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.08);
+    animation: toastSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transition: opacity .3s, transform .3s;
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.97);
+    border: 1px solid rgba(0,0,0,.06);
+}
 
-        .custom-alert.danger .icon {
-            color: #EF4444;
-        }
+[data-theme="dark"] .toast {
+    background: rgba(15, 23, 42, 0.97);
+    border-color: rgba(255,255,255,.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
 
-        .custom-alert .content {
-            flex-grow: 1;
-            margin-right: 8px;
-        }
+.toast.dismissing {
+    animation: toastSlideOut .35s ease forwards;
+}
 
-        .custom-alert .content .title {
-            font-weight: 700;
-            font-size: 14px;
-            color: #1E293B;
-            margin-bottom: 2px;
-        }
+/* ─── Toast Types ─────────────────────────────────────────── */
+.toast-success { border-left: 4px solid #10B981; }
+.toast-danger  { border-left: 4px solid #EF4444; }
+.toast-warning { border-left: 4px solid #F59E0B; }
+.toast-info    { border-left: 4px solid #3B82F6; }
 
-        [data-theme="dark"] .custom-alert .content .title {
-            color: #F8FAFC;
-        }
+/* ─── Toast Icon ─────────────────────────────────────────── */
+.toast-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+.toast-success .toast-icon { color: #10B981; }
+.toast-danger  .toast-icon { color: #EF4444; }
+.toast-warning .toast-icon { color: #F59E0B; }
+.toast-info    .toast-icon { color: #3B82F6; }
 
-        .custom-alert .content .message {
-            font-size: 13px;
-            color: #64748B;
-            line-height: 1.4;
-        }
+/* ─── Toast Body ─────────────────────────────────────────── */
+.toast-body { flex: 1; min-width: 0; }
 
-        [data-theme="dark"] .custom-alert .content .message {
-            color: #94A3B8;
-        }
+.toast-title {
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .3px;
+    color: #0F172A;
+    margin-bottom: 3px;
+}
+[data-theme="dark"] .toast-title { color: #F1F5F9; }
 
-        .custom-alert .close-btn {
-            background: none;
-            border: none;
-            color: #94A3B8;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s;
-        }
+.toast-message {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.45;
+    word-break: break-word;
+}
+[data-theme="dark"] .toast-message { color: #94A3B8; }
 
-        .custom-alert .close-btn:hover {
-            color: #475569;
-        }
+/* ─── Toast Close ─────────────────────────────────────────── */
+.toast-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94A3B8;
+    font-size: 13px;
+    padding: 2px;
+    line-height: 1;
+    transition: color .2s;
+    margin-top: 1px;
+}
+.toast-close:hover { color: #475569; }
+[data-theme="dark"] .toast-close:hover { color: #CBD5E1; }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(120%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
+/* ─── Progress Bar ─────────────────────────────────────────── */
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 0 0 14px 14px;
+    width: 100%;
+    transform-origin: left;
+    animation: toastProgress 5s linear forwards;
+}
+.success-progress { background: #10B981; }
+.danger-progress  { background: #EF4444; }
+.warning-progress { background: #F59E0B; }
+.info-progress    { background: #3B82F6; }
 
-        @keyframes fadeOut {
-            to {
-                transform: translateX(50px);
-                opacity: 0;
-            }
-        }
-    </style>
+/* ─── Keyframes ─────────────────────────────────────────── */
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateX(110%); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes toastSlideOut {
+    to   { opacity: 0; transform: translateX(120%); }
+}
+@keyframes toastProgress {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+}
+</style>
 
-    <script>
-        document.querySelectorAll('.custom-alert').forEach(alert => {
-            setTimeout(() => {
-                if (alert && alert.parentElement) {
-                    alert.style.animation = 'fadeOut 0.5s ease forwards';
-                    setTimeout(() => alert.remove(), 500);
-                }
-            }, 4000);
-        });
-    </script>
+<script>
+function dismissToast(el) {
+    if (!el) return;
+    el.classList.add('dismissing');
+    setTimeout(() => el.remove(), 350);
+}
+
+document.querySelectorAll('.toast').forEach(toast => {
+    setTimeout(() => dismissToast(toast), 5000);
+});
+</script>
 @endif
