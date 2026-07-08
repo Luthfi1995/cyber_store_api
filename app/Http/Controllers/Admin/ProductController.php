@@ -438,9 +438,9 @@ class ProductController extends Controller
 
             // Clear cache
             try {
-                Cache::store('redis')->tags(['products-list'])->flush();
+                Cache::flush();
             } catch (\Exception $e) {
-                // Ignore Redis errors
+                // Ignore cache errors
             }
         }
 

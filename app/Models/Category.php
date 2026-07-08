@@ -38,7 +38,6 @@ class Category extends Model
 
     public static function clearCache(): void
     {
-        \Illuminate\Support\Facades\Cache::store('redis')->forget('categories:active');
-        \Illuminate\Support\Facades\Cache::store('redis')->tags(['products-list'])->flush();
+        \Illuminate\Support\Facades\Cache::flush();
     }
 }

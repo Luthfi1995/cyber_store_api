@@ -83,10 +83,6 @@ class Product extends Model
 
     public static function clearCache($product = null): void
     {
-        \Illuminate\Support\Facades\Cache::store('redis')->tags(['products-list'])->flush();
-
-        if ($product) {
-            \Illuminate\Support\Facades\Cache::store('redis')->forget("product:detail:{$product->id}");
-        }
+        \Illuminate\Support\Facades\Cache::flush();
     }
 }
