@@ -12,3 +12,8 @@ php artisan view:cache
 # Jalankan migrasi database
 echo "Running database migrations..."
 php artisan migrate --force
+
+# Jalankan database seeder
+echo "Running database seeders..."
+php artisan db:seed --force
+
