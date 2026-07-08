@@ -1,7 +1,10 @@
 FROM serversideup/php:8.3-fpm-nginx-alpine
 
-# Install PHP extensions required for image resizing
+# Temporarily switch to root to install PHP extensions
+USER root
 RUN install-php-extensions gd
+# Switch back to www-data for composer and app runtime
+USER www-data
 
 # Set the working directory
 WORKDIR /var/www/html
