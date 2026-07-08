@@ -11,7 +11,7 @@ class CategoryController extends Controller
 {
     public function index(): JsonResponse
     {
-        $categories = Cache::rememberForever('categories:active', function () {
+        $categories = Cache::store('redis')->rememberForever('categories:active', function () {
             return Category::where('is_active', true)->orderBy('name')->get()->toArray();
         });
 
