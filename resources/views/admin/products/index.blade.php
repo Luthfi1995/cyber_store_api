@@ -20,7 +20,10 @@
                 <path d="m3.27 6.96 8.73 5 8.73-5" />
                 <path d="M12 22.08V12" />
             </svg> Daftar Produk</span>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" id="btn-bulk-delete" class="btn btn-danger" style="display: none; align-items: center; gap: 6px; background-color: #EF4444; border-color: #EF4444; color: white;" onclick="confirmBulkDelete()">
+                🗑️ Hapus Terpilih (<span id="selected-count">0</span>)
+            </button>
             <button type="button" class="btn btn-secondary" onclick="document.getElementById('import-section').style.display = document.getElementById('import-section').style.display === 'none' ? 'block' : 'none'" style="display: inline-flex; align-items: center; gap: 6px;">
                 📥 Impor Massal (CSV)
             </button>
@@ -108,6 +111,7 @@
         <table>
             <thead>
                 <tr>
+                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="check-all" style="cursor: pointer; width: 16px; height: 16px;"></th>
                     <th>No.</th>
                     <th>Produk</th>
                     <th>SKU</th>
@@ -121,6 +125,7 @@
             <tbody>
                 @foreach ($products as $product)
                 <tr>
+                    <td style="text-align: center;"><input type="checkbox" name="product_ids[]" value="{{ $product->id }}" class="product-checkbox" style="cursor: pointer; width: 16px; height: 16px;"></td>
                     <td style="color:var(--text-muted); font-size:12px;">
                         {{ $loop->iteration + ($products->firstItem() - 1) }}
                     </td>
@@ -230,4 +235,96 @@
     </div>
     @endif
 </div>
+
+<!-- Modal: Konfirmasi Hapus Massal -->
+<div class="modal-overlay" id="bulkConfirmModal">
+    <div class="modal-box">
+        <div class="modal-icon-wrap danger-icon">
+            <i class="bi bi-trash3-fill"></i>
+        </div>
+        <div class="modal-title">Konfirmasi Hapus Massal</div>
+        <div class="modal-body" id="bulkConfirmModalBody">Apakah Anda yakin ingin menghapus produk yang dipilih? Tindakan ini tidak dapat dibatalkan.</div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="_closeModal('bulkConfirmModal')">
+                <i class="bi bi-x-lg"></i> Batal
+            </button>
+            <form id="bulk-delete-form" action="{{ route('admin.products.bulk-destroy') }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <div id="bulk-delete-ids"></div>
+                <button type="submit" class="btn btn-danger" onclick="_closeModal('bulkConfirmModal'); showLoading('Menghapus produk terpilih…')">
+                    <i class="bi bi-trash3"></i> Ya, Hapus Semua
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkAll = document.getElementById('check-all');
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        const btnBulkDelete = document.getElementById('btn-bulk-delete');
+        const selectedCount = document.getElementById('selected-count');
+
+        function updateBulkDeleteButton() {
+            const checkedCount = document.querySelectorAll('.product-checkbox:checked').length;
+            if (checkedCount > 0) {
+                btnBulkDelete.style.display = 'inline-flex';
+                selectedCount.textContent = checkedCount;
+            } else {
+                btnBulkDelete.style.display = 'none';
+            }
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => {
+                    cb.checked = checkAll.checked;
+                });
+                updateBulkDeleteButton();
+            });
+        }
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                // If any is unchecked, checkAll should be unchecked
+                if (!this.checked) {
+                    if (checkAll) checkAll.checked = false;
+                } else {
+                    // Check if all checkboxes are checked
+                    const allChecked = Array.from(checkboxes).every(c => c.checked);
+                    if (checkAll) checkAll.checked = allChecked;
+                }
+                updateBulkDeleteButton();
+            });
+        });
+
+        window.confirmBulkDelete = function() {
+            const checkedCheckboxes = document.querySelectorAll('.product-checkbox:checked');
+            if (checkedCheckboxes.length === 0) return;
+
+            const bulkConfirmModalBody = document.getElementById('bulkConfirmModalBody');
+            if (bulkConfirmModalBody) {
+                bulkConfirmModalBody.textContent = `Apakah Anda yakin ingin menghapus ${checkedCheckboxes.length} produk terpilih? Tindakan ini tidak dapat dibatalkan.`;
+            }
+
+            const idsContainer = document.getElementById('bulk-delete-ids');
+            if (idsContainer) {
+                idsContainer.innerHTML = '';
+                checkedCheckboxes.forEach(cb => {
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'ids[]';
+                    hiddenInput.value = cb.value;
+                    idsContainer.appendChild(hiddenInput);
+                });
+            }
+
+            _openModal('bulkConfirmModal');
+        }
+    });
+</script>
+@endpush
 @endsection

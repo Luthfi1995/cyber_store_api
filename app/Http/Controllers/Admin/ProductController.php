@@ -301,6 +301,53 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['exists:products,id'],
+        ]);
+
+        $products = Product::whereIn('id', $request->ids)->get();
+        $deletedCount = 0;
+        $skippedCount = 0;
+
+        foreach ($products as $product) {
+            if ($product->orderItems()->exists()) {
+                $skippedCount++;
+                continue;
+            }
+
+            if ($product->main_photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($product->main_photo);
+            }
+
+            // Optional: delete additional images from storage
+            foreach ($product->images as $img) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($img->image);
+                $img->delete();
+            }
+
+            $product->delete();
+            $deletedCount++;
+        }
+
+        Product::clearCache();
+
+        if ($deletedCount === 0) {
+            return redirect()->route('admin.products.index')
+                ->with('error', 'Tidak ada produk yang berhasil dihapus karena semua produk pilihan memiliki riwayat transaksi/order.');
+        }
+
+        if ($skippedCount > 0) {
+            return redirect()->route('admin.products.index')
+                ->with('success', "Berhasil menghapus {$deletedCount} produk. {$skippedCount} produk dilewati karena memiliki riwayat transaksi/order.");
+        }
+
+        return redirect()->route('admin.products.index')
+            ->with('success', "Berhasil menghapus {$deletedCount} produk terpilih.");
+    }
+
     public function toggleActive(Product $product)
     {
         $product->update(['is_active' => !$product->is_active]);

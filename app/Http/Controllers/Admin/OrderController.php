@@ -120,4 +120,74 @@ class OrderController extends Controller
 
         return back()->with('success', $result['message']);
     }
+
+    public function approveCancel(Order $order)
+    {
+        if ($order->cancel_request_status !== 'pending') {
+            return back()->with('error', 'Tidak ada pengajuan pembatalan yang aktif untuk pesanan ini.');
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
+                if ($order->payment) {
+                    $order->payment->update([
+                        'status' => \App\Models\Payment::STATUS_FAILED,
+                    ]);
+                }
+
+                $order->update([
+                    'status' => Order::STATUS_CANCELLED,
+                    'cancel_request_status' => 'approved',
+                ]);
+
+                $order->trackings()->create([
+                    'status' => Order::STATUS_CANCELLED,
+                    'description' => 'Pengajuan pembatalan disetujui oleh Admin. Pesanan dibatalkan.',
+                    'location' => 'Admin Panel',
+                ]);
+
+                foreach ($order->items as $item) {
+                    $product = $item->product;
+                    if ($product) {
+                        $product->increment('stock', $item->quantity);
+                        
+                        $product->stockMovements()->create([
+                            'user_id' => $order->user_id,
+                            'type' => 'in',
+                            'quantity' => $item->quantity,
+                            'reference' => $order->invoice_number,
+                            'note' => 'Restock: Pengajuan pembatalan disetujui Admin',
+                        ]);
+                    }
+                }
+            });
+
+            return back()->with('success', 'Pengajuan pembatalan pesanan berhasil disetujui.');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menyetujui pembatalan: ' . $e->getMessage());
+        }
+    }
+
+    public function rejectCancel(Request $request, Order $order)
+    {
+        if ($order->cancel_request_status !== 'pending') {
+            return back()->with('error', 'Tidak ada pengajuan pembatalan yang aktif untuk pesanan ini.');
+        }
+
+        $rejectReason = $request->input('reject_reason', 'Pengajuan ditolak oleh admin.');
+
+        $order->update([
+            'cancel_request_status' => 'rejected',
+            'note' => $order->note ? $order->note . ' | Penolakan Batal: ' . $rejectReason : 'Penolakan Batal: ' . $rejectReason,
+        ]);
+
+        $order->trackings()->create([
+            'status' => $order->status,
+            'description' => 'Pengajuan pembatalan ditolak oleh Admin. Alasan: ' . $rejectReason,
+            'location' => 'Admin Panel',
+        ]);
+
+        return back()->with('success', 'Pengajuan pembatalan pesanan berhasil ditolak.');
+    }
 }

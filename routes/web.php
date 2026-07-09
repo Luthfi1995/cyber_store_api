@@ -59,6 +59,7 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/bulk-delete', [ProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::patch('/products/{product}/toggle', [ProductController::class, 'toggleActive'])->name('products.toggle');
     // ── Banners ──────────────────────────────────────────────────────────────
@@ -76,6 +77,8 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
+    Route::patch('/orders/{order}/cancel-approve', [OrderController::class, 'approveCancel'])->name('orders.cancel-approve');
+    Route::patch('/orders/{order}/cancel-reject', [OrderController::class, 'rejectCancel'])->name('orders.cancel-reject');
     Route::patch('/orders/{order}/resi', [OrderController::class, 'updateResi'])->name('orders.resi');
     Route::post('/orders/{order}/track', [OrderController::class, 'trackWaybill'])->name('orders.track');
 

@@ -41,6 +41,7 @@ class ProductReviewController extends Controller
             'order_id' => ['required', 'exists:orders,id'],
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:500'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $user = $request->user();
@@ -73,6 +74,11 @@ class ProductReviewController extends Controller
             return response()->json(['message' => 'Anda sudah memberikan ulasan untuk produk ini.'], 400);
         }
 
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('reviews', 'public');
+        }
+
         // Create the review
         $review = ProductReview::create([
             'product_id' => $product->id,
@@ -80,6 +86,7 @@ class ProductReviewController extends Controller
             'order_id' => $order->id,
             'rating' => $validated['rating'],
             'comment' => $validated['comment'] ?? null,
+            'photo' => $photoPath,
         ]);
 
         // Recalculate average rating & reviews count

@@ -19,11 +19,59 @@ $statusColors = [
     {{-- Kiri: Detail --}}
     <div style="display:flex;flex-direction:column;gap:20px;">
 
+        {{-- Pengajuan Pembatalan Alert Card --}}
+        @if($order->cancel_request_status === 'pending')
+        <div class="card" style="border: 1px solid #FEE2E2; background-color: #FEF2F2;">
+            <div class="card-header" style="background-color: #FEE2E2; color: #991B1B;">
+                <span class="card-title" style="display: flex; align-items: center; gap: 8px;">
+                    ⚠️ Pengajuan Pembatalan Pesanan
+                </span>
+            </div>
+            <div class="card-body">
+                <p style="margin: 0 0 12px 0; font-size: 14px; color: #7F1D1D; line-height: 1.5;">
+                    Customer telah mengajukan pembatalan untuk pesanan ini setelah melakukan pembayaran. Silakan tinjau alasan berikut untuk menyetujui atau menolak pengajuan tersebut.
+                </p>
+                <div style="padding: 12px; background: white; border-radius: var(--radius-sm); border-left: 4px solid #EF4444; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <div style="font-size: 11px; color: #9B1C1C; font-weight: bold; margin-bottom: 4px;">ALASAN PEMBATALAN</div>
+                    <div style="font-size: 13.5px; color: #1E293B;">"{{ $order->cancel_request_reason ?? 'Tidak ada alasan khusus' }}"</div>
+                </div>
+
+                <div style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                    {{-- Form Terima --}}
+                    <form id="approveCancelForm" method="POST" action="{{ route('admin.orders.cancel-approve', $order) }}" style="margin: 0;">
+                        @csrf @method('PATCH')
+                        <button type="button" class="btn btn-danger" style="background-color: #EF4444; border-color: #EF4444; color: white;" onclick="confirmUpdate('approveCancelForm', 'Setujui Pembatalan', 'Apakah Anda yakin ingin menyetujui pembatalan pesanan ini? Stok produk akan dikembalikan otomatis.')">
+                            ✅ Setujui & Batalkan
+                        </button>
+                    </form>
+
+                    {{-- Form Tolak --}}
+                    <div style="flex: 1; min-width: 250px;">
+                        <form id="rejectCancelForm" method="POST" action="{{ route('admin.orders.cancel-reject', $order) }}" style="display: flex; gap: 8px; margin: 0;">
+                            @csrf @method('PATCH')
+                            <input type="text" name="reject_reason" class="form-control" placeholder="Tulis alasan penolakan..." required style="flex: 1; border-color: #FCA5A5;">
+                            <button type="button" class="btn btn-secondary" onclick="confirmUpdate('rejectCancelForm', 'Tolak Pembatalan', 'Apakah Anda yakin ingin menolak pengajuan pembatalan pesanan ini?')">
+                                ❌ Tolak
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         {{-- Info Order --}}
         <div class="card">
-            <div class="card-header">
+            <div class="card-header" style="justify-content: space-between; align-items: center; display: flex;">
                 <span class="card-title">📋 Informasi Pesanan</span>
-                <span class="badge {{ $statusColors[$order->status]??'badge-inactive' }}">{{ $statusLabels[$order->status]??$order->status }}</span>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    @if($order->cancel_request_status === 'approved')
+                    <span class="badge" style="background-color: #DEF7EC; color: #03543F; font-size: 11px;">Batal Disetujui Admin</span>
+                    @elseif($order->cancel_request_status === 'rejected')
+                    <span class="badge" style="background-color: #FDE8E8; color: #9B1C1C; font-size: 11px;">Batal Ditolak Admin</span>
+                    @endif
+                    <span class="badge {{ $statusColors[$order->status]??'badge-inactive' }}">{{ $statusLabels[$order->status]??$order->status }}</span>
+                </div>
             </div>
             <div class="card-body">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">

@@ -16,6 +16,7 @@ class ProductReview extends Model
         'order_id',
         'rating',
         'comment',
+        'photo',
     ];
 
     protected function casts(): array

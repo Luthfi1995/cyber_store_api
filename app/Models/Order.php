@@ -38,6 +38,8 @@ class Order extends Model
         'status',
         'resi_number',
         'note',
+        'cancel_request_status',
+        'cancel_request_reason',
     ];
 
     protected function casts(): array

@@ -75,56 +75,85 @@ class OrderController extends Controller
     {
         abort_if($order->user_id !== $request->user()->id, 403);
 
-        if ($order->status !== Order::STATUS_PENDING_PAYMENT) {
-            return response()->json(['message' => 'Hanya pesanan yang belum dibayar yang dapat dibatalkan.'], 422);
-        }
-
         $reason = $request->input('reason', 'Tidak ada alasan khusus');
 
-        try {
-            DB::transaction(function () use ($order, $reason) {
-                if ($order->payment) {
-                    $order->payment->update([
-                        'status' => \App\Models\Payment::STATUS_FAILED,
-                    ]);
-                }
-
-                $order->update([
-                    'status' => Order::STATUS_CANCELLED,
-                    'note' => $order->note ? $order->note . ' | Alasan Batal: ' . $reason : 'Alasan Batal: ' . $reason,
-                ]);
-
-                $order->trackings()->create([
-                    'status' => Order::STATUS_CANCELLED,
-                    'description' => 'Pesanan dibatalkan oleh pembeli. Alasan: ' . $reason,
-                    'location' => $order->address?->city ?? 'Sistem',
-                ]);
-
-                foreach ($order->items as $item) {
-                    $product = $item->product;
-                    if ($product) {
-                        $product->increment('stock', $item->quantity);
-                        
-                        $product->stockMovements()->create([
-                            'user_id' => $order->user_id,
-                            'type' => 'in',
-                            'quantity' => $item->quantity,
-                            'reference' => $order->invoice_number,
-                            'note' => 'Restock: Dibatalkan oleh pembeli (Cancel order)',
+        // Case 1: Pending payment -> Cancel immediately
+        if ($order->status === Order::STATUS_PENDING_PAYMENT) {
+            try {
+                DB::transaction(function () use ($order, $reason) {
+                    if ($order->payment) {
+                        $order->payment->update([
+                            'status' => \App\Models\Payment::STATUS_FAILED,
                         ]);
                     }
-                }
-            });
 
-            return response()->json([
-                'message' => 'Pesanan berhasil dibatalkan.',
-                'order' => $order->fresh()->load(['items.product', 'payment', 'trackings', 'address', 'expedition']),
+                    $order->update([
+                        'status' => Order::STATUS_CANCELLED,
+                        'note' => $order->note ? $order->note . ' | Alasan Batal: ' . $reason : 'Alasan Batal: ' . $reason,
+                    ]);
+
+                    $order->trackings()->create([
+                        'status' => Order::STATUS_CANCELLED,
+                        'description' => 'Pesanan dibatalkan oleh pembeli. Alasan: ' . $reason,
+                        'location' => $order->address?->city ?? 'Sistem',
+                    ]);
+
+                    foreach ($order->items as $item) {
+                        $product = $item->product;
+                        if ($product) {
+                            $product->increment('stock', $item->quantity);
+                            
+                            $product->stockMovements()->create([
+                                'user_id' => $order->user_id,
+                                'type' => 'in',
+                                'quantity' => $item->quantity,
+                                'reference' => $order->invoice_number,
+                                'note' => 'Restock: Dibatalkan oleh pembeli (Cancel order)',
+                            ]);
+                        }
+                    }
+                });
+
+                return response()->json([
+                    'message' => 'Pesanan berhasil dibatalkan.',
+                    'order' => $order->fresh()->load(['items.product', 'payment', 'trackings', 'address', 'expedition']),
+                ]);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Gagal membatalkan pesanan: ' . $e->getMessage(),
+                ], 500);
+            }
+        }
+
+        // Case 2: Paid or Packed -> Request cancellation
+        if (in_array($order->status, [Order::STATUS_PAID, Order::STATUS_PACKED])) {
+            if ($order->cancel_request_status === 'pending') {
+                return response()->json(['message' => 'Pengajuan pembatalan untuk pesanan ini sedang diproses oleh Admin.'], 422);
+            }
+
+            if ($order->cancel_request_status === 'approved') {
+                return response()->json(['message' => 'Pengajuan pembatalan sudah disetujui.'], 422);
+            }
+
+            $order->update([
+                'cancel_request_status' => 'pending',
+                'cancel_request_reason' => $reason,
             ]);
 
-        } catch (\Exception $e) {
+            $order->trackings()->create([
+                'status' => $order->status,
+                'description' => 'Mengajukan pembatalan pesanan. Alasan: ' . $reason,
+                'location' => 'Customer App',
+            ]);
+
             return response()->json([
-                'message' => 'Gagal membatalkan pesanan: ' . $e->getMessage(),
-            ], 500);
+                'message' => 'Pengajuan pembatalan pesanan berhasil dikirim ke Admin.',
+                'order' => $order->fresh()->load(['items.product', 'payment', 'trackings', 'address', 'expedition']),
+            ]);
         }
+
+        // Case 3: Other statuses -> Cannot cancel
+        return response()->json(['message' => 'Pesanan tidak dapat dibatalkan atau diajukan pembatalan karena sudah dikirim/selesai.'], 422);
     }
 }
