@@ -140,6 +140,11 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         }
         return back()->with('success', '✅ Cache produk berhasil dibersihkan. Data Flutter akan langsung diperbarui.');
     })->name('cache.flush-products');
+
+    Route::post('/cache/flush-categories', function () {
+        Cache::store('redis')->forget('categories:active');
+        return back()->with('success', '✅ Cache kategori berhasil dibersihkan. Data Flutter akan langsung diperbarui.');
+    })->name('cache.flush-categories');
 });
 
 

@@ -6,7 +6,16 @@
 <div class="card">
     <div class="card-header">
         <span class="card-title">🏷️ Daftar Kategori</span>
-        <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">＋ Tambah Kategori</a>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            {{-- Tombol flush cache kategori di Redis agar Flutter langsung segar --}}
+            <form method="POST" action="{{ route('admin.cache.flush-categories') }}" style="margin: 0;" onsubmit="return confirm('Bersihkan cache kategori di server? Flutter akan langsung menampilkan data terbaru.')">
+                @csrf
+                <button type="submit" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; background-color: #F59E0B; border-color: #F59E0B; color: white;">
+                    🔄 Bersihkan Cache
+                </button>
+            </form>
+            <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">＋ Tambah Kategori</a>
+        </div>
     </div>
     <div style="padding:14px 20px;border-bottom:1px solid var(--border);">
         <form method="GET" action="{{ route('admin.categories.index') }}" class="filter-bar">
