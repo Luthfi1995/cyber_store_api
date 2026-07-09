@@ -83,6 +83,18 @@ class Product extends Model
 
     public static function clearCache($product = null): void
     {
-        \Illuminate\Support\Facades\Cache::flush();
+        $cache = \Illuminate\Support\Facades\Cache::store('redis');
+
+        // Hapus seluruh daftar produk (semua kombinasi halaman/filter)
+        try {
+            $cache->tags(['products-list'])->flush();
+        } catch (\Exception) {
+            // Driver file/array tidak mendukung tags — abaikan
+        }
+
+        // Hapus cache detail produk spesifik
+        if ($product) {
+            $cache->forget("product:detail:{$product->id}");
+        }
     }
 }
