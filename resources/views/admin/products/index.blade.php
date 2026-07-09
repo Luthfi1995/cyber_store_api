@@ -24,6 +24,13 @@
             <button type="button" id="btn-bulk-delete" class="btn btn-danger" style="display: none; align-items: center; gap: 6px; background-color: #EF4444; border-color: #EF4444; color: white;" onclick="confirmBulkDelete()">
                 🗑️ Hapus Terpilih (<span id="selected-count">0</span>)
             </button>
+            {{-- Tombol flush cache produk di Redis agar Flutter langsung segar --}}
+            <form method="POST" action="{{ route('admin.cache.flush-products') }}" style="margin: 0;" onsubmit="return confirm('Bersihkan cache produk di server? Flutter akan langsung menampilkan data terbaru.')">
+                @csrf
+                <button type="submit" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; background-color: #F59E0B; border-color: #F59E0B; color: white;">
+                    🔄 Bersihkan Cache
+                </button>
+            </form>
             <button type="button" class="btn btn-secondary" onclick="document.getElementById('import-section').style.display = document.getElementById('import-section').style.display === 'none' ? 'block' : 'none'" style="display: inline-flex; align-items: center; gap: 6px;">
                 📥 Impor Massal (CSV)
             </button>
@@ -32,6 +39,7 @@
             </a>
         </div>
     </div>
+
 
     <div id="import-section" style="display: none; padding: 20px; background: #f8fafc; border-bottom: 1px solid var(--border);">
         <form action="{{ route('admin.products.import') }}" method="POST" enctype="multipart/form-data" class="filter-bar" style="align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">

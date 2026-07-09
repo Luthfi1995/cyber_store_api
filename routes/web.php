@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\UserController;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
@@ -129,6 +130,16 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::post('/chats/{chat}/close', [ChatController::class, 'close'])->name('chats.close');
     Route::post('/chats/{chat}/reopen', [ChatController::class, 'reopen'])->name('chats.reopen');
     Route::get('/chats-unread-count', [ChatController::class, 'unreadCount'])->name('chats.unread-count');
+
+    // ── Cache Management ─────────────────────────────────────────────────────
+    Route::post('/cache/flush-products', function () {
+        try {
+            Cache::store('redis')->tags(['products-list'])->flush();
+        } catch (\Exception) {
+            Cache::flush();
+        }
+        return back()->with('success', '✅ Cache produk berhasil dibersihkan. Data Flutter akan langsung diperbarui.');
+    })->name('cache.flush-products');
 });
 
 
