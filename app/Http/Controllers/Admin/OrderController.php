@@ -35,6 +35,10 @@ class OrderController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('cancel_request')) {
+            $query->where('cancel_request_status', $request->cancel_request);
+        }
+
         $orders = $query->paginate(15)->withQueryString();
         $statusLabels = $this->statusLabels;
 

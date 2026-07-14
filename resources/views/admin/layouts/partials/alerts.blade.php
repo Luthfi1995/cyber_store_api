@@ -1,6 +1,86 @@
 @php
+    $pendingCancellationsCount = \App\Models\Order::where('cancel_request_status', 'pending')->count();
+    $isCurrentlyViewingPending = request()->routeIs('admin.orders.index') && request('cancel_request') === 'pending';
     $hasAlerts = session('success') || session('error') || session('warning') || session('info') || $errors->any();
 @endphp
+
+@if ($pendingCancellationsCount > 0 && !$isCurrentlyViewingPending)
+<div class="cancel-request-alert" style="
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-left: 4px solid #f59e0b;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    gap: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+">
+    <div style="display: flex; align-items: center; gap: 14px; flex: 1;">
+        <div style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border-radius: 50%;
+            font-size: 18px;
+            flex-shrink: 0;
+            animation: pulse-amber 2s infinite;
+        ">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <div>
+            <h4 style="margin: 0 0 2px 0; font-size: 14px; font-weight: 700; color: var(--text-primary); text-align: left;">
+                Pengajuan Pembatalan Pesanan
+            </h4>
+            <p style="margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.4; text-align: left;">
+                Ada <strong style="color: #f59e0b;">{{ $pendingCancellationsCount }} pesanan</strong> baru yang diajukan pembatalan oleh customer dan memerlukan persetujuan admin.
+            </p>
+        </div>
+    </div>
+    <a href="{{ route('admin.orders.index', ['cancel_request' => 'pending']) }}" class="btn-review" style="
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f59e0b;
+        color: #ffffff;
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: background 0.2s, transform 0.2s;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    " onmouseover="this.style.background='#d97706'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#f59e0b'; this.style.transform='translateY(0)';">
+        Tinjau Sekarang <i class="bi bi-arrow-right" style="font-size: 12px;"></i>
+    </a>
+</div>
+
+<style>
+@keyframes pulse-amber {
+    0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+@media (max-width: 576px) {
+    .cancel-request-alert {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    .cancel-request-alert .btn-review {
+        justify-content: center;
+    }
+}
+</style>
+@endif
 
 @if ($hasAlerts)
 <div class="toast-container" id="toastContainer">

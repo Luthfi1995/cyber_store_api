@@ -52,6 +52,14 @@
             <span class="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
             </span> Pesanan
+            @php
+                $pendingCancelRequests = \App\Models\Order::where('cancel_request_status', 'pending')->count();
+            @endphp
+            @if($pendingCancelRequests > 0)
+                <span id="sidebar-cancel-badge" style="margin-left: auto; background-color: #f59e0b; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; display: inline-block; line-height: 1;" title="Pengajuan Pembatalan">
+                    {{ $pendingCancelRequests }} Batal
+                </span>
+            @endif
         </a>
         <a href="{{ route('admin.payments.index') }}"
             class="nav-link {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">

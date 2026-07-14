@@ -32,8 +32,14 @@ $statusColors = [
                     <option value="{{ $val }}" {{ request('status')===$val?'selected':'' }}>{{ $label }}</option>
                 @endforeach
             </select>
+            <select name="cancel_request" class="form-control">
+                <option value="">Semua Pengajuan Batal</option>
+                <option value="pending" {{ request('cancel_request')==='pending'?'selected':'' }}>Menunggu Persetujuan</option>
+                <option value="approved" {{ request('cancel_request')==='approved'?'selected':'' }}>Disetujui</option>
+                <option value="rejected" {{ request('cancel_request')==='rejected'?'selected':'' }}>Ditolak</option>
+            </select>
             <button type="submit" class="btn btn-primary">Filter</button>
-            @if(request()->hasAny(['search','status']))
+            @if(request()->hasAny(['search','status','cancel_request']))
                 <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary">Reset</a>
             @endif
         </form>
@@ -64,7 +70,22 @@ $statusColors = [
                 <td>Rp {{ number_format($order->subtotal,0,',','.') }}</td>
                 <td>Rp {{ number_format($order->shipping_cost,0,',','.') }}</td>
                 <td style="font-weight:700;color:var(--text-primary);">Rp {{ number_format($order->grand_total,0,',','.') }}</td>
-                <td><span class="badge {{ $statusColors[$order->status] ?? 'badge-inactive' }}">{{ $statusLabels[$order->status] ?? $order->status }}</span></td>
+                <td>
+                    <span class="badge {{ $statusColors[$order->status] ?? 'badge-inactive' }}">{{ $statusLabels[$order->status] ?? $order->status }}</span>
+                    @if($order->cancel_request_status === 'pending')
+                        <span class="badge" style="background-color: rgba(245,158,11,0.12); color: #f59e0b; font-size: 10px; font-weight: 700; display: block; margin-top: 4px; border: 1px solid rgba(245,158,11,0.25); text-align: center; white-space: nowrap;">
+                            ⚠️ Pengajuan Batal
+                        </span>
+                    @elseif($order->cancel_request_status === 'approved')
+                        <span class="badge" style="background-color: rgba(16,185,129,0.12); color: #10b981; font-size: 10px; font-weight: 700; display: block; margin-top: 4px; border: 1px solid rgba(16,185,129,0.25); text-align: center; white-space: nowrap;">
+                            Batal Disetujui
+                        </span>
+                    @elseif($order->cancel_request_status === 'rejected')
+                        <span class="badge" style="background-color: rgba(239,68,68,0.12); color: #ef4444; font-size: 10px; font-weight: 700; display: block; margin-top: 4px; border: 1px solid rgba(239,68,68,0.25); text-align: center; white-space: nowrap;">
+                            Batal Ditolak
+                        </span>
+                    @endif
+                </td>
                 <td style="font-size:12px;color:var(--text-muted);">{{ $order->resi_number ?? '—' }}</td>
                 <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ $order->created_at->format('d M Y') }}</td>
                 <td>
