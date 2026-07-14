@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -21,7 +22,10 @@ class ProductController extends Controller
         $searchHash = $search ? md5($search) : '';
         $cacheKey = "products:index:page_{$page}:per_page_{$perPage}:cat_{$categoryId}:search_{$searchHash}:rec_{$isRecommended}";
 
-        $products = Cache::store('redis')->tags(['products-list'])->remember($cacheKey, now()->addHours(12), function () use ($request) {
+        /** @var CacheRepository $cache */
+        $cache = Cache::store('redis');
+
+        $products = $cache->tags(['products-list'])->remember($cacheKey, now()->addHours(12), function () use ($request) {
             return Product::query()
                 ->with(['category', 'images'])
                 ->where('is_active', true)

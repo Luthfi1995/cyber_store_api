@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -76,6 +77,9 @@ class CachingTest extends TestCase
 
     public function test_products_list_and_details_are_cached()
     {
+        /** @var CacheRepository $cache */
+        $cache = Cache::store('redis');
+
         $category = Category::factory()->create(['is_active' => true]);
         $product = Product::factory()->create([
             'category_id' => $category->id,
@@ -89,7 +93,7 @@ class CachingTest extends TestCase
 
         // Cari cache key dinamis
         $cacheKey = "products:index:page_1:per_page_12:cat_:search_:rec_";
-        $this->assertTrue(Cache::store('redis')->tags(['products-list'])->has($cacheKey));
+        $this->assertTrue($cache->tags(['products-list'])->has($cacheKey));
 
         // 2. Uji Caching Detail Produk
         $responseDetail1 = $this->getJson("/api/v1/products/{$product->id}");
@@ -100,6 +104,9 @@ class CachingTest extends TestCase
 
     public function test_products_cache_is_invalidated_on_save_or_delete()
     {
+        /** @var CacheRepository $cache */
+        $cache = Cache::store('redis');
+
         $category = Category::factory()->create(['is_active' => true]);
         $product = Product::factory()->create([
             'category_id' => $category->id,
@@ -112,13 +119,13 @@ class CachingTest extends TestCase
         $this->getJson("/api/v1/products/{$product->id}");
 
         $cacheKey = "products:index:page_1:per_page_12:cat_:search_:rec_";
-        $this->assertTrue(Cache::store('redis')->tags(['products-list'])->has($cacheKey));
-        $this->assertTrue(Cache::store('redis')->has("product:detail:{$product->id}"));
+        $this->assertTrue($cache->tags(['products-list'])->has($cacheKey));
+        $this->assertTrue($cache->has("product:detail:{$product->id}"));
 
         // Update produk (harus menghapus cache detail dan list)
         $product->update(['price' => 150000]);
 
-        $this->assertFalse(Cache::store('redis')->tags(['products-list'])->has($cacheKey));
-        $this->assertFalse(Cache::store('redis')->has("product:detail:{$product->id}"));
+        $this->assertFalse($cache->tags(['products-list'])->has($cacheKey));
+        $this->assertFalse($cache->has("product:detail:{$product->id}"));
     }
 }

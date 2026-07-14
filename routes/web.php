@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\UserController;
+use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
@@ -134,7 +135,9 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     // ── Cache Management ─────────────────────────────────────────────────────
     Route::post('/cache/flush-products', function () {
         try {
-            Cache::store('redis')->tags(['products-list'])->flush();
+            /** @var CacheRepository $cache */
+            $cache = Cache::store('redis');
+            $cache->tags(['products-list'])->flush();
         } catch (\Exception) {
             Cache::flush();
         }
