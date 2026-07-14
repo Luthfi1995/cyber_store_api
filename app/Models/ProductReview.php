@@ -19,6 +19,25 @@ class ProductReview extends Model
         'photo',
     ];
 
+    protected $appends = [
+        'photos',
+    ];
+
+    public function getPhotosAttribute(): array
+    {
+        $photo = $this->attributes['photo'] ?? null;
+        if (!$photo) {
+            return [];
+        }
+
+        $decoded = json_decode($photo, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        return [$photo];
+    }
+
     protected function casts(): array
     {
         return [

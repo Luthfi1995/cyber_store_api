@@ -42,6 +42,8 @@ class ProductReviewController extends Controller
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:500'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photos' => ['nullable', 'array'],
+            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $user = $request->user();
@@ -74,9 +76,23 @@ class ProductReviewController extends Controller
             return response()->json(['message' => 'Anda sudah memberikan ulasan untuk produk ini.'], 400);
         }
 
-        $photoPath = null;
+        $paths = [];
+
+        // Handle single 'photo' upload
         if ($request->hasFile('photo')) {
-            $photoPath = $request->file('photo')->store('reviews', 'public');
+            $paths[] = $request->file('photo')->store('reviews', 'public');
+        }
+
+        // Handle multiple 'photos' upload (e.g. photos[] from Flutter app)
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $file) {
+                $paths[] = $file->store('reviews', 'public');
+            }
+        }
+
+        $photoValue = null;
+        if (!empty($paths)) {
+            $photoValue = count($paths) === 1 ? $paths[0] : json_encode($paths);
         }
 
         // Create the review
@@ -86,7 +102,7 @@ class ProductReviewController extends Controller
             'order_id' => $order->id,
             'rating' => $validated['rating'],
             'comment' => $validated['comment'] ?? null,
-            'photo' => $photoPath,
+            'photo' => $photoValue,
         ]);
 
         // Recalculate average rating & reviews count
