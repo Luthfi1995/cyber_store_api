@@ -147,7 +147,7 @@ class OrderController extends Controller
                 $order->trackings()->create([
                     'status' => Order::STATUS_CANCELLED,
                     'description' => 'Pengajuan pembatalan disetujui oleh Admin. Pesanan dibatalkan.',
-                    'location' => 'Admin Panel',
+                    'location' => 'Admin Cyber',
                 ]);
 
                 foreach ($order->items as $item) {
@@ -189,7 +189,7 @@ class OrderController extends Controller
         $order->trackings()->create([
             'status' => $order->status,
             'description' => 'Pengajuan pembatalan ditolak oleh Admin. Alasan: ' . $rejectReason,
-            'location' => 'Admin Panel',
+            'location' => 'Admin Cyber',
         ]);
 
         return back()->with('success', 'Pengajuan pembatalan pesanan berhasil ditolak.');

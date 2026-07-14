@@ -144,7 +144,7 @@ class OrderController extends Controller
             $order->trackings()->create([
                 'status' => $order->status,
                 'description' => 'Mengajukan pembatalan pesanan. Alasan: ' . $reason,
-                'location' => 'Customer App',
+                'location' => null,
             ]);
 
             return response()->json([
