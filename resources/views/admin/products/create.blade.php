@@ -96,6 +96,77 @@
                         </div>
                     </div>
 
+                    <div class="form-row" style="gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
+                        {{-- Gambar 4 --}}
+                        <div class="form-group" style="flex: 1; min-width: 220px;">
+                            <label class="form-label" style="font-weight: 600;">Gambar 4</label>
+                            <div class="avatar-upload-wrap">
+                                <div class="avatar-preview" id="previewWrap4"
+                                    style="border-radius: var(--radius-sm); width: 100px; height: 100px;">
+                                    <div class="avatar-initials" style="border-radius: var(--radius-sm); font-size: 24px;">📷</div>
+                                </div>
+                                <div class="avatar-upload-actions">
+                                    <label style="cursor:pointer;">
+                                        <input type="file" name="photo_4"
+                                            accept="image/jpg,image/jpeg,image/png,image/webp" style="display:none;"
+                                            onchange="previewPhoto(this, 'previewWrap4')">
+                                        <span class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">📷 Pilih</span>
+                                    </label>
+                                    <div style="font-size:10px;color:var(--text-muted);">Maks 2MB</div>
+                                </div>
+                            </div>
+                            @error('photo_4')
+                                <div class="form-error">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Gambar 5 --}}
+                        <div class="form-group" style="flex: 1; min-width: 220px;">
+                            <label class="form-label" style="font-weight: 600;">Gambar 5</label>
+                            <div class="avatar-upload-wrap">
+                                <div class="avatar-preview" id="previewWrap5"
+                                    style="border-radius: var(--radius-sm); width: 100px; height: 100px;">
+                                    <div class="avatar-initials" style="border-radius: var(--radius-sm); font-size: 24px;">📷</div>
+                                </div>
+                                <div class="avatar-upload-actions">
+                                    <label style="cursor:pointer;">
+                                        <input type="file" name="photo_5"
+                                            accept="image/jpg,image/jpeg,image/png,image/webp" style="display:none;"
+                                            onchange="previewPhoto(this, 'previewWrap5')">
+                                        <span class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">📷 Pilih</span>
+                                    </label>
+                                    <div style="font-size:10px;color:var(--text-muted);">Maks 2MB</div>
+                                </div>
+                            </div>
+                            @error('photo_5')
+                                <div class="form-error">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Gambar 6 --}}
+                        <div class="form-group" style="flex: 1; min-width: 220px;">
+                            <label class="form-label" style="font-weight: 600;">Gambar 6</label>
+                            <div class="avatar-upload-wrap">
+                                <div class="avatar-preview" id="previewWrap6"
+                                    style="border-radius: var(--radius-sm); width: 100px; height: 100px;">
+                                    <div class="avatar-initials" style="border-radius: var(--radius-sm); font-size: 24px;">📷</div>
+                                </div>
+                                <div class="avatar-upload-actions">
+                                    <label style="cursor:pointer;">
+                                        <input type="file" name="photo_6"
+                                            accept="image/jpg,image/jpeg,image/png,image/webp" style="display:none;"
+                                            onchange="previewPhoto(this, 'previewWrap6')">
+                                        <span class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">📷 Pilih</span>
+                                    </label>
+                                    <div style="font-size:10px;color:var(--text-muted);">Maks 2MB</div>
+                                </div>
+                            </div>
+                            @error('photo_6')
+                                <div class="form-error">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
                     {{-- Info Dasar --}}
                     <div
                         style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--border);">
@@ -258,6 +329,7 @@
                         <a href="{{ route('admin.products.index') }}" class="btn btn-secondary">Batal</a>
                         <button type="button" class="btn btn-primary" onclick="confirmCreate('productCreateForm', 'Konfirmasi Tambah Produk', 'Apakah Anda yakin ingin menyimpan produk baru ini?')">💾 Simpan Produk</button>
                     </div>
+                    <div id="product-colors-data" data-colors="{{ json_encode(old('colors', [])) }}" style="display:none;"></div>
                 </form>
             </div>
         </div>
@@ -281,7 +353,8 @@
         let colorIndex = 0;
 
         document.addEventListener("DOMContentLoaded", function() {
-            const oldColors = @json(old('colors', []));
+            const dataEl = document.getElementById('product-colors-data');
+            const oldColors = JSON.parse(dataEl.dataset.colors || '[]');
             if (Array.isArray(oldColors)) {
                 oldColors.forEach(c => {
                     if (typeof c === 'object' && c.name) {

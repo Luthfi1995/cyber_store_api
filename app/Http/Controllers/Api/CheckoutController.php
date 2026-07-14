@@ -168,7 +168,7 @@ class CheckoutController extends Controller
                     'total' => $product->price * $item->quantity,
                 ]);
 
-                $product->decrement('stock', $item->quantity);
+                $product->decrement('stock', $item->quantity, []);
 
                 $product->stockMovements()->create([
                     'user_id' => $user->id,

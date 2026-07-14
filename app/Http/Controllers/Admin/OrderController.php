@@ -153,7 +153,7 @@ class OrderController extends Controller
                 foreach ($order->items as $item) {
                     $product = $item->product;
                     if ($product) {
-                        $product->increment('stock', $item->quantity);
+                        $product->increment('stock', $item->quantity, []);
                         
                         $product->stockMovements()->create([
                             'user_id' => $order->user_id,

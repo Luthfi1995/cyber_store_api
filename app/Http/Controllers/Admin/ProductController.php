@@ -62,6 +62,9 @@ class ProductController extends Controller
             'main_photo'     => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'photo_2'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'photo_3'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo_4'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo_5'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo_6'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $slug = Str::slug($validated['name']);
@@ -139,6 +142,30 @@ class ProductController extends Controller
             ]);
         }
 
+        if ($request->hasFile('photo_4')) {
+            $path4 = $request->file('photo_4')->store('products', 'public');
+            $product->images()->create([
+                'image' => $path4,
+                'sort_order' => 3,
+            ]);
+        }
+
+        if ($request->hasFile('photo_5')) {
+            $path5 = $request->file('photo_5')->store('products', 'public');
+            $product->images()->create([
+                'image' => $path5,
+                'sort_order' => 4,
+            ]);
+        }
+
+        if ($request->hasFile('photo_6')) {
+            $path6 = $request->file('photo_6')->store('products', 'public');
+            $product->images()->create([
+                'image' => $path6,
+                'sort_order' => 5,
+            ]);
+        }
+
         Product::clearCache($product);
 
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan.');
@@ -168,8 +195,14 @@ class ProductController extends Controller
             'main_photo'     => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'photo_2'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'photo_3'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo_4'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo_5'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo_6'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'remove_photo_2' => ['nullable', 'boolean'],
             'remove_photo_3' => ['nullable', 'boolean'],
+            'remove_photo_4' => ['nullable', 'boolean'],
+            'remove_photo_5' => ['nullable', 'boolean'],
+            'remove_photo_6' => ['nullable', 'boolean'],
         ]);
 
         // Update slug hanya jika nama berubah
@@ -283,6 +316,69 @@ class ProductController extends Controller
             ]);
         }
 
+        // Handle Photo 4
+        if ($request->boolean('remove_photo_4')) {
+            $oldImage = $product->images()->where('sort_order', 3)->first();
+            if ($oldImage) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage->image);
+                $oldImage->delete();
+            }
+        } elseif ($request->hasFile('photo_4')) {
+            $oldImage = $product->images()->where('sort_order', 3)->first();
+            if ($oldImage) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage->image);
+                $oldImage->delete();
+            }
+
+            $path4 = $request->file('photo_4')->store('products', 'public');
+            $product->images()->create([
+                'image' => $path4,
+                'sort_order' => 3,
+            ]);
+        }
+
+        // Handle Photo 5
+        if ($request->boolean('remove_photo_5')) {
+            $oldImage = $product->images()->where('sort_order', 4)->first();
+            if ($oldImage) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage->image);
+                $oldImage->delete();
+            }
+        } elseif ($request->hasFile('photo_5')) {
+            $oldImage = $product->images()->where('sort_order', 4)->first();
+            if ($oldImage) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage->image);
+                $oldImage->delete();
+            }
+
+            $path5 = $request->file('photo_5')->store('products', 'public');
+            $product->images()->create([
+                'image' => $path5,
+                'sort_order' => 4,
+            ]);
+        }
+
+        // Handle Photo 6
+        if ($request->boolean('remove_photo_6')) {
+            $oldImage = $product->images()->where('sort_order', 5)->first();
+            if ($oldImage) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage->image);
+                $oldImage->delete();
+            }
+        } elseif ($request->hasFile('photo_6')) {
+            $oldImage = $product->images()->where('sort_order', 5)->first();
+            if ($oldImage) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage->image);
+                $oldImage->delete();
+            }
+
+            $path6 = $request->file('photo_6')->store('products', 'public');
+            $product->images()->create([
+                'image' => $path6,
+                'sort_order' => 5,
+            ]);
+        }
+
         Product::clearCache($product);
 
         return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui.');
@@ -308,7 +404,7 @@ class ProductController extends Controller
             'ids.*' => ['exists:products,id'],
         ]);
 
-        $products = Product::whereIn('id', $request->ids)->get();
+        $products = Product::query()->whereIn('id', $request->ids, 'and', false)->get();
         $deletedCount = 0;
         $skippedCount = 0;
 

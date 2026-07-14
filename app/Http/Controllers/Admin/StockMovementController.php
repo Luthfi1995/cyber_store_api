@@ -31,7 +31,7 @@ class StockMovementController extends Controller
         }
 
         $movements = $query->paginate(20)->withQueryString();
-        $products  = Product::select('id', 'name')->orderBy('name')->get();
+        $products  = Product::select(['id', 'name'])->orderBy('name')->get();
 
         return view('admin.stock-movements.index', compact('movements', 'products'));
     }
@@ -82,7 +82,7 @@ class StockMovementController extends Controller
 
         StockMovement::create([
             'product_id' => $request->product_id,
-            'user_id'    => auth()->id(),
+            'user_id'    => \Illuminate\Support\Facades\Auth::id(),
             'type'       => $request->type,
             'quantity'   => $request->quantity,
             'reference'  => $request->reference,
@@ -91,9 +91,9 @@ class StockMovementController extends Controller
 
         // Update stok produk
         if ($request->type === 'in') {
-            $product->increment('stock', $request->quantity);
+            $product->increment('stock', $request->quantity, []);
         } else {
-            $product->decrement('stock', $request->quantity);
+            $product->decrement('stock', $request->quantity, []);
         }
 
         return back()->with('success', 'Mutasi stok berhasil dicatat.');

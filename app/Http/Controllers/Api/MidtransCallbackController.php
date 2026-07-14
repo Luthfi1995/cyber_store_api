@@ -61,7 +61,7 @@ class MidtransCallbackController extends Controller
         }
 
         // Find the order by invoice_number
-        $order = Order::where('invoice_number', $orderId)->with(['payment', 'items.product'])->first();
+        $order = Order::query()->where('invoice_number', '=', $orderId, 'and')->with(['payment', 'items.product'])->first();
 
         if (!$order) {
             return response()->json(['message' => 'Order tidak ditemukan.'], 404);
@@ -124,7 +124,7 @@ class MidtransCallbackController extends Controller
                     foreach ($order->items as $item) {
                         $product = $item->product;
                         if ($product) {
-                            $product->increment('stock', $item->quantity);
+                            $product->increment('stock', $item->quantity, []);
                             
                             $product->stockMovements()->create([
                                 'user_id' => $order->user_id,
