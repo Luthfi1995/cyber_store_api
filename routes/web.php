@@ -132,6 +132,11 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::post('/chats/{chat}/reopen', [ChatController::class, 'reopen'])->name('chats.reopen');
     Route::get('/chats-unread-count', [ChatController::class, 'unreadCount'])->name('chats.unread-count');
 
+    // ── Chat Ulasan ──────────────────────────────────────────────────────────
+    Route::get('/review-chats', [App\Http\Controllers\Admin\ProductReviewController::class, 'index'])->name('review-chats.index');
+    Route::get('/review-chats/{review}', [App\Http\Controllers\Admin\ProductReviewController::class, 'show'])->name('review-chats.show');
+    Route::post('/review-chats/{review}/reply', [App\Http\Controllers\Admin\ProductReviewController::class, 'reply'])->name('review-chats.reply');
+
     // ── Cache Management ─────────────────────────────────────────────────────
     Route::post('/cache/flush-products', function () {
         try {

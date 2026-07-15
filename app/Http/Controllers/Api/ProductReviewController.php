@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductReview;
+use App\Models\ProductReviewReply;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -21,7 +22,7 @@ class ProductReviewController extends Controller
             "reviews:product:{$product->id}",
             now()->addMinutes(30),
             function () use ($product) {
-                return ProductReview::with('user:id,name,photo')
+                return ProductReview::with(['user:id,name,photo', 'replies.user:id,name,photo'])
                     ->where('product_id', $product->id)
                     ->latest()
                     ->get()
@@ -137,6 +138,12 @@ class ProductReviewController extends Controller
             'reply' => ['required', 'string', 'max:500'],
         ]);
 
+        $reply = ProductReviewReply::create([
+            'product_review_id' => $review->id,
+            'user_id' => $request->user()->id,
+            'reply' => $validated['reply'],
+        ]);
+
         $review->update([
             'reply' => $validated['reply'],
         ]);
@@ -147,8 +154,17 @@ class ProductReviewController extends Controller
 
         return response()->json([
             'message' => 'Balasan berhasil dikirim.',
-            'review' => $review->load('user:id,name,photo'),
+            'review' => $review->load(['user:id,name,photo', 'replies.user:id,name,photo']),
         ]);
+    }
+
+    /**
+     * Get replies for a specific review.
+     */
+    public function replies(ProductReview $review): JsonResponse
+    {
+        $replies = $review->replies()->with('user:id,name,photo')->oldest()->get();
+        return response()->json($replies);
     }
 
     /**

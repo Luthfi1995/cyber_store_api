@@ -47,6 +47,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/profile', [ProfileController::class, 'update']);
         Route::post('/products/{product}/reviews', [ProductReviewController::class, 'store']);
         Route::post('/reviews/{review}/reply', [ProductReviewController::class, 'reply']);
+        Route::get('/reviews/{review}/replies', [ProductReviewController::class, 'replies']);
 
         Route::apiResource('/addresses', CustomerAddressController::class);
 

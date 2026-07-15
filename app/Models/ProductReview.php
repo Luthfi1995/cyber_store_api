@@ -57,6 +57,11 @@ class ProductReview extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function replies(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProductReviewReply::class, 'product_review_id');
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
