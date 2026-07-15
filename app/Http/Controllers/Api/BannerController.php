@@ -23,7 +23,7 @@ class BannerController extends Controller
                     'description' => $banner->description,
                     'order'       => $banner->order,
                     'image_url'   => $banner->image_path
-                        ? Storage::disk('public')->url($banner->image_path)
+                        ? asset($banner->image_path)
                         : null,
                 ];
             })->toArray();

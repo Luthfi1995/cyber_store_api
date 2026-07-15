@@ -46,6 +46,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/profile', [ProfileController::class, 'update']);
         Route::post('/products/{product}/reviews', [ProductReviewController::class, 'store']);
+        Route::post('/reviews/{review}/reply', [ProductReviewController::class, 'reply']);
 
         Route::apiResource('/addresses', CustomerAddressController::class);
 

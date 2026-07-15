@@ -20,6 +20,7 @@ class ProductReview extends Model
         'rating',
         'comment',
         'photo',
+        'reply',
     ];
 
     protected $appends = [

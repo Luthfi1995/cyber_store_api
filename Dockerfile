@@ -14,3 +14,7 @@ COPY --chown=www-data:www-data . .
 
 # Install production dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Create storage symlink
+RUN php artisan storage:link
+

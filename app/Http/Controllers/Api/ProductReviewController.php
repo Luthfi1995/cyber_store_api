@@ -125,6 +125,33 @@ class ProductReviewController extends Controller
     }
 
     /**
+     * Submit an admin reply to a review.
+     */
+    public function reply(Request $request, ProductReview $review): JsonResponse
+    {
+        if (!in_array($request->user()->role, ['admin', 'superadmin'])) {
+            return response()->json(['message' => 'Hanya admin yang dapat membalas ulasan.'], 403);
+        }
+
+        $validated = $request->validate([
+            'reply' => ['required', 'string', 'max:500'],
+        ]);
+
+        $review->update([
+            'reply' => $validated['reply'],
+        ]);
+
+        // Hapus cache review produk agar data terbaru langsung tampil
+        Cache::store('redis')->forget("reviews:product:{$review->product_id}");
+        Cache::store('redis')->forget("product:detail:{$review->product_id}");
+
+        return response()->json([
+            'message' => 'Balasan berhasil dikirim.',
+            'review' => $review->load('user:id,name,photo'),
+        ]);
+    }
+
+    /**
      * Get all reviews written by the authenticated user.
      */
     public function myReviews(Request $request): JsonResponse
