@@ -38,6 +38,8 @@ class StoreSeeder extends Seeder
         // ============================
         // BANNERS CAROUSEL
         // ============================
+        Banner::query()->delete();
+
         $availableBanners = [
             [
                 'title' => 'OUR BEST FUTURE',
@@ -60,16 +62,14 @@ class StoreSeeder extends Seeder
         ];
 
         foreach ($availableBanners as $bData) {
-            $imagePath = 'assets/img/' . $bData['file'];
+            $imagePath = $bData['file'];
 
-            Banner::firstOrCreate(
-                ['image_path' => $imagePath],
-                [
-                    'title' => $bData['title'],
-                    'description' => $bData['description'],
-                    'order' => $bData['order'],
-                ]
-            );
+            Banner::create([
+                'image_path' => $imagePath,
+                'title' => $bData['title'],
+                'description' => $bData['description'],
+                'order' => $bData['order'],
+            ]);
         }
 
         $this->command->info('✅ StoreSeeder selesai (Kategori, Ekspeditur & Banner Carousel).');
