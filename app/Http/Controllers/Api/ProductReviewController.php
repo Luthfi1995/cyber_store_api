@@ -156,7 +156,7 @@ class ProductReviewController extends Controller
      */
     public function myReviews(Request $request): JsonResponse
     {
-        $reviews = ProductReview::with(['product:id,name,images', 'product.images'])
+        $reviews = ProductReview::with(['product:id,name,main_photo', 'product.images'])
             ->where('user_id', $request->user()->id)
             ->latest()
             ->paginate($request->integer('per_page', 10));
