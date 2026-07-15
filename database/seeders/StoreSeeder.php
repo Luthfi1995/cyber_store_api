@@ -61,15 +61,25 @@ class StoreSeeder extends Seeder
             ]
         ];
 
-        foreach ($availableBanners as $bData) {
-            $imagePath = $bData['file'];
+        Storage::disk('public')->makeDirectory('banners');
 
-            Banner::create([
-                'image_path' => $imagePath,
-                'title' => $bData['title'],
-                'description' => $bData['description'],
-                'order' => $bData['order'],
-            ]);
+        foreach ($availableBanners as $bData) {
+            $filename = basename($bData['file']);
+            $destPath = 'banners/' . Str::slug(pathinfo($filename, PATHINFO_FILENAME)) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
+            $sourcePath = public_path($bData['file']);
+
+            if (file_exists($sourcePath)) {
+                if (!Storage::disk('public')->exists($destPath)) {
+                    Storage::disk('public')->put($destPath, file_get_contents($sourcePath));
+                }
+
+                Banner::create([
+                    'image_path' => $destPath,
+                    'title' => $bData['title'],
+                    'description' => $bData['description'],
+                    'order' => $bData['order'],
+                ]);
+            }
         }
 
         $this->command->info('✅ StoreSeeder selesai (Kategori, Ekspeditur & Banner Carousel).');
