@@ -1,12 +1,10 @@
-use App\Models\Chat;
-use Illuminate\Support\Facades\Storage;
 <!-- ─── SIDEBAR ─────────────────────────────────────────────────────── -->
 <aside class="sidebar" id="sidebar">
     <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
         <div class="sidebar-brand">
             @php
             $sidebarLogoSetting = \App\Models\Setting::get('store_logo');
-            $sidebarLogoUrl = $sidebarLogoSetting ? Storage::disk('public')->url($sidebarLogoSetting) : asset('/assets/img/logo-cyberstore.jpg');
+            $sidebarLogoUrl = $sidebarLogoSetting ? \Storage::disk('public')->url($sidebarLogoSetting) : asset('/assets/img/logo-cyberstore.jpg');
             @endphp
             <img src="{{ $sidebarLogoUrl }}" alt="Logo">
         </div>
@@ -181,7 +179,7 @@ use Illuminate\Support\Facades\Storage;
         <div class="user-card">
             <div class="user-avatar">
                 @if (auth()->user()->photo)
-                <img src="{{ Storage::disk('public')->url(auth()->user()->photo) }}"
+                <img src="{{ \Storage::disk('public')->url(auth()->user()->photo) }}"
                     alt="{{ auth()->user()->name }}">
                 @else
                 {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
