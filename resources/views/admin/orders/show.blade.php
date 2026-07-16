@@ -164,7 +164,11 @@ $statusColors = [
                     @foreach($order->trackings as $i => $track)
                     <div style="display:flex;gap:14px;">
                         <div style="display:flex;flex-direction:column;align-items:center;">
-                            <div style="width:12px;height:12px;border-radius:50%;background:{{ $i===0?'var(--accent)':'var(--border)' }};flex-shrink:0; margin-top:4px;"></div>
+                            @if($i === 0)
+                            <div style="width:12px;height:12px;border-radius:50%;background:var(--accent);flex-shrink:0; margin-top:4px;"></div>
+                            @else
+                            <div style="width:12px;height:12px;border-radius:50%;background:var(--border);flex-shrink:0; margin-top:4px;"></div>
+                            @endif
                             @if(!$loop->last)
                             <div style="width:2px;flex:1;background:var(--border);margin:4px 0;"></div>
                             @endif

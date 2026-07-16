@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ChatController extends Controller
 {
@@ -30,23 +31,22 @@ class ChatController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('subject', 'like', "%{$search}%")
-                  ->orWhere('product_name', 'like', "%{$search}%")
-                  ->orWhereHas('customer', fn ($u) => $u->where('name', 'like', "%{$search}%")
-                                                         ->orWhere('email', 'like', "%{$search}%"));
+                    ->orWhere('product_name', 'like', "%{$search}%")
+                    ->orWhereHas('customer', fn ($u) => $u->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%"));
             });
         }
 
         $chats = $query->paginate(20)->withQueryString();
 
         // Total unread untuk badge di navbar
-        $totalUnread = Chat::whereHas('messages', fn ($q) =>
-            $q->where('sender_type', 'customer')->where('is_read', false)
+        $totalUnread = Chat::whereHas('messages', fn ($q) => $q->where('sender_type', 'customer')->where('is_read', false)
         )->count();
 
         if ($request->wantsJson()) {
             return response()->json([
                 'chats' => $chats->items(),
-                'total_unread' => $totalUnread
+                'total_unread' => $totalUnread,
             ]);
         }
 
@@ -76,8 +76,7 @@ class ChatController extends Controller
             ->take(50)
             ->get();
 
-        $totalUnread = Chat::whereHas('messages', fn ($q) =>
-            $q->where('sender_type', 'customer')->where('is_read', false)
+        $totalUnread = Chat::whereHas('messages', fn ($q) => $q->where('sender_type', 'customer')->where('is_read', false)
         )->count();
 
         if (request()->wantsJson()) {
@@ -90,9 +89,9 @@ class ChatController extends Controller
                         'sender_name' => $m->sender?->name ?? 'Admin',
                         'message' => $m->message,
                         'is_read' => $m->is_read,
-                        'created_at' => $m->created_at->toIso8601String()
+                        'created_at' => $m->created_at->toIso8601String(),
                     ];
-                })
+                }),
             ]);
         }
 
@@ -111,15 +110,16 @@ class ChatController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['error' => 'Chat sudah ditutup.'], 422);
             }
+
             return back()->with('error', 'Chat sudah ditutup.');
         }
 
         $msg = ChatMessage::create([
-            'chat_id'     => $chat->id,
+            'chat_id' => $chat->id,
             'sender_type' => 'admin',
-            'sender_id'   => auth()->id(),
-            'message'     => $request->input('message'),
-            'is_read'     => false,
+            'sender_id' => Auth::id(),
+            'message' => $request->input('message'),
+            'is_read' => false,
         ]);
 
         $chat->update(['last_message_at' => now()]);
@@ -130,11 +130,11 @@ class ChatController extends Controller
                 'message' => [
                     'id' => $msg->id,
                     'sender_type' => $msg->sender_type,
-                    'sender_name' => auth()->user()->name,
+                    'sender_name' => Auth::user()?->name,
                     'message' => $msg->message,
                     'is_read' => $msg->is_read,
-                    'created_at' => $msg->created_at->toIso8601String()
-                ]
+                    'created_at' => $msg->created_at->toIso8601String(),
+                ],
             ]);
         }
 
@@ -148,6 +148,7 @@ class ChatController extends Controller
     public function close(Chat $chat)
     {
         $chat->update(['status' => 'closed']);
+
         return back()->with('success', 'Chat ditutup.');
     }
 
@@ -158,6 +159,7 @@ class ChatController extends Controller
     public function reopen(Chat $chat)
     {
         $chat->update(['status' => 'open']);
+
         return back()->with('success', 'Chat dibuka kembali.');
     }
 
@@ -166,8 +168,7 @@ class ChatController extends Controller
      */
     public function unreadCount()
     {
-        $count = Chat::whereHas('messages', fn ($q) =>
-            $q->where('sender_type', 'customer')->where('is_read', false)
+        $count = Chat::whereHas('messages', fn ($q) => $q->where('sender_type', 'customer')->where('is_read', false)
         )->count();
 
         return response()->json(['unread' => $count]);

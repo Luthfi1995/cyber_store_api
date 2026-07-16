@@ -12,8 +12,8 @@ class SettingController extends Controller
 {
     public function index()
     {
-        $storeName = Setting::get('store_name', 'UBSI Store');
-        $storeAddress = Setting::get('store_address', 'Jl. Kramat Raya No.98, Senen, Jakarta Pusat');
+        $storeName = Setting::get('store_name', 'BSI Cyber Store');
+        $storeAddress = Setting::get('store_address', 'jl. Dewi Sartika Blok, Jl. H. Abdul Hamid No.77, RT.8/RW.4, Cawang, Kec. Kramat jati, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13630');
         $storeCityId = Setting::get('store_city_id', '152');
         $storeEmail = Setting::get('store_email', 'support@bsi.ac.id');
         $storePhone = Setting::get('store_phone', '(021) 7867868');

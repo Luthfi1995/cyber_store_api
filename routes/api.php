@@ -64,6 +64,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/orders/{order}/complete', [OrderController::class, 'complete']);
         Route::post('/orders/{order}/track', [OrderController::class, 'trackWaybill']);
         Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
+        Route::post('/payments/{payment}/check-status', [PaymentController::class, 'checkStatus']);
 
         // ── Reviews ───────────────────────────────────────────────────────────
         Route::get('/my-reviews', [ProductReviewController::class, 'myReviews']);
@@ -73,11 +74,6 @@ Route::prefix('v1')->group(function () {
         Route::post('/chats', [ChatController::class, 'store']);
         Route::get('/chats/{chat}/messages', [ChatController::class, 'messages']);
         Route::post('/chats/{chat}/messages', [ChatController::class, 'sendMessage']);
-
-        // ── Testing lokal: simulate pembayaran (HANYA di env local/testing) ──
-        if (app()->environment('local', 'testing')) {
-            Route::post('/payments/{payment}/simulate-paid', [PaymentController::class, 'simulatePaid']);
-        }
     });
 
     // Public Midtrans Callback Webhook

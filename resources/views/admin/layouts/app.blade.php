@@ -5,17 +5,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="ubsiStore Admin Panel — Kelola produk dan pengguna toko Anda.">
-    <title>@yield('title', 'Dashboard') — {{ \App\Models\Setting::get('store_name', 'UBSI Store') }} Admin</title>
+    <title>@yield('title', 'Dashboard') — {{ \App\Models\Setting::get('store_name', 'BSI Cyber Store') }} Admin</title>
     @php
-        $faviconSetting = \App\Models\Setting::get('store_logo');
-        $faviconUrl = $faviconSetting ? Storage::disk('public')->url($faviconSetting) : asset('assets/img/logo.png');
+    $faviconSetting = \App\Models\Setting::get('store_logo');
+    $faviconUrl = $faviconSetting ? Storage::disk('public')->url($faviconSetting) : asset('assets/img/logo-cyberstore.jpg');
     @endphp
     <link rel="icon" href="{{ $faviconUrl }}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-        <!-- Bootstrap Icons -->
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}?v=2">
     <script>

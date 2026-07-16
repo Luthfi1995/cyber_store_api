@@ -29,6 +29,8 @@ class Payment extends Model
         'paid_at',
         'expired_at',
         'external_reference',
+        'snap_token',
+        'snap_url',
     ];
 
     protected function casts(): array

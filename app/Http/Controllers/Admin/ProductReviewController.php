@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ProductReview;
 use App\Models\ProductReviewReply;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class ProductReviewController extends Controller
@@ -24,8 +25,8 @@ class ProductReviewController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('comment', 'like', "%{$search}%")
-                  ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
-                  ->orWhereHas('product', fn ($p) => $p->where('name', 'like', "%{$search}%"));
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('product', fn ($p) => $p->where('name', 'like', "%{$search}%"));
             });
         }
 
@@ -63,9 +64,9 @@ class ProductReviewController extends Controller
                         'reply' => $r->reply,
                         'admin_name' => $r->user?->name ?? 'Admin',
                         'admin_photo' => $r->user?->photo,
-                        'created_at' => $r->created_at->toIso8601String()
+                        'created_at' => $r->created_at->toIso8601String(),
                     ];
-                })
+                }),
             ]);
         }
 
@@ -78,18 +79,18 @@ class ProductReviewController extends Controller
     public function reply(Request $request, ProductReview $review)
     {
         $request->validate([
-            'message' => 'required|string|max:1000'
+            'message' => 'required|string|max:1000',
         ]);
 
         $reply = ProductReviewReply::create([
             'product_review_id' => $review->id,
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'reply' => $request->input('message'),
         ]);
 
         // Fallback update on product_reviews reply column for backward compatibility
         $review->update([
-            'reply' => $request->input('message')
+            'reply' => $request->input('message'),
         ]);
 
         // Clear products and reviews caches
@@ -102,10 +103,10 @@ class ProductReviewController extends Controller
                 'reply' => [
                     'id' => $reply->id,
                     'reply' => $reply->reply,
-                    'admin_name' => auth()->user()->name,
-                    'admin_photo' => auth()->user()->photo,
-                    'created_at' => $reply->created_at->toIso8601String()
-                ]
+                    'admin_name' => Auth::user()?->name,
+                    'admin_photo' => Auth::user()?->photo,
+                    'created_at' => $reply->created_at->toIso8601String(),
+                ],
             ]);
         }
 

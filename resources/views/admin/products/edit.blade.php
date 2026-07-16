@@ -368,6 +368,23 @@
                         <div class="form-group">
                             <label class="form-label">Warna & Palet</label>
                             <div id="color-list" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;"></div>
+                            <div style="margin-bottom: 8px;">
+                                <select id="color-template" class="form-control" onchange="applyColorTemplate(this)" style="font-size: 13px; height: 38px; cursor: pointer;">
+                                    <option value="">— Gunakan Template Warna —</option>
+                                    <option value="Hitam|#080808">Hitam (#080808)</option>
+                                    <option value="Putih|#FFFFFF">Putih (#FFFFFF)</option>
+                                    <option value="Abu-abu|#808080">Abu-abu (#808080)</option>
+                                    <option value="Merah|#FF0000">Merah (#FF0000)</option>
+                                    <option value="Biru|#0400FF">Biru (#0400FF)</option>
+                                    <option value="Hijau|#00FF00">Hijau (#00FF00)</option>
+                                    <option value="Kuning|#FFFF00">Kuning (#FFFF00)</option>
+                                    <option value="Orange|#FFA500">Orange (#FFA500)</option>
+                                    <option value="Pink|#FF007B">Pink (#FF007B)</option>
+                                    <option value="Ungu|#FF00EA">Ungu (#FF00EA)</option>
+                                    <option value="Cokelat|#A52A2A">Cokelat (#A52A2A)</option>
+                                    <option value="Navy|#000080">Navy (#000080)</option>
+                                </select>
+                            </div>
                             <div style="display:flex; gap:8px; align-items:center;">
                                 <input type="text" id="color-name" class="form-control"
                                     placeholder="Nama Warna (Cth: Merah)" style="flex:1;">
@@ -563,6 +580,19 @@
         function removeColor(index) {
             const el = document.getElementById('color-item-' + index);
             if (el) el.remove();
+        }
+
+        function applyColorTemplate(select) {
+            if (!select.value) return;
+            const parts = select.value.split('|');
+            const name = parts[0];
+            const hex = parts[1];
+
+            document.getElementById('color-name').value = name;
+            document.getElementById('color-hex').value = hex;
+
+            addColor();
+            select.value = '';
         }
     </script>
 @endsection

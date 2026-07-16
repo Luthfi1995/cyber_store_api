@@ -24,7 +24,7 @@ class CheckoutController extends Controller
         $validated = $request->validate([
             'customer_address_id' => ['required', 'exists:customer_addresses,id'],
             'expedition_id' => ['required', 'exists:expeditions,id'],
-            'bank_code' => ['required', 'in:bca,bni,bri,mandiri,permata'],
+            'bank_code' => ['nullable', 'in:bca,bni,bri,mandiri,permata'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -100,7 +100,7 @@ class CheckoutController extends Controller
                 }
 
                 try {
-                    $response = Http::timeout(3)->withHeaders([
+                    $response = Http::withoutVerifying()->timeout(3)->withHeaders([
                         'key' => env('RAJAONGKIR_API_KEY')
                     ])->post(env('RAJAONGKIR_BASE_URL') . '/cost', [
                         'origin' => $originCityId,
@@ -179,21 +179,23 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            $paymentData = $midtransService->createVirtualAccount($order->invoice_number, $grandTotal, $validated['bank_code']);
+            $paymentData = $midtransService->createSnapTransaction($order->invoice_number, $grandTotal, $validated['bank_code'] ?? null);
 
             $order->payment()->create([
-                'bank_code' => $validated['bank_code'],
-                'virtual_account_number' => $paymentData['va_number'] ?? $paymentData['bill_key'] ?? 'N/A',
+                'bank_code' => $validated['bank_code'] ?? null,
+                'virtual_account_number' => $paymentData['va_number'] ?? null,
                 'biller_code' => $paymentData['biller_code'] ?? null,
                 'amount' => $grandTotal,
                 'status' => Payment::STATUS_WAITING_PAYMENT,
                 'expired_at' => now()->addDay(),
                 'external_reference' => $paymentData['transaction_id'] ?? 'VA-' . strtoupper(Str::random(12)),
+                'snap_token' => $paymentData['snap_token'] ?? null,
+                'snap_url' => $paymentData['snap_url'] ?? null,
             ]);
 
             $order->trackings()->create([
                 'status' => Order::STATUS_PENDING_PAYMENT,
-                'description' => 'Pesanan dibuat dan menunggu pembayaran virtual account.',
+                'description' => 'Pesanan dibuat dan menunggu pembayaran.',
                 'location' => $address->city,
             ]);
 

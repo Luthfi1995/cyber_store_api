@@ -77,13 +77,29 @@ class MidtransCallbackController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($order, $transactionStatus) {
+            DB::transaction(function () use ($order, $transactionStatus, $payload) {
                 if ($transactionStatus === 'capture' || $transactionStatus === 'settlement') {
-                    // Update Payment and Order to PAID
-                    $order->payment->update([
+                    $updateFields = [
                         'status' => Payment::STATUS_PAID,
                         'paid_at' => now(),
-                    ]);
+                    ];
+
+                    if (isset($payload['payment_type'])) {
+                        if ($payload['payment_type'] === 'bank_transfer' && !empty($payload['va_numbers'])) {
+                            $updateFields['bank_code'] = $payload['va_numbers'][0]['bank'] ?? null;
+                            $updateFields['virtual_account_number'] = $payload['va_numbers'][0]['va_number'] ?? null;
+                        } elseif ($payload['payment_type'] === 'echannel') {
+                            $updateFields['bank_code'] = 'mandiri';
+                            $updateFields['virtual_account_number'] = $payload['bill_key'] ?? null;
+                            $updateFields['biller_code'] = $payload['biller_code'] ?? null;
+                        } elseif ($payload['payment_type'] === 'cstore') {
+                            $updateFields['bank_code'] = $payload['store'] ?? 'cstore';
+                            $updateFields['virtual_account_number'] = $payload['payment_code'] ?? null;
+                        }
+                    }
+
+                    // Update Payment and Order to PAID
+                    $order->payment->update($updateFields);
 
                     $order->update([
                         'status' => Order::STATUS_PAID,
@@ -91,7 +107,7 @@ class MidtransCallbackController extends Controller
 
                     $order->trackings()->create([
                         'status' => Order::STATUS_PAID,
-                        'description' => 'Pembayaran virtual account berhasil diverifikasi oleh Midtrans.',
+                        'description' => 'Pembayaran berhasil diverifikasi oleh Midtrans.',
                         'location' => $order->address?->city ?? 'Sistem',
                     ]);
 
@@ -103,7 +119,7 @@ class MidtransCallbackController extends Controller
                     $newPaymentStatus = $isExpire ? Payment::STATUS_EXPIRED : Payment::STATUS_FAILED;
                     $statusDescription = $isExpire 
                         ? 'Pesanan dibatalkan otomatis karena batas waktu pembayaran habis.' 
-                        : 'Pembayaran virtual account gagal atau dibatalkan.';
+                        : 'Pembayaran gagal atau dibatalkan.';
 
                     // Update Payment and Order to EXPIRED/FAILED and CANCELLED
                     $order->payment->update([

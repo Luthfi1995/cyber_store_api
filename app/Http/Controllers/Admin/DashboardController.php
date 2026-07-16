@@ -28,11 +28,17 @@ class DashboardController extends Controller
             fn () => $this->computeDashboardStats()
         );
 
-        $recent_users = User::latest()->take(5)->get();
+        /** @var \Illuminate\Database\Eloquent\Builder $user */
+        $user = User::query();
+        $recent_users = $user->latest()->take(5)->get();
 
-        $recent_orders = Order::with('user')->latest()->take(5)->get();
+        /** @var \Illuminate\Database\Eloquent\Builder $order */
+        $order = Order::query();
+        $recent_orders = $order->with('user')->latest()->take(5)->get();
 
-        $low_stock_products = Product::where('stock', '<=', self::LOW_STOCK_THRESHOLD)
+        /** @var \Illuminate\Database\Eloquent\Builder $product */
+        $product = Product::query();
+        $low_stock_products = $product->where('stock', '<=', self::LOW_STOCK_THRESHOLD)
             ->where('is_active', true)
             ->orderBy('stock')
             ->take(5)
@@ -54,17 +60,26 @@ class DashboardController extends Controller
      */
     private function computeDashboardStats(): array
     {
+        /** @var \Illuminate\Database\Eloquent\Builder $user */
+        $user = User::query();
+        /** @var \Illuminate\Database\Eloquent\Builder $product */
+        $product = Product::query();
+        /** @var \Illuminate\Database\Eloquent\Builder $category */
+        $category = Category::query();
+        /** @var \Illuminate\Database\Eloquent\Builder $order */
+        $order = Order::query();
+
         return [
-            'total_users'       => User::count(),
-            'total_customers'   => User::where('role', User::ROLE_CUSTOMER)->count(),
-            'total_admins'      => User::whereIn('role', [User::ROLE_ADMIN, User::ROLE_SUPERADMIN])->count(),
-            'total_products'    => Product::count(),
-            'active_products'   => Product::where('is_active', true)->count(),
-            'total_categories'  => Category::count(),
-            'total_orders'      => Order::count(),
-            'total_revenue'     => Order::where('status', Order::STATUS_COMPLETED)->sum('grand_total'),
-            'pending_orders'    => Order::where('status', Order::STATUS_PENDING_PAYMENT)->count(),
-            'processing_orders' => Order::whereIn('status', [
+            'total_users'       => (clone $user)->count(),
+            'total_customers'   => (clone $user)->where('role', User::ROLE_CUSTOMER)->count(),
+            'total_admins'      => (clone $user)->whereIn('role', [User::ROLE_ADMIN, User::ROLE_SUPERADMIN])->count(),
+            'total_products'    => (clone $product)->count(),
+            'active_products'   => (clone $product)->where('is_active', true)->count(),
+            'total_categories'  => (clone $category)->count(),
+            'total_orders'      => (clone $order)->count(),
+            'total_revenue'     => (clone $order)->where('status', Order::STATUS_COMPLETED)->sum('grand_total'),
+            'pending_orders'    => (clone $order)->where('status', Order::STATUS_PENDING_PAYMENT)->count(),
+            'processing_orders' => (clone $order)->whereIn('status', [
                 Order::STATUS_PAID,
                 Order::STATUS_PACKED,
                 Order::STATUS_SHIPPED,
