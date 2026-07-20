@@ -68,7 +68,9 @@ $bankLabels   = ['bca'=>'BCA','bni'=>'BNI','bri'=>'BRI','mandiri'=>'Mandiri','pe
                 <td style="font-size:12px;color:var(--text-muted);">{{ $pay->paid_at?->format('d M Y H:i') ?? '—' }}</td>
                 <td style="font-size:12px;color:var(--text-muted);">{{ $pay->expired_at?->format('d M Y H:i') ?? '—' }}</td>
                 <td>
-                    <a href="{{ route('admin.payments.show', $pay) }}" class="btn btn-info btn-sm btn-icon" title="Detail">👁️</a>
+                    <a href="{{ route('admin.payments.show', $pay) }}" class="btn btn-info btn-sm btn-icon" title="Detail">
+                        <iconify-icon icon="flat-color-icons:view-details" style="font-size: 16px;"></iconify-icon>
+                    </a>
                 </td>
             </tr>
             @endforeach

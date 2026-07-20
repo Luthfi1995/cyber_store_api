@@ -41,23 +41,53 @@
     </div>
 
 
+    <style>
+    @keyframes spinCustom {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .spinner-border-custom {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid #ffffff;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spinCustom 0.75s linear infinite;
+        vertical-align: middle;
+    }
+    </style>
+
+    @if(session('import_errors'))
+    <div id="import-section" style="padding: 20px; background: #f8fafc; border-bottom: 1px solid var(--border);">
+    @else
     <div id="import-section" style="display: none; padding: 20px; background: #f8fafc; border-bottom: 1px solid var(--border);">
-        <form action="{{ route('admin.products.import') }}" method="POST" enctype="multipart/form-data" class="filter-bar" style="align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    @endif
+        <form action="{{ route('admin.products.import') }}" method="POST" enctype="multipart/form-data" id="importCsvForm" onsubmit="return handleCsvImportSubmit(this)" class="filter-bar" style="align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
             @csrf
             <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-weight: bold; font-size: 13px;">Pilih File CSV (.csv)</label>
-                <input type="file" name="file" accept=".csv" required class="form-control" style="background: white;">
+                <label style="font-weight: bold; font-size: 13px;">Pilih File (.csv / .xls / .xlsx)</label>
+                <input type="file" name="file" accept=".csv,.xls,.xlsx" required class="form-control" style="background: white;" id="csvFileInput">
             </div>
             <div style="display: flex; gap: 12px; align-items: center;">
-                <button type="submit" class="btn btn-success" style="background-color: #10B981; border-color: #10B981; color: white;">
-                    🚀 Proses Impor
+                <button type="submit" id="importSubmitBtn" class="btn btn-success" style="background-color: #10B981; border-color: #10B981; color: white; display: inline-flex; align-items: center; gap: 8px;">
+                    <span id="importBtnIcon"><iconify-icon icon="flat-color-icons:upload" style="font-size: 18px;"></iconify-icon></span> <span id="importBtnText">Proses Impor</span>
                 </button>
-                <a href="{{ route('admin.products.import-template') }}" class="btn btn-link" style="font-size: 13px; text-decoration: underline; color: #0D47A1; font-weight: bold;">
-                    📥 Unduh Template Excel (.xls)
+                <a href="{{ route('admin.products.import-template') }}" class="btn btn-link" style="font-size: 13px; text-decoration: underline; color: #0D47A1; font-weight: bold; display: inline-flex; align-items: center; gap: 6px;">
+                    <iconify-icon icon="vscode-icons:file-type-excel" style="font-size: 18px;"></iconify-icon> Unduh Template Excel (.xls)
                 </a>
             </div>
         </form>
-        <div style="margin-top: 10px; font-size: 11px; color: #64748b; line-height: 1.6;">
+
+        <div id="import-status-box" style="display: none; align-items: center; gap: 12px; margin-top: 14px; padding: 12px 16px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; color: #1E40AF; font-size: 13px;">
+            <span class="spinner-border-custom" style="border-color: #1E40AF; border-right-color: transparent; width: 18px; height: 18px; border-width: 3px;"></span>
+            <div>
+                <strong>Sedang Memproses & Mengimpor File CSV...</strong><br>
+                <span style="font-size: 11px; opacity: 0.85;">Mohon jangan memuat ulang atau menutup halaman sampai proses selesai.</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 12px; font-size: 11px; color: #64748b; line-height: 1.6;">
             * <strong>Langkah Penggunaan:</strong> <br>
             1. Klik <strong>"Unduh Template Excel (.xls)"</strong> di atas. File ini sudah terformat rapi dengan garis tabel dan warna header.<br>
             2. Buka dan isi data produk Anda menggunakan Microsoft Excel atau Google Sheets.<br>
@@ -68,8 +98,11 @@
     </div>
 
     @if (session('import_errors'))
-    <div style="margin: 15px 20px; padding: 15px; background-color: #FEF2F2; border: 1px solid #FEE2E2; border-radius: 8px;">
-        <h4 style="color: #991B1B; margin-top: 0; margin-bottom: 8px; font-size: 13px; font-weight: bold;">⚠️ Beberapa baris memiliki kesalahan data dan dilewati:</h4>
+    <div style="margin: 15px 20px; padding: 15px; background-color: #FEF2F2; border: 1px solid #FEE2E2; border-radius: 8px; position: relative;">
+        <button onclick="this.parentElement.remove()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 16px; cursor: pointer; color: #991B1B;">✕</button>
+        <h4 style="color: #991B1B; margin-top: 0; margin-bottom: 8px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 6px;">
+            ⚠️ Beberapa baris memiliki kesalahan data dan dilewati:
+        </h4>
         <ul style="color: #B91C1C; margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.6;">
             @foreach (session('import_errors') as $err)
             <li>{{ $err }}</li>
@@ -77,6 +110,39 @@
         </ul>
     </div>
     @endif
+
+    <script>
+    function handleCsvImportSubmit(form) {
+        const fileInput = document.getElementById('csvFileInput');
+        if (!fileInput || !fileInput.files || !fileInput.files.length) {
+            alert('Silakan pilih file CSV terlebih dahulu.');
+            return false;
+        }
+
+        const btn = document.getElementById('importSubmitBtn');
+        const icon = document.getElementById('importBtnIcon');
+        const text = document.getElementById('importBtnText');
+        const statusBox = document.getElementById('import-status-box');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.85';
+            btn.style.cursor = 'not-allowed';
+        }
+        if (icon) {
+            icon.className = 'spinner-border-custom';
+            icon.innerHTML = '';
+        }
+        if (text) {
+            text.innerText = 'Memproses Impor...';
+        }
+        if (statusBox) {
+            statusBox.style.display = 'flex';
+        }
+
+        return true;
+    }
+    </script>
 
     <div style="padding: 16px 20px; border-bottom: 1px solid var(--border);">
         <form method="GET" action="{{ route('admin.products.index') }}" class="filter-bar">
@@ -198,14 +264,17 @@
                         </span>
                     </td>
                     <td>
-                        <span class="badge {{ $product->is_active ? 'badge-active' : 'badge-inactive' }}">
+                        <span class="badge {{ $product->is_active ? 'badge-active' : 'badge-inactive' }}" style="display: inline-flex; align-items: center; gap: 4px;">
+                            <iconify-icon icon="{{ $product->is_active ? 'flat-color-icons:checkmark' : 'flat-color-icons:cancel' }}" style="font-size: 13px;"></iconify-icon>
                             {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
                         </span>
                     </td>
                     <td>
                         <div class="actions">
                             <a href="{{ route('admin.products.edit', $product) }}"
-                                class="btn btn-secondary btn-sm btn-icon" title="Edit">✏️</a>
+                                class="btn btn-secondary btn-sm btn-icon" title="Edit">
+                                <iconify-icon icon="flat-color-icons:edit-image" style="font-size: 16px;"></iconify-icon>
+                            </a>
 
                             {{-- Toggle Active --}}
                             <form method="POST" action="{{ route('admin.products.toggle', $product) }}"
@@ -214,14 +283,16 @@
                                 <button type="submit"
                                     class="btn btn-sm btn-icon {{ $product->is_active ? 'btn-warning' : 'btn-success' }}"
                                     title="{{ $product->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
-                                    {{ $product->is_active ? '🚫' : '✅' }}
+                                    <iconify-icon icon="{{ $product->is_active ? 'flat-color-icons:cancel' : 'flat-color-icons:ok' }}" style="font-size: 16px;"></iconify-icon>
                                 </button>
                             </form>
 
                             <button type="button" class="btn btn-danger btn-sm btn-icon" title="Hapus"
                                 data-url="{{ route('admin.products.destroy', $product) }}"
                                 data-name="{{ $product->name }}"
-                                onclick="confirmDelete(this.dataset.url, this.dataset.name)">🗑️</button>
+                                onclick="confirmDelete(this.dataset.url, this.dataset.name)">
+                                <iconify-icon icon="fluent-emoji-flat:wastebasket" style="font-size: 16px;"></iconify-icon>
+                            </button>
                         </div>
                     </td>
                 </tr>

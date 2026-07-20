@@ -83,7 +83,8 @@
                     <td style="font-size:12px;color:var(--text-muted);">{{ $user->phone ?? '—' }}</td>
                     <td><span class="badge badge-{{ $user->role }}">{{ ucfirst($user->role) }}</span></td>
                     <td>
-                        <span class="badge {{ $user->is_active?'badge-active':'badge-inactive' }}">
+                        <span class="badge {{ $user->is_active?'badge-active':'badge-inactive' }}" style="display: inline-flex; align-items: center; gap: 4px;">
+                            <iconify-icon icon="{{ $user->is_active ? 'flat-color-icons:checkmark' : 'flat-color-icons:cancel' }}" style="font-size: 13px;"></iconify-icon>
                             {{ $user->is_active?'Aktif':'Nonaktif' }}
                         </span>
                     </td>
@@ -92,11 +93,11 @@
                         <div class="actions">
                             @if($user->role === 'customer')
                             <a href="{{ route('admin.chats.index', ['search' => $user->email]) }}" class="btn btn-primary btn-sm btn-icon" title="Chat Customer">
-                                <i class="bi bi-chat-dots"></i>
+                                <iconify-icon icon="flat-color-icons:speech-bubble" style="font-size: 16px;"></iconify-icon>
                             </a>
                             @endif
                             <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
-                                <i class="bi bi-pencil-square"></i>
+                                <iconify-icon icon="flat-color-icons:edit-image" style="font-size: 16px;"></iconify-icon>
                             </a>
                             <form method="POST" action="{{ route('admin.users.toggle', $user) }}" style="display:inline;">
                                 @csrf @method('PATCH')
@@ -104,7 +105,7 @@
                                     class="btn btn-sm btn-icon {{ $user->is_active?'btn-warning':'btn-success' }}"
                                     title="{{ $user->is_active?'Nonaktifkan':'Aktifkan' }}"
                                     {{ $user->id===auth()->id()?'disabled':'' }}>
-                                    <i class="bi {{ $user->is_active?'bi-person-x':'bi-person-check' }}"></i>
+                                    <iconify-icon icon="{{ $user->is_active ? 'flat-color-icons:cancel' : 'flat-color-icons:ok' }}" style="font-size: 16px;"></iconify-icon>
                                 </button>
                             </form>
                             @if($user->role !== 'superadmin' || auth()->user()->role === 'superadmin')
@@ -113,7 +114,7 @@
                                 <button type="submit"
                                     class="btn btn-secondary btn-sm btn-icon"
                                     title="Reset Password">
-                                    <i class="bi bi-key"></i>
+                                    <iconify-icon icon="flat-color-icons:key" style="font-size: 16px;"></iconify-icon>
                                 </button>
                             </form>
                             @endif
@@ -125,7 +126,7 @@
                                 data-name="{{ $user->name }}"
                                 onclick="confirmDelete(this.dataset.url, this.dataset.name)"
                                 {{ $user->id===auth()->id()?'disabled':'' }}>
-                                <i class="bi bi-trash"></i>
+                                <iconify-icon icon="fluent-emoji-flat:wastebasket" style="font-size: 16px;"></iconify-icon>
                             </button>
                             @endif
                         </div>

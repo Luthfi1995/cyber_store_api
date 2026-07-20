@@ -50,20 +50,29 @@
                     <span style="font-weight:600;color:var(--text-primary);">{{ $cat->products_count }}</span>
                     <span style="font-size:11px;color:var(--text-muted);"> produk</span>
                 </td>
-                <td><span class="badge {{ $cat->is_active?'badge-active':'badge-inactive' }}">{{ $cat->is_active?'Aktif':'Nonaktif' }}</span></td>
+                <td>
+                    <span class="badge {{ $cat->is_active?'badge-active':'badge-inactive' }}" style="display: inline-flex; align-items: center; gap: 4px;">
+                        <iconify-icon icon="{{ $cat->is_active ? 'flat-color-icons:checkmark' : 'flat-color-icons:cancel' }}" style="font-size: 13px;"></iconify-icon>
+                        {{ $cat->is_active?'Aktif':'Nonaktif' }}
+                    </span>
+                </td>
                 <td>
                     <div class="actions">
-                        <a href="{{ route('admin.categories.edit',$cat) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">✏️</a>
+                        <a href="{{ route('admin.categories.edit',$cat) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
+                            <iconify-icon icon="flat-color-icons:edit-image" style="font-size: 16px;"></iconify-icon>
+                        </a>
                         <form method="POST" action="{{ route('admin.categories.toggle',$cat) }}" style="display:inline;">
                             @csrf @method('PATCH')
                             <button type="submit" class="btn btn-sm btn-icon {{ $cat->is_active?'btn-warning':'btn-success' }}" title="{{ $cat->is_active?'Nonaktifkan':'Aktifkan' }}">
-                                {{ $cat->is_active?'🚫':'✅' }}
+                                <iconify-icon icon="{{ $cat->is_active ? 'flat-color-icons:cancel' : 'flat-color-icons:ok' }}" style="font-size: 16px;"></iconify-icon>
                             </button>
                         </form>
                         <button type="button" class="btn btn-danger btn-sm btn-icon" title="Hapus"
                             data-url="{{ route('admin.categories.destroy',$cat) }}"
                             data-name="{{ $cat->name }}"
-                            onclick="confirmDelete(this.dataset.url, this.dataset.name)">🗑️</button>
+                            onclick="confirmDelete(this.dataset.url, this.dataset.name)">
+                            <iconify-icon icon="fluent-emoji-flat:wastebasket" style="font-size: 16px;"></iconify-icon>
+                        </button>
                     </div>
                 </td>
             </tr>

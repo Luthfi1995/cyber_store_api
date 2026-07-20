@@ -36,45 +36,58 @@ class InfoController extends Controller
     public function help(): JsonResponse
     {
         $data = Cache::store('redis')->rememberForever('info:help', function () {
-            return [
-                'faqs' => [
-                    [
-                        'question' => 'Bagaimana cara mendaftar akun?',
-                        'answer' => 'Anda dapat mendaftar melalui Halaman Register dengan mengisi nama lengkap, email, nomor telepon, dan membuat kata sandi baru.',
-                    ],
-                    [
-                        'question' => 'Apakah pembelian merchandise dapat dikirim ke luar kota?',
-                        'answer' => 'Ya, kami bekerjasama dengan ekspedisi resmi (JNE, J&T, SiCepat, Anteraja) untuk pengiriman ke seluruh wilayah Indonesia.',
-                    ],
-                    [
-                        'question' => 'Bagaimana cara melacak pesanan saya?',
-                        'answer' => 'Anda dapat melihat status pelacakan pesanan Anda di tab "Riwayat Transaksi" dan memilih pesanan yang ingin dilacak.',
-                    ],
-                    [
-                        'question' => 'Bagaimana jika barang yang saya terima cacat/tidak sesuai?',
-                        'answer' => 'Silakan hubungi customer service kami melalui kontak WhatsApp/Email yang tersedia di menu bantuan dengan melampirkan video unboxing.',
-                    ],
+            $defaultFaqs = [
+                [
+                    'question' => 'Bagaimana cara mendaftar akun?',
+                    'answer' => 'Anda dapat mendaftar melalui Halaman Register dengan mengisi nama lengkap, email, nomor telepon, dan membuat kata sandi baru.',
                 ],
+                [
+                    'question' => 'Apakah pembelian merchandise dapat dikirim ke luar kota?',
+                    'answer' => 'Ya, kami bekerjasama dengan ekspedisi resmi (JNE, J&T, SiCepat, Anteraja) untuk pengiriman ke seluruh wilayah Indonesia.',
+                ],
+                [
+                    'question' => 'Bagaimana cara melacak pesanan saya?',
+                    'answer' => 'Anda dapat melihat status pelacakan pesanan Anda di tab "Riwayat Transaksi" dan memilih pesanan yang ingin dilacak.',
+                ],
+                [
+                    'question' => 'Bagaimana jika barang yang saya terima cacat/tidak sesuai?',
+                    'answer' => 'Silakan hubungi customer service kami melalui kontak WhatsApp/Email yang tersedia di menu bantuan dengan melampirkan video unboxing.',
+                ],
+            ];
+
+            $faqsRaw = \App\Models\Setting::get('help_faqs');
+            $faqs = !empty($faqsRaw) ? json_decode($faqsRaw, true) : $defaultFaqs;
+
+            $whatsapp = \App\Models\Setting::get('help_whatsapp', '628123456789');
+            $email = \App\Models\Setting::get('help_email', 'support@bsi.ac.id');
+            $phone = \App\Models\Setting::get('help_phone', '(021) 7867868');
+
+            $guidesRaw = \App\Models\Setting::get('help_guide_sections');
+            $guides = !empty($guidesRaw) ? json_decode($guidesRaw, true) : null;
+
+            return [
+                'faqs' => $faqs,
                 'contacts' => [
-                    'chat' => [
-                        'label' => 'WhatsApp Chat',
-                        'value' => 'https://wa.me/6282212345678',
+                    'whatsapp' => [
+                        'label' => 'WhatsApp CS',
+                        'value' => str_starts_with($whatsapp, 'http') ? $whatsapp : 'https://wa.me/' . preg_replace('/[^0-9]/', '', $whatsapp),
                         'icon' => 'whatsapp',
                     ],
                     'email' => [
                         'label' => 'Email Support',
-                        'value' => 'support@bsi.ac.id',
+                        'value' => $email,
                         'icon' => 'email',
                     ],
                     'telephone' => [
                         'label' => 'Customer Call Center',
-                        'value' => '+62-21-800-1234',
+                        'value' => $phone,
                         'icon' => 'phone',
                     ],
                 ],
                 'app_guide' => [
                     'title' => 'Panduan Aplikasi',
                     'url' => 'https://ubsistore.test/guides/app-manual.pdf',
+                    'sections' => $guides,
                 ],
             ];
         });
@@ -89,9 +102,10 @@ class InfoController extends Controller
             $logo = \App\Models\Setting::get('store_logo');
 
             return [
-                'store_name'    => \App\Models\Setting::get('store_name', 'UBSI Store'),
-                'store_address' => \App\Models\Setting::get('store_address', 'Jl. Kramat Raya No.98, Senen, Jakarta Pusat'),
-                'store_email'   => \App\Models\Setting::get('store_email', 'support@bsi.ac.id'),
+                'store_name'      => \App\Models\Setting::get('store_name', 'UBSI Store'),
+                'store_address'   => \App\Models\Setting::get('store_address', 'Jl. Kramat Raya No.98, Senen, Jakarta Pusat'),
+                'store_city_name' => \App\Models\Setting::get('store_city_name', 'Jakarta Pusat'),
+                'store_email'     => \App\Models\Setting::get('store_email', 'support@bsi.ac.id'),
                 'store_phone'   => \App\Models\Setting::get('store_phone', '(021) 7867868'),
                 'store_logo'    => $logo ? asset('storage/' . $logo) : asset('assets/img/logo.png'),
             ];

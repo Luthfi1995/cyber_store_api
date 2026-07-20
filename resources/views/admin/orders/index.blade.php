@@ -89,7 +89,9 @@ $statusColors = [
                 <td style="font-size:12px;color:var(--text-muted);">{{ $order->resi_number ?? '—' }}</td>
                 <td style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ $order->created_at->format('d M Y') }}</td>
                 <td>
-                    <a href="{{ route('admin.orders.show',$order) }}" class="btn btn-info btn-sm btn-icon" title="Detail">👁️</a>
+                    <a href="{{ route('admin.orders.show',$order) }}" class="btn btn-info btn-sm btn-icon" title="Detail">
+                        <iconify-icon icon="flat-color-icons:view-details" style="font-size: 16px;"></iconify-icon>
+                    </a>
                 </td>
             </tr>
             @endforeach

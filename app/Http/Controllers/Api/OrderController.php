@@ -21,12 +21,105 @@ class OrderController extends Controller
         return response()->json($orders);
     }
 
-    public function show(Request $request, Order $order): JsonResponse
+    public function show(Request $request, Order $order, \App\Services\MidtransService $midtransService): JsonResponse
     {
         abort_if($order->user_id !== $request->user()->id, 403);
 
+        if ($order->payment && $order->payment->status === \App\Models\Payment::STATUS_WAITING_PAYMENT) {
+            $isPastDeadline = $order->payment->expired_at && now()->greaterThan($order->payment->expired_at);
+
+            try {
+                $statusData = $midtransService->getTransactionStatus($order->invoice_number);
+                $transactionStatus = $statusData['status'] ?? 'unknown';
+
+                if ($transactionStatus === 'settlement' || $transactionStatus === 'capture') {
+                    DB::transaction(function () use ($order, $statusData) {
+                        $order->payment->update([
+                            'status' => \App\Models\Payment::STATUS_PAID,
+                            'paid_at' => now(),
+                            'bank_code' => $statusData['bank'] ?? $order->payment->bank_code,
+                            'virtual_account_number' => $statusData['va_number'] ?? $order->payment->virtual_account_number,
+                            'biller_code' => $statusData['biller_code'] ?? $order->payment->biller_code,
+                        ]);
+
+                        $order->update([
+                            'status' => Order::STATUS_PAID,
+                        ]);
+
+                        $order->trackings()->create([
+                            'status' => Order::STATUS_PAID,
+                            'description' => 'Pembayaran berhasil diverifikasi oleh Midtrans.',
+                            'location' => $order->address?->city ?? 'Sistem',
+                        ]);
+                    });
+                } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny', 'failure'], true) || $isPastDeadline) {
+                    DB::transaction(function () use ($order) {
+                        $order->payment->update([
+                            'status' => \App\Models\Payment::STATUS_EXPIRED,
+                        ]);
+
+                        $order->update([
+                            'status' => Order::STATUS_CANCELLED,
+                        ]);
+
+                        $order->trackings()->create([
+                            'status' => Order::STATUS_CANCELLED,
+                            'description' => 'Batas waktu pembayaran telah terlewat. Pesanan dibatalkan otomatis.',
+                            'location' => $order->address?->city ?? 'Sistem',
+                        ]);
+
+                        foreach ($order->items as $item) {
+                            $product = $item->product;
+                            if ($product) {
+                                $product->increment('stock', $item->quantity, []);
+                                $product->stockMovements()->create([
+                                    'user_id' => $order->user_id,
+                                    'type' => 'in',
+                                    'quantity' => $item->quantity,
+                                    'reference' => $order->invoice_number,
+                                    'note' => 'Restock: Batas waktu pembayaran terlewat',
+                                ]);
+                            }
+                        }
+                    });
+                } elseif ($transactionStatus !== 'unknown') {
+                    $updateFields = [];
+                    if (!empty($statusData['bank'])) {
+                        $updateFields['bank_code'] = $statusData['bank'];
+                    }
+                    if (!empty($statusData['va_number'])) {
+                        $updateFields['virtual_account_number'] = $statusData['va_number'];
+                    }
+                    if (!empty($statusData['biller_code'])) {
+                        $updateFields['biller_code'] = $statusData['biller_code'];
+                    }
+                    if (!empty($updateFields)) {
+                        $order->payment->update($updateFields);
+                    }
+                }
+            } catch (\Exception $e) {
+                if ($isPastDeadline) {
+                    DB::transaction(function () use ($order) {
+                        $order->payment->update(['status' => \App\Models\Payment::STATUS_EXPIRED]);
+                        $order->update(['status' => Order::STATUS_CANCELLED]);
+                        $order->trackings()->create([
+                            'status' => Order::STATUS_CANCELLED,
+                            'description' => 'Batas waktu pembayaran telah terlewat. Pesanan dibatalkan otomatis.',
+                            'location' => $order->address?->city ?? 'Sistem',
+                        ]);
+                        foreach ($order->items as $item) {
+                            $product = $item->product;
+                            if ($product) {
+                                $product->increment('stock', $item->quantity, []);
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
         return response()->json([
-            'order' => $order->load(['items.product', 'payment', 'trackings', 'address', 'expedition']),
+            'order' => $order->fresh()->load(['items.product', 'payment', 'trackings', 'address', 'expedition']),
             'status_labels' => Order::statuses(),
             'store_name' => \App\Models\Setting::get('store_name', 'UBSI Store'),
             'store_address' => \App\Models\Setting::get('store_address', 'Jl. Kramat Raya No.98, Senen, Jakarta Pusat'),

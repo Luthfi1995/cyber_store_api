@@ -115,14 +115,18 @@
                                 <td>
                                     <div class="actions">
                                         <a href="{{ route('admin.banners.edit', $banner) }}"
-                                            class="btn btn-secondary btn-sm btn-icon" title="Edit">✏️</a>
+                                            class="btn btn-secondary btn-sm btn-icon" title="Edit">
+                                            <iconify-icon icon="flat-color-icons:edit-image" style="font-size: 16px;"></iconify-icon>
+                                        </a>
 
                                         <button type="button"
                                             class="btn btn-danger btn-sm btn-icon"
                                             title="Hapus"
                                             data-url="{{ route('admin.banners.destroy', $banner) }}"
                                             data-name="{{ $banner->title ?? 'banner ini' }}"
-                                            onclick="confirmDelete(this.dataset.url, this.dataset.name)">🗑️</button>
+                                            onclick="confirmDelete(this.dataset.url, this.dataset.name)">
+                                            <iconify-icon icon="fluent-emoji-flat:wastebasket" style="font-size: 16px;"></iconify-icon>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>

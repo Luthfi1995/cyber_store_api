@@ -345,6 +345,15 @@
                                 <div class="form-error">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="form-group">
+                            <label class="form-label" for="rating">Rating Produk (Bintang 0.0 - 5.0)</label>
+                            <input type="number" id="rating" name="rating" class="form-control"
+                                value="{{ old('rating', $product->rating) }}" placeholder="Contoh: 4.8 (Kosongkan/isi 0 untuk Produk Baru)" min="0" max="5" step="0.1">
+                            <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Isi rating kustom (misal 4.8). Kosongkan atau isi 0 untuk status <strong>Produk Baru</strong>.</div>
+                            @error('rating')
+                                <div class="form-error">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
 
                     {{-- Varian --}}

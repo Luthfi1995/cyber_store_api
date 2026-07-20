@@ -55,6 +55,7 @@ class ProductController extends Controller
             'original_price' => ['nullable', 'numeric', 'min:0'],
             'stock'          => ['required', 'integer', 'min:0'],
             'weight'         => ['required', 'integer', 'min:1'],
+            'rating'         => ['nullable', 'numeric', 'min:0', 'max:5'],
             'sizes'          => ['nullable'],
             'colors'         => ['nullable'],
             'is_active'      => ['boolean'],
@@ -107,6 +108,8 @@ class ProductController extends Controller
             $mainPhotoPath = $request->file('main_photo')->store('products', 'public');
         }
 
+        $rating = isset($validated['rating']) && $validated['rating'] !== null && $validated['rating'] !== '' ? (float) $validated['rating'] : 0.0;
+
         $product = Product::create([
             'category_id'    => $validated['category_id'],
             'name'           => $validated['name'],
@@ -122,7 +125,7 @@ class ProductController extends Controller
             'is_active'      => $request->boolean('is_active', true),
             'is_recommended' => $request->boolean('is_recommended', false),
             'main_photo'     => $mainPhotoPath,
-            'rating'         => 4.8,
+            'rating'         => $rating,
             'reviews_count'  => 0,
         ]);
 
@@ -188,6 +191,7 @@ class ProductController extends Controller
             'original_price' => ['nullable', 'numeric', 'min:0'],
             'stock'          => ['required', 'integer', 'min:0'],
             'weight'         => ['required', 'integer', 'min:1'],
+            'rating'         => ['nullable', 'numeric', 'min:0', 'max:5'],
             'sizes'          => ['nullable'],
             'colors'         => ['nullable'],
             'is_active'      => ['boolean'],
@@ -244,6 +248,8 @@ class ProductController extends Controller
             }
         }
 
+        $rating = isset($validated['rating']) && $validated['rating'] !== null && $validated['rating'] !== '' ? (float) $validated['rating'] : $product->rating;
+
         $data = [
             'category_id'    => $validated['category_id'],
             'name'           => $validated['name'],
@@ -254,6 +260,7 @@ class ProductController extends Controller
             'original_price' => $validated['original_price'] ?? null,
             'stock'          => $validated['stock'],
             'weight'         => $validated['weight'],
+            'rating'         => $rating,
             'sizes'          => array_values($sizes),
             'colors'         => $colors,
             'is_active'      => $request->boolean('is_active'),
@@ -454,137 +461,162 @@ class ProductController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:4096'],
+            'file' => ['required', 'file', 'max:10240'],
+        ], [
+            'file.required' => 'File impor wajib dipilih.',
+            'file.max' => 'Ukuran file maksimal adalah 10 MB.',
         ]);
 
         $file = $request->file('file');
+        $extension = strtolower($file->getClientOriginalExtension());
+        if (!in_array($extension, ['csv', 'txt', 'xls', 'xlsx'])) {
+            return back()->with('error', 'Format file tidak didukung. Harap unggah file .csv, .xls, .xlsx, atau .txt.');
+        }
+
         $path = $file->getRealPath();
+        $allRows = $this->parseRowsFromFile($path);
+
+        if (empty($allRows)) {
+            return back()->with('error', 'File yang diunggah kosong atau format biner .xlsx tidak dapat dibaca langsung. Silakan pilih "Save As" -> CSV (Comma Delimited) (*.csv) di Excel, atau unggah langsung file template .xls yang telah disediakan.');
+        }
+
+        // Extract header row
+        $headerRow = array_shift($allRows);
+
+        // Clean BOM and non-alphanumeric characters from header strings
+        $cleanHeaders = array_map(function ($col) {
+            $cleaned = preg_replace('/[\x00-\x1F\x7F\xEF\xBB\xBF\xFE\xFF]/u', '', (string) $col);
+            return strtolower(trim(preg_replace('/[^a-zA-Z0-9]/', '', $cleaned)));
+        }, $headerRow);
+
+        $findCol = function (array $keywords, int $defaultIndex) use ($cleanHeaders) {
+            foreach ($cleanHeaders as $idx => $h) {
+                foreach ($keywords as $kw) {
+                    if ($h === $kw || str_contains($h, $kw)) {
+                        return $idx;
+                    }
+                }
+            }
+            return $defaultIndex;
+        };
+
+        // Expected columns mapping with flexible keyword matching and position fallback
+        $colMap = [
+            'kategori' => $findCol(['kategori', 'category', 'cat'], 0),
+            'nama' => $findCol(['nama', 'name', 'produk', 'product'], 1),
+            'sku' => $findCol(['sku', 'kode', 'code'], 2),
+            'deskripsi' => $findCol(['deskripsi', 'description', 'desc', 'keterangan'], 3),
+            'harga' => $findCol(['harga', 'price', 'jual'], 4),
+            'harga_coret' => $findCol(['hargacoret', 'hargaasli', 'originalprice', 'discount'], 5),
+            'stok' => $findCol(['stok', 'stock', 'qty', 'jumlah'], 6),
+            'berat' => $findCol(['berat', 'weight', 'gram'], 7),
+            'ukuran' => $findCol(['ukuran', 'sizes', 'size'], 8),
+            'warna' => $findCol(['warna', 'colors', 'color'], 9),
+            'foto_utama' => $findCol(['fotoutama', 'mainphoto', 'foto', 'image', 'photo'], 10),
+        ];
+
+        // Validate header structure (must at least have name, price, stock, category)
+        if ($colMap['nama'] === -1 || $colMap['harga'] === -1 || $colMap['stok'] === -1 || $colMap['kategori'] === -1) {
+            $readableHeaders = implode(', ', array_filter(array_map('trim', $headerRow)));
+            return back()->with('error', "Format header file salah. Header yang terbaca: \"{$readableHeaders}\". Pastikan terdapat kolom: Kategori, Nama, Harga, dan Stok.");
+        }
 
         $importedCount = 0;
         $skippedCount = 0;
         $errors = [];
+        $rowNum = 1;
 
-        if (($handle = fopen($path, 'r')) !== false) {
-            // Read header row
-            $header = fgetcsv($handle, 1000, ',');
-            
-            // Normalize header columns
-            if ($header) {
-                $header = array_map(function($col) {
-                    return strtolower(trim($col));
-                }, $header);
+        foreach ($allRows as $data) {
+            $rowNum++;
+
+            // Ignore empty rows
+            if (array_filter($data) === []) {
+                continue;
             }
 
-            // Expected columns mapping
-            $colMap = [
-                'kategori' => array_search('kategori', $header) !== false ? array_search('kategori', $header) : array_search('category', $header),
-                'nama' => array_search('nama', $header) !== false ? array_search('nama', $header) : array_search('name', $header),
-                'sku' => array_search('sku', $header) !== false ? array_search('sku', $header) : array_search('sku', $header),
-                'deskripsi' => array_search('deskripsi', $header) !== false ? array_search('deskripsi', $header) : array_search('description', $header),
-                'harga' => array_search('harga', $header) !== false ? array_search('harga', $header) : array_search('price', $header),
-                'harga_coret' => array_search('harga_coret', $header) !== false ? array_search('harga_coret', $header) : array_search('original_price', $header),
-                'stok' => array_search('stok', $header) !== false ? array_search('stok', $header) : array_search('stock', $header),
-                'berat' => array_search('berat', $header) !== false ? array_search('berat', $header) : array_search('weight', $header),
-                'ukuran' => array_search('ukuran', $header) !== false ? array_search('ukuran', $header) : array_search('sizes', $header),
-                'warna' => array_search('warna', $header) !== false ? array_search('warna', $header) : array_search('colors', $header),
-                'foto_utama' => array_search('foto_utama', $header) !== false ? array_search('foto_utama', $header) : array_search('main_photo', $header),
-            ];
+            // Get values based on column mapping
+            $categoryName = $colMap['kategori'] !== false && isset($data[$colMap['kategori']]) ? trim($data[$colMap['kategori']]) : '';
+            $name = $colMap['nama'] !== false && isset($data[$colMap['nama']]) ? trim($data[$colMap['nama']]) : '';
+            $sku = $colMap['sku'] !== false && isset($data[$colMap['sku']]) && trim($data[$colMap['sku']]) !== '' ? trim($data[$colMap['sku']]) : null;
+            $description = $colMap['deskripsi'] !== false && isset($data[$colMap['deskripsi']]) ? trim($data[$colMap['deskripsi']]) : null;
+            $price = $colMap['harga'] !== false && isset($data[$colMap['harga']]) ? floatval(str_replace(['.', ','], ['', '.'], trim($data[$colMap['harga']]))) : 0;
+            $originalPrice = $colMap['harga_coret'] !== false && isset($data[$colMap['harga_coret']]) && trim($data[$colMap['harga_coret']]) !== ''
+                ? floatval(str_replace(['.', ','], ['', '.'], trim($data[$colMap['harga_coret']]))) : null;
+            $stock = $colMap['stok'] !== false && isset($data[$colMap['stok']]) ? intval(trim($data[$colMap['stok']])) : 0;
+            $weight = $colMap['berat'] !== false && isset($data[$colMap['berat']]) ? intval(trim($data[$colMap['berat']])) : 100;
+            $sizesStr = $colMap['ukuran'] !== false && isset($data[$colMap['ukuran']]) ? trim($data[$colMap['ukuran']]) : '';
+            $colorsStr = $colMap['warna'] !== false && isset($data[$colMap['warna']]) ? trim($data[$colMap['warna']]) : '';
+            $mainPhoto = $colMap['foto_utama'] !== false && isset($data[$colMap['foto_utama']]) && trim($data[$colMap['foto_utama']]) !== '' ? trim($data[$colMap['foto_utama']]) : 'products/default.jpg';
 
-            // Validate header structure (must at least have name, price, stock, weight, category)
-            if ($colMap['nama'] === false || $colMap['harga'] === false || $colMap['stok'] === false || $colMap['kategori'] === false) {
-                fclose($handle);
-                return back()->with('error', 'Format file CSV salah. Pastikan memiliki kolom: Kategori, Nama, Harga, dan Stok.');
+            // Basic validation
+            if (empty($name) || empty($categoryName) || $price <= 0) {
+                $errors[] = "Baris $rowNum: Nama, Kategori, atau Harga tidak boleh kosong/nol. Diabaikan.";
+                $skippedCount++;
+                continue;
             }
 
-            $rowNum = 1;
-            while (($data = fgetcsv($handle, 1000, ',')) !== false) {
-                $rowNum++;
-                
-                // Get values based on column mapping
-                $categoryName = $colMap['kategori'] !== false && isset($data[$colMap['kategori']]) ? trim($data[$colMap['kategori']]) : '';
-                $name = $colMap['nama'] !== false && isset($data[$colMap['nama']]) ? trim($data[$colMap['nama']]) : '';
-                $sku = $colMap['sku'] !== false && isset($data[$colMap['sku']]) && trim($data[$colMap['sku']]) !== '' ? trim($data[$colMap['sku']]) : null;
-                $description = $colMap['deskripsi'] !== false && isset($data[$colMap['deskripsi']]) ? trim($data[$colMap['deskripsi']]) : null;
-                $price = $colMap['harga'] !== false && isset($data[$colMap['harga']]) ? floatval(str_replace(['.', ','], ['', '.'], trim($data[$colMap['harga']]))) : 0;
-                $originalPrice = $colMap['harga_coret'] !== false && isset($data[$colMap['harga_coret']]) && trim($data[$colMap['harga_coret']]) !== '' 
-                    ? floatval(str_replace(['.', ','], ['', '.'], trim($data[$colMap['harga_coret']]))) : null;
-                $stock = $colMap['stok'] !== false && isset($data[$colMap['stok']]) ? intval(trim($data[$colMap['stok']])) : 0;
-                $weight = $colMap['berat'] !== false && isset($data[$colMap['berat']]) ? intval(trim($data[$colMap['berat']])) : 100;
-                $sizesStr = $colMap['ukuran'] !== false && isset($data[$colMap['ukuran']]) ? trim($data[$colMap['ukuran']]) : '';
-                $colorsStr = $colMap['warna'] !== false && isset($data[$colMap['warna']]) ? trim($data[$colMap['warna']]) : '';
-                $mainPhoto = $colMap['foto_utama'] !== false && isset($data[$colMap['foto_utama']]) && trim($data[$colMap['foto_utama']]) !== '' ? trim($data[$colMap['foto_utama']]) : 'products/default.jpg';
-
-                // Basic validation
-                if (empty($name) || empty($categoryName) || $price <= 0) {
-                    $errors[] = "Baris $rowNum: Nama, Kategori, atau Harga tidak boleh kosong/nol. Diabaikan.";
-                    $skippedCount++;
-                    continue;
-                }
-
-                // Check unique SKU
-                if (!empty($sku) && Product::query()->where('sku', $sku)->exists()) {
-                    $errors[] = "Baris $rowNum: SKU '$sku' sudah digunakan oleh produk lain. Diabaikan.";
-                    $skippedCount++;
-                    continue;
-                }
-
-                // Check/create category
-                $category = Category::firstOrCreate(
-                    ['slug' => Str::slug($categoryName)],
-                    ['name' => $categoryName, 'description' => 'Kategori ' . $categoryName, 'is_active' => true]
-                );
-
-                // Generate slug
-                $slug = Str::slug($name);
-                $baseSlug = $slug;
-                $counter = 1;
-                while (Product::query()->where('slug', $slug)->exists()) {
-                    $slug = $baseSlug . '-' . $counter++;
-                }
-
-                // Parse sizes
-                $sizes = [];
-                if (!empty($sizesStr)) {
-                    $sizes = array_filter(array_map('trim', explode(';', $sizesStr)));
-                }
-
-                // Parse colors
-                $colors = [];
-                if (!empty($colorsStr)) {
-                    $colorNames = array_filter(array_map('trim', explode(';', $colorsStr)));
-                    foreach ($colorNames as $cName) {
-                        $colors[] = ['name' => $cName, 'hex' => '#000000'];
-                    }
-                }
-
-                // Save product
-                Product::create([
-                    'category_id' => $category->id,
-                    'name' => $name,
-                    'slug' => $slug,
-                    'sku' => $sku,
-                    'description' => $description,
-                    'price' => $price,
-                    'original_price' => $originalPrice,
-                    'stock' => $stock,
-                    'weight' => $weight,
-                    'sizes' => $sizes,
-                    'colors' => $colors,
-                    'main_photo' => $mainPhoto,
-                    'is_active' => true,
-                    'is_recommended' => false,
-                ]);
-
-                $importedCount++;
+            // Check unique SKU
+            if (!empty($sku) && Product::query()->where('sku', $sku)->exists()) {
+                $errors[] = "Baris $rowNum: SKU '$sku' sudah digunakan oleh produk lain. Diabaikan.";
+                $skippedCount++;
+                continue;
             }
-            fclose($handle);
 
-            // Clear cache
-            try {
-                Cache::flush();
-            } catch (\Exception $e) {
-                // Ignore cache errors
+            // Check/create category
+            $category = Category::firstOrCreate(
+                ['slug' => Str::slug($categoryName)],
+                ['name' => $categoryName, 'description' => 'Kategori ' . $categoryName, 'is_active' => true]
+            );
+
+            // Generate slug
+            $slug = Str::slug($name);
+            $baseSlug = $slug;
+            $counter = 1;
+            while (Product::query()->where('slug', $slug)->exists()) {
+                $slug = $baseSlug . '-' . $counter++;
             }
+
+            // Parse sizes
+            $sizes = [];
+            if (!empty($sizesStr)) {
+                $sizes = array_filter(array_map('trim', explode(';', $sizesStr)));
+            }
+
+            // Parse colors
+            $colors = [];
+            if (!empty($colorsStr)) {
+                $colorNames = array_filter(array_map('trim', explode(';', $colorsStr)));
+                foreach ($colorNames as $cName) {
+                    $colors[] = ['name' => $cName, 'hex' => '#000000'];
+                }
+            }
+
+            // Save product
+            Product::create([
+                'category_id' => $category->id,
+                'name' => $name,
+                'slug' => $slug,
+                'sku' => $sku,
+                'description' => $description,
+                'price' => $price,
+                'original_price' => $originalPrice,
+                'stock' => $stock,
+                'weight' => $weight,
+                'sizes' => $sizes,
+                'colors' => $colors,
+                'main_photo' => $mainPhoto,
+                'is_active' => true,
+                'is_recommended' => false,
+            ]);
+
+            $importedCount++;
+        }
+
+        // Clear cache
+        try {
+            Cache::flush();
+        } catch (\Exception $e) {
+            // Ignore cache errors
         }
 
         $message = "Berhasil mengimpor $importedCount produk.";
@@ -597,6 +629,50 @@ class ProductController extends Controller
         }
 
         return back()->with('success', $message);
+    }
+
+    private function parseRowsFromFile(string $path): array
+    {
+        $content = file_get_contents($path);
+
+        // 1. Handle HTML-based Excel file (.xls template downloaded from system)
+        if (str_contains(strtolower($content), '<table') || str_contains(strtolower($content), '<tr')) {
+            preg_match_all('/<tr[^>]*>(.*?)<\/tr>/is', $content, $trMatches);
+            $rows = [];
+            foreach ($trMatches[1] as $trContent) {
+                preg_match_all('/<t[dh][^>]*>(.*?)<\/t[dh]>/is', $trContent, $tdMatches);
+                if (!empty($tdMatches[1])) {
+                    $row = array_map(function ($val) {
+                        return html_entity_decode(trim(strip_tags($val)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    }, $tdMatches[1]);
+                    $rows[] = $row;
+                }
+            }
+            return $rows;
+        }
+
+        // 2. Handle CSV / Text file (auto detect delimiter: comma or semicolon)
+        $rows = [];
+        if (($handle = fopen($path, 'r')) !== false) {
+            $firstLine = fgets($handle);
+            rewind($handle);
+
+            $delimiter = ',';
+            if ($firstLine !== false) {
+                $countSemicolon = substr_count($firstLine, ';');
+                $countComma = substr_count($firstLine, ',');
+                if ($countSemicolon > $countComma) {
+                    $delimiter = ';';
+                }
+            }
+
+            while (($data = fgetcsv($handle, 0, $delimiter)) !== false) {
+                $rows[] = array_map('trim', $data);
+            }
+            fclose($handle);
+        }
+
+        return $rows;
     }
 
     public function downloadTemplate()

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\MidtransService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,10 +19,10 @@ class MidtransCallbackController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function handle(Request $request): JsonResponse
+    public function handle(Request $request, MidtransService $midtransService): JsonResponse
     {
         $payload = $request->all();
-        
+
         Log::info('Midtrans Webhook Received', $payload);
 
         $orderId = $payload['order_id'] ?? null;
@@ -34,34 +35,34 @@ class MidtransCallbackController extends Controller
             return response()->json(['message' => 'Parameter tidak lengkap.'], 400);
         }
 
-        // Retrieve server key for signature verification
-        $serverKey = config('services.midtrans.server_key') ?: env('MIDTRANS_SERVER_KEY', '');
+        // [SECURITY] Verify signature using MidtransService.
+        // Midtrans sends gross_amount as a string (e.g. "10000.00") — keep it raw.
+        $serverKeyConfigured = !empty(config('services.midtrans.server_key', env('MIDTRANS_SERVER_KEY', '')));
 
-        // Verify Signature Key
-        // [SECURITY] Di production, server key WAJIB dikonfigurasi — tolak request jika tidak ada
-        if (empty($serverKey)) {
-            if (! app()->environment('local', 'testing')) {
+        if (!$serverKeyConfigured) {
+            if (!app()->environment('local', 'testing')) {
                 Log::error('Midtrans Webhook rejected: MIDTRANS_SERVER_KEY is not configured in production.');
                 return response()->json(['message' => 'Konfigurasi server tidak lengkap.'], 500);
             }
             Log::warning('Midtrans signature verification skipped (local/testing environment, no server key).');
         } else {
-            // Midtrans sends gross_amount as a string (often with decimals like '10000.00' or without).
-            // We should ensure it matches what Midtrans passed exactly.
-            $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+            $signatureValid = $midtransService->verifyNotificationSignature(
+                (string) $orderId,
+                (string) $statusCode,
+                (string) $grossAmount,
+                (string) $signatureKey
+            );
 
-            if ($signatureKey !== $expectedSignature) {
+            if (!$signatureValid) {
                 Log::warning('Midtrans Webhook Invalid Signature', [
-                    'received' => $signatureKey,
-                    'expected' => $expectedSignature,
-                    'order_id' => $orderId
+                    'order_id' => $orderId,
                 ]);
                 return response()->json(['message' => 'Tanda tangan tidak valid.'], 403);
             }
         }
 
         // Find the order by invoice_number
-        $order = Order::query()->where('invoice_number', '=', $orderId, 'and')->with(['payment', 'items.product'])->first();
+        $order = Order::query()->where('invoice_number', $orderId)->with(['payment', 'items.product'])->first();
 
         if (!$order) {
             return response()->json(['message' => 'Order tidak ditemukan.'], 404);
@@ -84,18 +85,21 @@ class MidtransCallbackController extends Controller
                         'paid_at' => now(),
                     ];
 
-                    if (isset($payload['payment_type'])) {
-                        if ($payload['payment_type'] === 'bank_transfer' && !empty($payload['va_numbers'])) {
-                            $updateFields['bank_code'] = $payload['va_numbers'][0]['bank'] ?? null;
-                            $updateFields['virtual_account_number'] = $payload['va_numbers'][0]['va_number'] ?? null;
-                        } elseif ($payload['payment_type'] === 'echannel') {
-                            $updateFields['bank_code'] = 'mandiri';
-                            $updateFields['virtual_account_number'] = $payload['bill_key'] ?? null;
-                            $updateFields['biller_code'] = $payload['biller_code'] ?? null;
-                        } elseif ($payload['payment_type'] === 'cstore') {
-                            $updateFields['bank_code'] = $payload['store'] ?? 'cstore';
-                            $updateFields['virtual_account_number'] = $payload['payment_code'] ?? null;
-                        }
+                    $paymentType = $payload['payment_type'] ?? null;
+
+                    if ($paymentType === 'bank_transfer' && !empty($payload['va_numbers'])) {
+                        $updateFields['bank_code']               = $payload['va_numbers'][0]['bank']      ?? null;
+                        $updateFields['virtual_account_number']  = $payload['va_numbers'][0]['va_number'] ?? null;
+                    } elseif ($paymentType === 'echannel') {
+                        $updateFields['bank_code']              = 'mandiri';
+                        $updateFields['virtual_account_number'] = $payload['bill_key']    ?? null;
+                        $updateFields['biller_code']            = $payload['biller_code'] ?? null;
+                    } elseif ($paymentType === 'cstore') {
+                        $updateFields['bank_code']              = $payload['store']        ?? 'cstore';
+                        $updateFields['virtual_account_number'] = $payload['payment_code'] ?? null;
+                    } elseif ($paymentType === 'gopay' || $paymentType === 'qris') {
+                        $updateFields['bank_code']              = $paymentType;
+                        $updateFields['virtual_account_number'] = $payload['acquirer'] ?? null;
                     }
 
                     // Update Payment and Order to PAID
@@ -112,13 +116,12 @@ class MidtransCallbackController extends Controller
                     ]);
 
                     Log::info("Order {$order->invoice_number} successfully paid.");
-
                 } elseif (in_array($transactionStatus, ['cancel', 'deny', 'failure', 'expire'], true)) {
-                    
+
                     $isExpire = ($transactionStatus === 'expire');
                     $newPaymentStatus = $isExpire ? Payment::STATUS_EXPIRED : Payment::STATUS_FAILED;
-                    $statusDescription = $isExpire 
-                        ? 'Pesanan dibatalkan otomatis karena batas waktu pembayaran habis.' 
+                    $statusDescription = $isExpire
+                        ? 'Pesanan dibatalkan otomatis karena batas waktu pembayaran habis.'
                         : 'Pembayaran gagal atau dibatalkan.';
 
                     // Update Payment and Order to EXPIRED/FAILED and CANCELLED
@@ -141,13 +144,13 @@ class MidtransCallbackController extends Controller
                         $product = $item->product;
                         if ($product) {
                             $product->increment('stock', $item->quantity, []);
-                            
+
                             $product->stockMovements()->create([
                                 'user_id' => $order->user_id,
                                 'type' => 'in',
                                 'quantity' => $item->quantity,
                                 'reference' => $order->invoice_number,
-                                'note' => $isExpire 
+                                'note' => $isExpire
                                     ? 'Restock: Waktu pembayaran habis (Midtrans Expire)'
                                     : 'Restock: Pembayaran gagal/batal (Midtrans Cancel/Deny/Failure)',
                             ]);
@@ -159,7 +162,6 @@ class MidtransCallbackController extends Controller
             });
 
             return response()->json(['message' => 'Status pembayaran berhasil diperbarui.']);
-
         } catch (\Exception $e) {
             Log::error('Error processing Midtrans Callback transaction', [
                 'order_id' => $orderId,
