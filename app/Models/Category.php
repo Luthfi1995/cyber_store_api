@@ -32,8 +32,8 @@ class Category extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => static::clearCache());
-        static::deleted(fn () => static::clearCache());
+        static::saved(fn() => static::clearCache());
+        static::deleted(fn() => static::clearCache());
     }
 
     public static function clearCache(): void
