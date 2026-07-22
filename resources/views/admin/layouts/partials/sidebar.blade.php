@@ -103,11 +103,11 @@
             )->count();
             @endphp
             @if($chatUnread > 0)
-            <span id="sidebar-chat-badge" style="margin-left: auto; background-color: #ef4444; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; display: inline-block; line-height: 1;">
+            <span id="sidebar-chat-badge" style="margin-left: auto; background-color: #3C3565; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; display: inline-block; line-height: 1;">
                 {{ $chatUnread }}
             </span>
             @else
-            <span id="sidebar-chat-badge" style="margin-left: auto; background-color: #ef4444; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; display: none; line-height: 1;">
+            <span id="sidebar-chat-badge" style="margin-left: auto; background-color: #3C3565; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; display: none; line-height: 1;">
                 0
             </span>
             @endif

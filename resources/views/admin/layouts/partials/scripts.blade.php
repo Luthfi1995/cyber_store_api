@@ -318,11 +318,11 @@
             #floating-chat-bubble {
                 position: fixed; bottom: 20px; right: 20px; z-index: 9998;
                 width: 56px; height: 56px; border-radius: 50%;
-                background: var(--accent, #4f6ef7); display: flex; align-items: center; justify-content: center;
+                background: #3C3565; display: flex; align-items: center; justify-content: center;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.25); cursor: pointer; color: white;
                 transition: transform 0.2s, background 0.2s;
             }
-            #floating-chat-bubble:hover { transform: scale(1.05); background: var(--accent-hover, #3b5cf6); }
+            #floating-chat-bubble:hover { transform: scale(1.05); background: #2C2458; }
             
             @keyframes wiggle-chat {
                 0% { transform: scale(1) rotate(0deg); }
@@ -349,7 +349,7 @@
             @keyframes slideUp-chat { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
             
             .widget-header {
-                background: var(--accent, #4f6ef7); color: white; padding: 14px 16px;
+                background: #3C3565; color: white; padding: 14px 16px;
                 display: flex; align-items: center; justify-content: space-between;
                 flex-shrink: 0;
             }
@@ -374,7 +374,7 @@
             .widget-chat-name { font-weight: 700; font-size: 13px; color: var(--text-primary); margin-bottom: 2px; }
             .widget-chat-message { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             .widget-chat-badge {
-                background: #ef4444; color: white; font-size: 9px; font-weight: 700;
+                background: #3C3565; color: white; font-size: 9px; font-weight: 700;
                 padding: 1px 6px; border-radius: 999px; min-width: 15px; text-align: center;
             }
             
@@ -383,7 +383,7 @@
             .widget-msg-wrap { display: flex; gap: 8px; align-items: flex-end; }
             .widget-msg-wrap.admin { flex-direction: row-reverse; }
             .widget-msg-avatar {
-                width: 24px; height: 24px; border-radius: 50%; background: var(--accent, #4f6ef7); color: white;
+                width: 24px; height: 24px; border-radius: 50%; background: #3C3565; color: white;
                 display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;
             }
             .widget-msg-wrap.customer .widget-msg-avatar { background: #64748b; }
@@ -391,7 +391,7 @@
                 max-width: 75%; padding: 8px 12px; border-radius: 12px; font-size: 12.5px; line-height: 1.4; word-break: break-word;
             }
             .widget-msg-bubble.customer { background: var(--bg-card, #fff); border: 1px solid var(--border); border-bottom-left-radius: 2px; color: var(--text-primary); }
-            .widget-msg-bubble.admin { background: var(--accent, #4f6ef7); color: white; border-bottom-right-radius: 2px; }
+            .widget-msg-bubble.admin { background: #3C3565; color: white; border-bottom-right-radius: 2px; }
             .widget-msg-time { font-size: 9px; color: var(--text-muted); margin-top: 2px; text-align: right; }
             .widget-msg-wrap.customer .widget-msg-time { text-align: left; }
             
@@ -401,28 +401,42 @@
                 flex: 1; border: 1px solid var(--border); background: var(--bg-input, #f1f5f9); color: var(--text-primary);
                 border-radius: 20px; padding: 8px 14px; font-size: 12.5px; outline: none; transition: border-color 0.2s;
             }
-            .widget-input:focus { border-color: var(--accent); }
+            .widget-input:focus { border-color: #3C3565; }
             .widget-send-btn {
-                background: var(--accent); border: none; border-radius: 50%; width: 32px; height: 32px;
+                background: #3C3565; border: none; border-radius: 50%; width: 32px; height: 32px;
                 color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;
             }
-            .widget-send-btn:hover { background: var(--accent-hover); }
+            .widget-send-btn:hover { background: #2C2458; }
         `;
-        document.head.appendChild(style);
 
         // Render Bubble Button
         const chatBubble = document.createElement('div');
         chatBubble.id = 'floating-chat-bubble';
         chatBubble.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <span id="bubble-unread-badge" style="position:absolute; top:-2px; right:-2px; background:#ef4444; color:#fff; font-size:9px; font-weight:700; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; border:2px solid var(--bg-dark);">0</span>
+            <span id="bubble-unread-badge" style="position:absolute; top:-2px; right:-2px; background:#3C3565; color:#fff; font-size:9px; font-weight:700; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; border:2px solid var(--bg-dark);">0</span>
         `;
-        document.body.appendChild(chatBubble);
 
         // Render Chat Window
         const chatBox = document.createElement('div');
         chatBox.id = 'floating-chat-window';
-        document.body.appendChild(chatBox);
+
+        function initFloatingWidgetDOM() {
+            if (document.head && !document.getElementById('floating-chat-styles')) {
+                style.id = 'floating-chat-styles';
+                document.head.appendChild(style);
+            }
+            if (document.body && !document.getElementById('floating-chat-bubble')) {
+                document.body.appendChild(chatBubble);
+                document.body.appendChild(chatBox);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFloatingWidgetDOM);
+        } else {
+            initFloatingWidgetDOM();
+        }
 
         // Open/Close toggle
         chatBubble.onclick = () => {

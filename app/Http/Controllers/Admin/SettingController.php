@@ -216,6 +216,8 @@ class SettingController extends Controller
 
         // Hapus cache agar API Flutter segera mendapat data terbaru
         try {
+            Cache::forget('store:info');
+            Cache::forget('info:help');
             Cache::store('redis')->forget('store:info');
             Cache::store('redis')->forget('info:help');
         } catch (\Exception $e) {

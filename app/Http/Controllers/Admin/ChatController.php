@@ -33,7 +33,8 @@ class ChatController extends Controller
                 $q->where('subject', 'like', "%{$search}%")
                     ->orWhere('product_name', 'like', "%{$search}%")
                     ->orWhereHas('customer', fn ($u) => $u->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%"));
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%"));
             });
         }
 
@@ -57,7 +58,7 @@ class ChatController extends Controller
      * GET /admin/chats/{chat}
      * Detail percakapan + form balas.
      */
-    public function show(Chat $chat)
+    public function show(Request $request, Chat $chat)
     {
         $chat->load(['customer', 'product', 'messages.sender']);
 
@@ -67,11 +68,23 @@ class ChatController extends Controller
             ->where('is_read', false)
             ->update(['is_read' => true]);
 
-        $chats = Chat::with(['customer', 'lastMessage'])
+        $query = Chat::with(['customer', 'lastMessage'])
             ->withCount(['messages as unread_count' => function ($q) {
                 $q->where('sender_type', 'customer')->where('is_read', false);
-            }])
-            ->orderByDesc('last_message_at')
+            }]);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('subject', 'like', "%{$search}%")
+                    ->orWhere('product_name', 'like', "%{$search}%")
+                    ->orWhereHas('customer', fn ($u) => $u->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%"));
+            });
+        }
+
+        $chats = $query->orderByDesc('last_message_at')
             ->orderByDesc('created_at')
             ->take(50)
             ->get();

@@ -27,18 +27,24 @@
     </div>
     <div class="topbar-right">
         @php
-            $chatUnread = \App\Models\Chat::whereHas('messages', fn($q) =>
-                $q->where('sender_type','customer')->where('is_read', false)
-            )->count();
+        $chatUnread = \App\Models\Chat::whereHas('messages', fn($q) =>
+        $q->where('sender_type','customer')->where('is_read', false)
+        )->count();
         @endphp
         <a href="{{ route('admin.chats.index') }}" class="theme-toggle-btn" title="Notifikasi Chat" style="position:relative; display:flex; align-items:center; justify-content:center; color:var(--text-primary); text-decoration:none; margin-right: 8px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell">
                 <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                 <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
             </svg>
-            <span id="topbar-chat-badge" style="position:absolute; top:-4px; right:-4px; background:#ef4444; color:#fff; font-size:9px; font-weight:700; width:15px; height:15px; border-radius:50%; display:{{ $chatUnread > 0 ? 'flex' : 'none' }}; align-items:center; justify-content:center; line-height:1;">
+            @if($chatUnread > 0)
+            <span id="topbar-chat-badge" style="position:absolute; top:-4px; right:-4px; background:#3C3565; color:#fff; font-size:9px; font-weight:700; width:15px; height:15px; border-radius:50%; display:flex; align-items:center; justify-content:center; line-height:1;">
                 {{ $chatUnread }}
             </span>
+            @else
+            <span id="topbar-chat-badge" style="position:absolute; top:-4px; right:-4px; background:#3C3565; color:#fff; font-size:9px; font-weight:700; width:15px; height:15px; border-radius:50%; display:none; align-items:center; justify-content:center; line-height:1;">
+                0
+            </span>
+            @endif
         </a>
 
         <button id="themeToggle" class="theme-toggle-btn" title="Ganti Tema" onclick="toggleTheme()">

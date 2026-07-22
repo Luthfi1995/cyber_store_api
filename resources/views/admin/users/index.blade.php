@@ -92,8 +92,8 @@
                     <td>
                         <div class="actions">
                             @if($user->role === 'customer')
-                            <a href="{{ route('admin.chats.index', ['search' => $user->email]) }}" class="btn btn-primary btn-sm btn-icon" title="Chat Customer">
-                                <iconify-icon icon="flat-color-icons:speech-bubble" style="font-size: 16px;"></iconify-icon>
+                            <a href="{{ route('admin.chats.index', ['search' => $user->email]) }}" class="btn btn-sm btn-icon" style="background-color: #3C3565; color: #ffffff; border-color: #3C3565;" title="Chat Customer">
+                                <iconify-icon icon="lucide:message-square" style="font-size: 16px; color: #ffffff;"></iconify-icon>
                             </a>
                             @endif
                             <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">

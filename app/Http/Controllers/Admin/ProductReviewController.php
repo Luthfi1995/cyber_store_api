@@ -25,7 +25,7 @@ class ProductReviewController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('comment', 'like', "%{$search}%")
-                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"))
                     ->orWhereHas('product', fn ($p) => $p->where('name', 'like', "%{$search}%"));
             });
         }
@@ -44,16 +44,25 @@ class ProductReviewController extends Controller
     /**
      * Display the specified review chat.
      */
-    public function show(ProductReview $review)
+    public function show(Request $request, ProductReview $review)
     {
         $review->load(['user', 'product', 'replies.user']);
 
-        $reviews = ProductReview::with(['user', 'product', 'replies'])
+        $query = ProductReview::with(['user', 'product', 'replies'])
             ->whereNotNull('comment')
             ->where('comment', '!=', '')
-            ->latest()
-            ->take(50)
-            ->get();
+            ->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('comment', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"))
+                    ->orWhereHas('product', fn ($p) => $p->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        $reviews = $query->take(50)->get();
 
         if (request()->wantsJson()) {
             return response()->json([

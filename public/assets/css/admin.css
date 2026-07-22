@@ -7,64 +7,89 @@
 }
 
 :root {
-    --bg-dark: #0a0f1e;
-    --bg-sidebar: #0d1426;
-    --bg-card: #111827;
-    --bg-card-hover: #161f35;
-    --bg-input: #1a2235;
-    --border: rgba(255, 255, 255, 0.07);
-    --border-focus: #4f6ef7;
+    /* Brand Spectrum Colors: Visionary Navy, Progressive Red, & Dark Charcoal */
+    --bg-dark: #0B023E;
+    --bg-sidebar: #130B45;
+    --bg-card: #1B134B;
+    --bg-card-hover: #241C52;
+    --bg-input: #2C2458;
+    --border: rgba(255, 255, 255, 0.1);
+    --border-focus: #DF0B2B;
 
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-primary: #ffffff;
+    --text-secondary: #CCCCCC;
+    --text-muted: #888888;
 
-    --accent: #4f6ef7;
-    --accent-hover: #3b5cf6;
-    --accent-light: rgba(79, 110, 247, 0.15);
+    --accent: #DF0B2B;
+    --accent-hover: #BA0924;
+    --accent-light: rgba(223, 11, 43, 0.18);
+
+    --visionary-navy: #0B023E;
+    --visionary-navy-deep: #130B45;
+    --visionary-navy-dark: #1B134B;
+    --visionary-navy-medium: #241C52;
+    --visionary-navy-purple: #2C2458;
+    --visionary-navy-light: #342C5E;
+    --visionary-navy-soft: #3C3565;
+
+    --progressive-red: #DF0B2B;
+    --progressive-red-dark: #BA0924;
+    --progressive-red-deep: #95081D;
+    --progressive-red-maroon: #700616;
+    --progressive-red-light: #E53C55;
+    --progressive-red-soft: #EC6C80;
+    --progressive-red-pink: #F29DAA;
+
+    --dark-charcoal: #222222;
+    --charcoal-dark: #444444;
 
     --success: #10b981;
     --success-light: rgba(16, 185, 129, 0.15);
     --warning: #f59e0b;
     --warning-light: rgba(245, 158, 11, 0.15);
-    --danger: #ef4444;
-    --danger-light: rgba(239, 68, 68, 0.15);
+    --danger: #DF0B2B;
+    --danger-light: rgba(223, 11, 43, 0.18);
     --info: #06b6d4;
     --info-light: rgba(6, 182, 212, 0.15);
-    --purple: #8b5cf6;
-    --purple-light: rgba(139, 92, 246, 0.15);
+    --purple: #2C2458;
+    --purple-light: rgba(44, 36, 88, 0.25);
 
     --sidebar-w: 268px;
     --topbar-h: 64px;
     --radius: 12px;
     --radius-sm: 8px;
-    --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    --shadow: 0 4px 24px rgba(11, 2, 62, 0.4);
     --transition: all 0.2s ease;
 
-    --bg-table-header: rgba(255, 255, 255, .03);
-    --scrollbar-thumb: rgba(255, 255, 255, 0.1);
-    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+    --bg-table-header: rgba(255, 255, 255, .04);
+    --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.25);
 }
 
 [data-theme="light"] {
-    --bg-dark: #f8fafc;
-    --bg-sidebar: #ffffff;
+    --bg-dark: #F8FAFC;
+    --bg-sidebar: #0B023E;
     --bg-card: #ffffff;
-    --bg-card-hover: #f1f5f9;
-    --bg-input: #f8fafc;
-    --border: rgba(0, 0, 0, 0.08);
-    --border-focus: #4f6ef7;
+    --bg-card-hover: #F1F5F9;
+    --bg-input: #ffffff;
+    --border: #E2E8F0;
+    --border-focus: #DF0B2B;
 
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
+    --text-primary: #1E293B;   /* Dark Slate 800: font gelap yang sangat kontras & nyaman di mata */
+    --text-secondary: #334155; /* Slate 700: warna font isi tabel dan deskripsi sekunder */
+    --text-muted: #64748B;     /* Slate 500: warna font lembut untuk hint dan breadcrumb */
 
-    --accent-light: rgba(79, 110, 247, 0.08);
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --accent-light: rgba(223, 11, 43, 0.08);
+    --shadow: 0 4px 20px rgba(11, 2, 62, 0.06);
 
-    --bg-table-header: rgba(0, 0, 0, 0.03);
-    --scrollbar-thumb: rgba(0, 0, 0, 0.1);
-    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
+    --bg-table-header: #F8FAFC;
+    --scrollbar-thumb: rgba(15, 23, 42, 0.15);
+    --scrollbar-thumb-hover: rgba(15, 23, 42, 0.3);
+}
+
+[data-theme="light"] .topbar {
+    background: #ffffff;
+    border-bottom: 1px solid #E2E8F0;
 }
 
 html,
@@ -113,6 +138,10 @@ body {
     flex-direction: column;
     z-index: 100;
     transition: transform 0.3s ease, width 0.3s ease;
+    /* Menjaga teks sidebar selalu terang dan jelas di atas background navy */
+    --text-primary: #ffffff;
+    --text-secondary: #CBD5E1;
+    --text-muted: #94A3B8;
 }
 
 .sidebar-brand {
@@ -214,6 +243,16 @@ body {
     width: 20px;
     text-align: center;
     flex-shrink: 0;
+    color: #3C3565;
+    transition: var(--transition);
+}
+
+.nav-link:hover .icon {
+    color: var(--text-primary);
+}
+
+.nav-link.active .icon {
+    color: var(--accent);
 }
 
 .sidebar-footer {
@@ -274,7 +313,7 @@ body {
 .logout-btn {
     background: none;
     border: none;
-    color: var(--text-muted);
+    color: #3C3565;
     cursor: pointer;
     font-size: 16px;
     padding: 4px;

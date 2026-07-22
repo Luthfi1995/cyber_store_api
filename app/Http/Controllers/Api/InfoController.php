@@ -97,17 +97,17 @@ class InfoController extends Controller
 
     public function storeInfo(): JsonResponse
     {
-        // Cache store info selama 1 hari — hapus cache jika setting berubah di admin
-        $data = Cache::store('redis')->remember('store:info', now()->addDay(), function () {
+        // Cache store info — hapus cache jika setting berubah di admin
+        $data = Cache::remember('store:info', now()->addDay(), function () {
             $logo = \App\Models\Setting::get('store_logo');
 
             return [
-                'store_name'      => \App\Models\Setting::get('store_name', 'UBSI Store'),
+                'store_name'      => \App\Models\Setting::get('store_name', 'BSI Cyber Store'),
                 'store_address'   => \App\Models\Setting::get('store_address', 'Jl. Kramat Raya No.98, Senen, Jakarta Pusat'),
                 'store_city_name' => \App\Models\Setting::get('store_city_name', 'Jakarta Pusat'),
                 'store_email'     => \App\Models\Setting::get('store_email', 'support@bsi.ac.id'),
-                'store_phone'   => \App\Models\Setting::get('store_phone', '(021) 7867868'),
-                'store_logo'    => $logo ? asset('storage/' . $logo) : asset('assets/img/logo.png'),
+                'store_phone'     => \App\Models\Setting::get('store_phone', '(021) 7867868'),
+                'store_logo'      => $logo ? asset('storage/' . $logo) : asset('assets/img/logo-cyberstore.jpg'),
             ];
         });
 
