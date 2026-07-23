@@ -4,79 +4,95 @@
 @section('page-title', 'Dashboard')
 @section('breadcrumb')
     <span class="breadcrumb-sep">›</span>
-    <span>Dashboard</span>
+    <span>Overview</span>
 @endsection
 
 @section('content')
-<div class="stat-grid">
+<!-- Notice Banner -->
+<div class="notice-banner">
+    <div class="notice-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+    </div>
+    <div style="font-size: 13px; color: #334155; line-height: 1.5;">
+        <strong>Selamat Datang Kembali, Admin!</strong> Berikut adalah ringkasan aktivitas penjualan, stok barang, serta pengguna toko {{ \App\Models\Setting::get('store_name', 'BSI Cyber Store') }} hari ini.
+    </div>
+</div>
+
+<!-- Stats Summary Grid -->
+<div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(79,110,247,0.15);">👥</div>
+        <div class="stat-icon" style="background:#eff6ff; color:#2563eb;">👥</div>
         <div class="stat-info">
-            <div class="stat-label">Total Pengguna</div>
             <div class="stat-value">{{ number_format($stats['total_users']) }}</div>
-            <div class="stat-sub">{{ $stats['total_customers'] }} customer · {{ $stats['total_admins'] }} admin</div>
+            <div class="stat-label">Total Pengguna</div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ $stats['total_customers'] }} Pelanggan · {{ $stats['total_admins'] }} Admin</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(16,185,129,0.15);">📦</div>
+        <div class="stat-icon" style="background:#f0fdf4; color:#16a34a;">📦</div>
         <div class="stat-info">
-            <div class="stat-label">Total Produk</div>
             <div class="stat-value">{{ number_format($stats['total_products']) }}</div>
-            <div class="stat-sub">{{ $stats['active_products'] }} aktif · {{ $stats['total_categories'] }} kategori</div>
+            <div class="stat-label">Total Produk</div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ $stats['active_products'] }} Aktif · {{ $stats['total_categories'] }} Kategori</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(245,158,11,0.15);">🛒</div>
+        <div class="stat-icon" style="background:#fffbeb; color:#d97706;">🛒</div>
         <div class="stat-info">
-            <div class="stat-label">Total Order</div>
             <div class="stat-value">{{ number_format($stats['total_orders']) }}</div>
-            <div class="stat-sub">{{ $stats['pending_orders'] }} pending · {{ $stats['processing_orders'] }} diproses</div>
+            <div class="stat-label">Total Pesanan</div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ $stats['pending_orders'] }} Pending · {{ $stats['processing_orders'] }} Diproses</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(6,182,212,0.15);">💰</div>
+        <div class="stat-icon" style="background:#fdf2f8; color:#db2777;">💰</div>
         <div class="stat-info">
-            <div class="stat-label">Total Revenue</div>
-            <div class="stat-value" style="font-size:20px;">Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}</div>
-            <div class="stat-sub">Dari order selesai</div>
+            <div class="stat-value" style="font-size: 19px;">Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}</div>
+            <div class="stat-label">Total Pendapatan</div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Dari pesanan selesai</div>
         </div>
     </div>
 </div>
 
-<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;" class="dashboard-grid">
-    {{-- Recent Users --}}
-    <div class="card">
-        <div class="card-header">
-            <span class="card-title">👥 Pengguna Terbaru</span>
-            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary btn-sm">Lihat Semua</a>
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px;" class="dashboard-grid">
+    {{-- Recent Users Card --}}
+    <div class="table-card" style="margin-bottom: 0;">
+        <div class="table-card-header">
+            <div style="font-weight: 800; font-size: 15px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                <span>👥</span> Pengguna Terbaru
+            </div>
+            <a href="{{ route('admin.users.index') }}" style="font-size: 12px; font-weight: 700; color: #0B023E; text-decoration: none; background: #f1f5f9; padding: 6px 12px; border-radius: 8px;">Lihat Semua ›</a>
         </div>
-        <div class="table-wrapper">
+        <div style="overflow-x: auto;">
             @if($recent_users->isEmpty())
-                <div class="empty-state">
-                    <div class="empty-state-icon">👤</div>
-                    <p>Belum ada pengguna</p>
-                </div>
+                <div style="text-align: center; padding: 32px; color: #94a3b8;">Belum ada pengguna</div>
             @else
-                <table>
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
                     <thead>
-                        <tr>
-                            <th>Nama</th>
-                            <th>Role</th>
-                            <th>Status</th>
+                        <tr style="background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; font-size: 11.5px; color: #64748b; text-transform: uppercase;">
+                            <th style="padding: 12px 16px;">Nama & Email</th>
+                            <th style="padding: 12px 16px;">Role</th>
+                            <th style="padding: 12px 16px;">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($recent_users as $user)
-                        <tr>
-                            <td>
-                                <div style="font-weight:500; color:var(--text-primary);">{{ $user->name }}</div>
-                                <div style="font-size:12px; color:var(--text-muted);">{{ $user->email }}</div>
+                        <tr class="table-row-custom" style="border-bottom: 1px solid #f1f5f9; font-size: 13px;">
+                            <td style="padding: 12px 16px;">
+                                <div style="font-weight: 700; color: #0f172a;">{{ $user->name }}</div>
+                                <div style="font-size: 11.5px; color: #64748b;">{{ $user->email }}</div>
                             </td>
-                            <td>
-                                <span class="badge badge-{{ $user->role }}">{{ ucfirst($user->role) }}</span>
+                            <td style="padding: 12px 16px;">
+                                <span class="badge-type {{ $user->role === 'admin' ? 'badge-promo' : 'badge-info' }}">
+                                    {{ ucfirst($user->role) }}
+                                </span>
                             </td>
-                            <td>
-                                <span class="badge {{ $user->is_active ? 'badge-active' : 'badge-inactive' }}">
+                            <td style="padding: 12px 16px;">
+                                <span class="badge-type {{ $user->is_active ? 'badge-success-custom' : 'badge-danger-custom' }}">
                                     {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
                                 </span>
                             </td>
@@ -88,42 +104,44 @@
         </div>
     </div>
 
-    {{-- Low Stock Products --}}
-    <div class="card">
-        <div class="card-header">
-            <span class="card-title">⚠️ Stok Hampir Habis</span>
-            <a href="{{ route('admin.products.index') }}" class="btn btn-secondary btn-sm">Lihat Semua</a>
+    {{-- Low Stock Products Card --}}
+    <div class="table-card" style="margin-bottom: 0;">
+        <div class="table-card-header">
+            <div style="font-weight: 800; font-size: 15px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                <span>⚠️</span> Stok Hampir Habis
+            </div>
+            <a href="{{ route('admin.products.index') }}" style="font-size: 12px; font-weight: 700; color: #0B023E; text-decoration: none; background: #f1f5f9; padding: 6px 12px; border-radius: 8px;">Lihat Semua ›</a>
         </div>
-        <div class="table-wrapper">
+        <div style="overflow-x: auto;">
             @if($low_stock_products->isEmpty())
-                <div class="empty-state">
-                    <div class="empty-state-icon">✅</div>
-                    <h3>Stok Aman</h3>
-                    <p>Semua produk memiliki stok yang cukup</p>
+                <div style="text-align: center; padding: 32px; color: #16a34a;">
+                    <div style="font-size: 24px; margin-bottom: 4px;">✅</div>
+                    <div style="font-weight: 700;">Stok Aman</div>
+                    <div style="font-size: 12px; color: #64748b;">Semua produk memiliki stok cukup</div>
                 </div>
             @else
-                <table>
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
                     <thead>
-                        <tr>
-                            <th>Produk</th>
-                            <th>Stok</th>
-                            <th>Aksi</th>
+                        <tr style="background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; font-size: 11.5px; color: #64748b; text-transform: uppercase;">
+                            <th style="padding: 12px 16px;">Nama Produk</th>
+                            <th style="padding: 12px 16px;">Sisa Stok</th>
+                            <th style="padding: 12px 16px; text-align: right;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($low_stock_products as $product)
-                        <tr>
-                            <td>
-                                <div style="font-weight:500; color:var(--text-primary);">{{ Str::limit($product->name, 30) }}</div>
-                                <div style="font-size:12px; color:var(--text-muted);">{{ $product->sku }}</div>
+                        <tr class="table-row-custom" style="border-bottom: 1px solid #f1f5f9; font-size: 13px;">
+                            <td style="padding: 12px 16px;">
+                                <div style="font-weight: 700; color: #0f172a;">{{ Str::limit($product->name, 28) }}</div>
+                                <div style="font-size: 11.5px; color: #64748b;">SKU: {{ $product->sku }}</div>
                             </td>
-                            <td>
-                                <span style="font-weight:600;" class="{{ $product->stock <= 5 ? 'text-danger' : 'text-warning' }}">
-                                    {{ $product->stock }}
+                            <td style="padding: 12px 16px;">
+                                <span style="font-weight: 800;" class="{{ $product->stock <= 5 ? 'text-danger' : 'text-warning' }}">
+                                    {{ $product->stock }} Pcs
                                 </span>
                             </td>
-                            <td>
-                                <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-warning btn-sm">Edit</a>
+                            <td style="padding: 12px 16px; text-align: right;">
+                                <a href="{{ route('admin.products.edit', $product) }}" style="background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700; text-decoration: none;">Restok</a>
                             </td>
                         </tr>
                         @endforeach
@@ -134,45 +152,43 @@
     </div>
 </div>
 
-{{-- Recent Orders --}}
-<div class="card">
-    <div class="card-header">
-        <span class="card-title">🛒 Order Terbaru</span>
+{{-- Recent Orders Table Card --}}
+<div class="table-card">
+    <div class="table-card-header">
+        <div style="font-weight: 800; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+            <span>🛒</span> Pesanan Terbaru
+        </div>
+        <a href="{{ route('admin.orders.index') }}" style="font-size: 12px; font-weight: 700; color: #0B023E; text-decoration: none; background: #f1f5f9; padding: 6px 12px; border-radius: 8px;">Semua Pesanan ›</a>
     </div>
-    <div class="table-wrapper">
+    <div style="overflow-x: auto;">
         @if($recent_orders->isEmpty())
-            <div class="empty-state">
-                <div class="empty-state-icon">📋</div>
-                <h3>Belum Ada Order</h3>
-                <p>Order dari pelanggan akan muncul di sini</p>
+            <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
+                <div style="font-weight: 700; color: #475569;">Belum Ada Pesanan</div>
+                <div style="font-size: 12.5px;">Pesanan dari pelanggan akan otomatis tampil di sini</div>
             </div>
         @else
-            <table>
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Pelanggan</th>
-                        <th>Status</th>
-                        <th>Total</th>
-                        <th>Tanggal</th>
+                    <tr style="background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; font-size: 12px; color: #64748b; text-transform: uppercase;">
+                        <th style="padding: 14px 20px;">ID Order</th>
+                        <th style="padding: 14px 20px;">Pelanggan</th>
+                        <th style="padding: 14px 20px;">Status Pembayaran / Pengiriman</th>
+                        <th style="padding: 14px 20px;">Total Bayar</th>
+                        <th style="padding: 14px 20px;">Tanggal Order</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($recent_orders as $order)
-                    <tr>
-                        <td style="font-family:monospace; color:var(--accent);">#{{ $order->id }}</td>
-                        <td>{{ $order->user?->name ?? '-' }}</td>
-                        <td>
+                    <tr class="table-row-custom" style="border-bottom: 1px solid #f1f5f9; font-size: 13.5px;">
+                        <td style="padding: 14px 20px; font-family: monospace; font-weight: 800; color: #0B023E;">
+                            #{{ $order->id }}
+                        </td>
+                        <td style="padding: 14px 20px; font-weight: 700; color: #0f172a;">
+                            {{ $order->user?->name ?? '-' }}
+                        </td>
+                        <td style="padding: 14px 20px;">
                             @php
-                                $statusColors = [
-                                    'pending_payment' => 'badge-warning',
-                                    'paid'            => 'badge-active',
-                                    'packed'          => 'badge-active',
-                                    'shipped'         => 'badge-recommended',
-                                    'arrived'         => 'badge-recommended',
-                                    'completed'       => 'badge-active',
-                                    'cancelled'       => 'badge-inactive',
-                                ];
                                 $statusLabels = [
                                     'pending_payment' => 'Menunggu Bayar',
                                     'paid'            => 'Dibayar',
@@ -182,13 +198,22 @@
                                     'completed'       => 'Selesai',
                                     'cancelled'       => 'Dibatalkan',
                                 ];
+                                $badgeClass = match($order->status) {
+                                    'completed', 'paid' => 'badge-success-custom',
+                                    'pending_payment', 'packed', 'shipped' => 'badge-warning-custom',
+                                    default => 'badge-danger-custom'
+                                };
                             @endphp
-                            <span class="badge {{ $statusColors[$order->status] ?? 'badge-inactive' }}">
+                            <span class="badge-type {{ $badgeClass }}">
                                 {{ $statusLabels[$order->status] ?? ucfirst($order->status) }}
                             </span>
                         </td>
-                        <td>Rp {{ number_format($order->grand_total, 0, ',', '.') }}</td>
-                        <td style="font-size:12px; color:var(--text-muted);">{{ $order->created_at->format('d M Y') }}</td>
+                        <td style="padding: 14px 20px; font-weight: 800; color: #0f172a;">
+                            Rp {{ number_format($order->grand_total, 0, ',', '.') }}
+                        </td>
+                        <td style="padding: 14px 20px; color: #64748b; font-size: 12.5px;">
+                            📅 {{ $order->created_at->format('d M Y, H:i') }}
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>

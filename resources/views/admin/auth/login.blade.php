@@ -1,14 +1,19 @@
-use Illuminate\Support\Facades\Storage;
+@php
+    $loginLogoSetting = \App\Models\Setting::get('store_logo');
+    $loginLogoUrl = $loginLogoSetting ? \Illuminate\Support\Facades\Storage::disk('public')->url($loginLogoSetting) : asset('assets/img/logo-cyberstore.jpg');
+    $storeName = \App\Models\Setting::get('store_name', 'BSI Cyber Store');
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login Admin — ubsiStore</title>
+    <title>Login Admin — {{ $storeName }}</title>
+    <link rel="icon" href="{{ $loginLogoUrl }}" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{asset('/assets/css/login.css')}}?v=6">
+    <link rel="stylesheet" href="{{asset('/assets/css/login.css')}}?v=7">
     <script src="https://code.iconify.design/iconify-icon/1.0.8/iconify-icon.min.js"></script>
 </head>
 
@@ -16,12 +21,8 @@ use Illuminate\Support\Facades\Storage;
     <div class="login-wrap">
         <!-- Left Column: Logo & Brand Info -->
         <div class="login-left">
-            @php
-            $loginLogoSetting = \App\Models\Setting::get('store_logo');
-            $loginLogoUrl = $loginLogoSetting ? Storage::disk('public')->url($loginLogoSetting) : asset('assets/img/logo.png');
-            @endphp
-            <img src="{{ $loginLogoUrl }}" alt="UBSI Store Logo" class="brand-logo">
-            <h1 class="brand-title">{{ \App\Models\Setting::get('store_name', 'UBSI Store') }}</h1>
+            <img src="{{ $loginLogoUrl }}" alt="{{ $storeName }} Logo" class="brand-logo" style="border-radius: 20px; max-height: 160px; object-fit: contain;">
+            <h1 class="brand-title">{{ $storeName }}</h1>
             <p class="brand-subtitle">Panel Administrasi Toko</p>
         </div>
 

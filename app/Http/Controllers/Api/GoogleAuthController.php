@@ -99,11 +99,11 @@ class GoogleAuthController extends Controller
         }
 
         // 1. Search for user by google_id
-        $user = User::where('google_id', '=', $googleId)->first();
+        $user = User::query()->where('google_id', '=', $googleId)->first();
 
         if (!$user) {
             // 2. Search for user by email to link the Google ID if they registered with email previously
-            $user = User::where('email', '=', $email)->first();
+            $user = User::query()->where('email', '=', $email)->first();
 
             if ($user) {
                 $user->update([

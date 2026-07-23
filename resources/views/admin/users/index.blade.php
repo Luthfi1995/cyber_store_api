@@ -1,5 +1,4 @@
 @extends('admin.layouts.app')
-
 @section('title', 'Kelola Pengguna')
 @section('page-title', 'Kelola Pengguna')
 @section('breadcrumb')
@@ -9,165 +8,274 @@
 
 @section('content')
 <style>
-    .table-wrapper {
-        padding: 12px 20px;
-        overflow-x: auto;
-    }
-    .floating-card-table {
-        width: 100%;
-        border-collapse: separate !important;
-        border-spacing: 0 10px !important;
-    }
-    .floating-card-table thead th {
-        background: transparent !important;
-        border: none !important;
-        padding: 8px 16px;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.6px;
-        color: var(--text-muted);
-    }
-    .floating-card-table tbody tr {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-        transition: all 0.25s ease;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    }
-    .floating-card-table tbody tr:hover {
-        background: rgba(255, 255, 255, 0.06);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    }
-    .floating-card-table tbody td {
-        padding: 14px 16px;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        vertical-align: middle;
-    }
-    .floating-card-table tbody td:first-child {
-        border-left: 1px solid rgba(255, 255, 255, 0.08);
-        border-top-left-radius: 12px;
-        border-bottom-left-radius: 12px;
-    }
-    .floating-card-table tbody td:last-child {
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
-        border-top-right-radius: 12px;
-        border-bottom-right-radius: 12px;
+    .user-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
     }
 
-    /* ─── DUKUNGAN STYLE KHUSUS MODE LIGHT (LIGHT MODE) ───────────────── */
-    [data-theme="light"] .floating-card-table tbody tr {
-        background: #ffffff !important;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
-        border: 1px solid #e2e8f0;
+    .user-stat-card {
+        background: var(--bg-card, #ffffff);
+        border-radius: 16px;
+        padding: 18px 20px;
+        border: 1px solid var(--border, #e2e8f0);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        display: flex;
+        align-items: center;
+        gap: 14px;
     }
-    [data-theme="light"] .floating-card-table tbody tr:hover {
-        background: #f8fafc !important;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
-        border-color: #cbd5e1;
+
+    .user-stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
     }
-    [data-theme="light"] .floating-card-table tbody td {
-        border-top: 1px solid #e2e8f0 !important;
-        border-bottom: 1px solid #e2e8f0 !important;
+
+    .user-filter-card {
+        background: var(--bg-card, #ffffff);
+        border-radius: 16px;
+        border: 1px solid var(--border, #e2e8f0);
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
     }
-    [data-theme="light"] .floating-card-table tbody td:first-child {
-        border-left: 1px solid #e2e8f0 !important;
+
+    .filter-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
     }
-    [data-theme="light"] .floating-card-table tbody td:last-child {
-        border-right: 1px solid #e2e8f0 !important;
+
+    .filter-item {
+        flex: 1 1 200px;
     }
-    [data-theme="light"] .floating-card-table thead th {
-        color: #64748b !important;
-        font-weight: 700;
+
+    .filter-btn-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .user-card-wrapper {
+        background: var(--bg-card, #ffffff);
+        border-radius: 16px;
+        border: 1px solid var(--border, #e2e8f0);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .user-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border, #f1f5f9);
+    }
+
+    .table-wrapper-custom {
+        padding: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Mobile Cards vs Desktop Table */
+    .desktop-table-container {
+        display: block;
+    }
+
+    .mobile-user-grid {
+        display: none;
+        padding: 16px;
+        gap: 14px;
+        flex-direction: column;
+    }
+
+    .mobile-user-card {
+        background: var(--bg-card, #ffffff);
+        border: 1px solid var(--border, #e2e8f0);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    @media (max-width: 768px) {
+        .desktop-table-container {
+            display: none;
+        }
+
+        .mobile-user-grid {
+            display: flex;
+        }
+
+        .user-card-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 14px;
+            padding: 16px;
+        }
+
+        .user-card-header .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .filter-item {
+            flex: 1 1 100%;
+        }
+
+        .filter-btn-group {
+            width: 100%;
+        }
+
+        .filter-btn-group .btn {
+            flex: 1;
+            justify-content: center;
+        }
     }
 </style>
 
-<div class="card">
-    <div class="card-header">
-        <span class="card-title"><i class="bi bi-people-fill"></i> Daftar Pengguna</span>
-        <a href="{{ route('admin.users.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Tambah User</a>
+<!-- Stats Grid -->
+<div class="user-stats-grid">
+    <div class="user-stat-card">
+        <div class="user-stat-icon" style="background:#eff6ff; color:#2563eb;">👥</div>
+        <div>
+            <div style="font-size:20px; font-weight:800; color:var(--text-primary);">{{ $users->total() }}</div>
+            <div style="font-size:12px; font-weight:600; color:var(--text-muted);">Total Pengguna</div>
+        </div>
     </div>
+    <div class="user-stat-card">
+        <div class="user-stat-icon" style="background:#f0fdf4; color:#16a34a;">🛡️</div>
+        <div>
+            <div style="font-size:20px; font-weight:800; color:var(--text-primary);">
+                {{ $users->whereIn('role', ['admin', 'superadmin'])->count() }}
+            </div>
+            <div style="font-size:12px; font-weight:600; color:var(--text-muted);">Admin Panel</div>
+        </div>
+    </div>
+    <div class="user-stat-card">
+        <div class="user-stat-icon" style="background:#fffbeb; color:#d97706;">👤</div>
+        <div>
+            <div style="font-size:20px; font-weight:800; color:var(--text-primary);">
+                {{ $users->where('role', 'customer')->count() }}
+            </div>
+            <div style="font-size:12px; font-weight:600; color:var(--text-muted);">Pelanggan</div>
+        </div>
+    </div>
+</div>
 
-    <div style="padding:14px 20px; border-bottom:1px solid var(--border);">
-        <form method="GET" action="{{ route('admin.users.index') }}" class="filter-bar">
-            <input type="text" name="search" class="form-control search-input"
-                placeholder="Cari nama, email, atau no. telepon..." value="{{ request('search') }}">
-            <select name="role" class="form-control">
+<!-- Filter Bar Card -->
+<div class="user-filter-card">
+    <form method="GET" action="{{ route('admin.users.index') }}" class="filter-grid">
+        <div class="filter-item" style="flex: 2 1 250px;">
+            <input type="text" name="search" class="form-input-custom"
+                placeholder="🔍 Cari nama, email, atau telepon..." value="{{ request('search') }}">
+        </div>
+        <div class="filter-item">
+            <select name="role" class="form-input-custom">
                 <option value="">Semua Role</option>
                 <option value="superadmin" {{ request('role')==='superadmin'?'selected':'' }}>Superadmin</option>
-                <option value="admin" {{ request('role')==='admin'     ?'selected':'' }}>Admin</option>
-                <option value="customer" {{ request('role')==='customer'  ?'selected':'' }}>Customer</option>
+                <option value="admin" {{ request('role')==='admin'?'selected':'' }}>Admin</option>
+                <option value="customer" {{ request('role')==='customer'?'selected':'' }}>Customer</option>
             </select>
-            <select name="status" class="form-control">
+        </div>
+        <div class="filter-item">
+            <select name="status" class="form-input-custom">
                 <option value="">Semua Status</option>
-                <option value="active" {{ request('status')==='active'  ?'selected':'' }}>Aktif</option>
+                <option value="active" {{ request('status')==='active'?'selected':'' }}>Aktif</option>
                 <option value="inactive" {{ request('status')==='inactive'?'selected':'' }}>Nonaktif</option>
             </select>
-            <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+        <div class="filter-btn-group">
+            <button type="submit" class="btn-primary-gradient" style="padding: 10px 18px;">
+                Filter
+            </button>
             @if(request()->hasAny(['search','role','status']))
-            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Reset</a>
+            <a href="{{ route('admin.users.index') }}" class="btn" style="background: #f1f5f9; color: #475569; padding: 10px 16px; border-radius: 10px; font-weight: 700; text-decoration: none;">
+                Reset
+            </a>
             @endif
-        </form>
+        </div>
+    </form>
+</div>
+
+<!-- User List Container -->
+<div class="user-card-wrapper">
+    <div class="user-card-header">
+        <div style="font-weight: 800; font-size: 16px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <i class="bi bi-people-fill"></i> Daftar Pengguna Toko
+        </div>
+        <a href="{{ route('admin.users.create') }}" class="btn-primary-gradient">
+            <i class="bi bi-plus-lg"></i> Tambah User Baru
+        </a>
     </div>
 
-    <div class="table-wrapper">
-        @if($users->isEmpty())
-        <div class="empty-state">
-            <div class="empty-state-icon"><i class="bi bi-person-slash"></i></div>
-            <h3>Tidak ada pengguna</h3>
-            <p>Coba ubah filter pencarian.</p>
-        </div>
-        @else
-        <table class="floating-card-table">
+    @if($users->isEmpty())
+    <div style="text-align: center; padding: 48px 24px; color: #94a3b8;">
+        <div style="font-size: 40px; margin-bottom: 10px;">👤</div>
+        <div style="font-size: 16px; font-weight: 700; color: #475569;">Tidak ada pengguna</div>
+        <div style="font-size: 12.5px;">Coba ubah kata kunci atau filter pencarian Anda.</div>
+    </div>
+    @else
+
+    <!-- Desktop Table View (>768px) -->
+    <div class="table-wrapper-custom desktop-table-container">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
             <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Pengguna</th>
-                    <th>Telepon</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Bergabung</th>
-                    <th>Aksi</th>
+                <tr style="background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; font-size: 12px; color: #64748b; text-transform: uppercase;">
+                    <th style="padding: 14px 20px;">#</th>
+                    <th style="padding: 14px 20px;">Pengguna</th>
+                    <th style="padding: 14px 20px;">Telepon</th>
+                    <th style="padding: 14px 20px;">Role</th>
+                    <th style="padding: 14px 20px;">Status</th>
+                    <th style="padding: 14px 20px;">Bergabung</th>
+                    <th style="padding: 14px 20px; text-align: right;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($users as $user)
-                <tr>
-                    <td style="color:var(--text-muted);font-size:12px;">{{ $user->id }}</td>
-                    <td>
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            {{-- Avatar --}}
-                            <div style="width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--border);">
+                <tr class="table-row-custom" style="border-bottom: 1px solid #f1f5f9; font-size: 13.5px;">
+                    <td style="padding: 14px 20px; color: var(--text-muted); font-size: 12px;">{{ $user->id }}</td>
+                    <td style="padding: 14px 20px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid var(--border);">
                                 @if($user->photo)
-                                <img src="{{ Storage::disk('public')->url($user->photo) }}"
-                                    style="width:100%;height:100%;object-fit:cover;"
-                                    alt="{{ $user->name }}">
+                                <img src="{{ Storage::disk('public')->url($user->photo) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ $user->name }}">
                                 @else
-                                <div style="width:100%;height:100%;background:linear-gradient(135deg,#4f6ef7,#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;">
-                                    {{ strtoupper(substr($user->name,0,1)) }}
+                                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #0B023E, #2C2458); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: #fff;">
+                                    {{ strtoupper(substr($user->name, 0, 1)) }}
                                 </div>
                                 @endif
                             </div>
                             <div>
-                                <div style="font-weight:600;color:var(--text-primary);">{{ $user->name }}</div>
-                                <div style="font-size:12px;color:var(--text-muted);">{{ $user->email }}</div>
+                                <div style="font-weight: 700; color: var(--text-primary);">{{ $user->name }}</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">{{ $user->email }}</div>
                             </div>
                         </div>
                     </td>
-                    <td style="font-size:12px;color:var(--text-muted);">{{ $user->phone ?? '—' }}</td>
-                    <td><span class="badge badge-{{ $user->role }}">{{ ucfirst($user->role) }}</span></td>
-                    <td>
-                        <span class="badge {{ $user->is_active?'badge-active':'badge-inactive' }}" style="display: inline-flex; align-items: center; gap: 4px;">
-                            <iconify-icon icon="{{ $user->is_active ? 'flat-color-icons:checkmark' : 'flat-color-icons:cancel' }}" style="font-size: 13px;"></iconify-icon>
-                            {{ $user->is_active?'Aktif':'Nonaktif' }}
+                    <td style="padding: 14px 20px; font-size: 12.5px; color: var(--text-muted);">{{ $user->phone ?? '—' }}</td>
+                    <td style="padding: 14px 20px;">
+                        <span class="badge-type {{ $user->role === 'admin' || $user->role === 'superadmin' ? 'badge-promo' : 'badge-info' }}">
+                            {{ ucfirst($user->role) }}
                         </span>
                     </td>
-                    <td style="font-size:12px;color:var(--text-muted);">{{ $user->created_at->format('d M Y') }}</td>
-                    <td>
-                        <div class="actions">
+                    <td style="padding: 14px 20px;">
+                        <span class="badge-type {{ $user->is_active ? 'badge-success-custom' : 'badge-danger-custom' }}">
+                            {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
+                        </span>
+                    </td>
+                    <td style="padding: 14px 20px; font-size: 12.5px; color: var(--text-muted);">{{ $user->created_at->format('d M Y') }}</td>
+                    <td style="padding: 14px 20px; text-align: right;">
+                        <div class="actions" style="justify-content: flex-end; gap: 6px;">
                             @if($user->role === 'customer')
-                            <a href="{{ route('admin.chats.index', ['search' => $user->email]) }}" class="btn btn-sm btn-icon" style="background-color: #3C3565; color: #ffffff; border-color: #3C3565;" title="Chat Customer">
-                                <iconify-icon icon="lucide:message-square" style="font-size: 16px; color: #ffffff;"></iconify-icon>
+                            <a href="{{ route('admin.chats.index', ['search' => $user->email]) }}" class="btn btn-sm btn-icon" style="background-color: #0B023E; color: #ffffff;" title="Chat Customer">
+                                <iconify-icon icon="lucide:message-square" style="font-size: 16px;"></iconify-icon>
                             </a>
                             @endif
                             <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
@@ -175,31 +283,20 @@
                             </a>
                             <form method="POST" action="{{ route('admin.users.toggle', $user) }}" style="display:inline;">
                                 @csrf @method('PATCH')
-                                <button type="submit"
-                                    class="btn btn-sm btn-icon {{ $user->is_active?'btn-warning':'btn-success' }}"
-                                    title="{{ $user->is_active?'Nonaktifkan':'Aktifkan' }}"
-                                    {{ $user->id===auth()->id()?'disabled':'' }}>
+                                <button type="submit" class="btn btn-sm btn-icon {{ $user->is_active?'btn-warning':'btn-success' }}" title="{{ $user->is_active?'Nonaktifkan':'Aktifkan' }}" {{ $user->id===auth()->id()?'disabled':'' }}>
                                     <iconify-icon icon="{{ $user->is_active ? 'flat-color-icons:cancel' : 'flat-color-icons:ok' }}" style="font-size: 16px;"></iconify-icon>
                                 </button>
                             </form>
                             @if($user->role !== 'superadmin' || auth()->user()->role === 'superadmin')
                             <form method="POST" action="{{ route('admin.users.reset-password', $user) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin me-reset password user {{ $user->name }} menjadi \'password\'?')">
                                 @csrf
-                                <button type="submit"
-                                    class="btn btn-secondary btn-sm btn-icon"
-                                    title="Reset Password">
+                                <button type="submit" class="btn btn-secondary btn-sm btn-icon" title="Reset Password">
                                     <iconify-icon icon="flat-color-icons:key" style="font-size: 16px;"></iconify-icon>
                                 </button>
                             </form>
                             @endif
                             @if(auth()->user()->role==='superadmin')
-                            <button type="button"
-                                class="btn btn-danger btn-sm btn-icon"
-                                title="Hapus"
-                                data-url="{{ route('admin.users.destroy',$user) }}"
-                                data-name="{{ $user->name }}"
-                                onclick="confirmDelete(this.dataset.url, this.dataset.name)"
-                                {{ $user->id===auth()->id()?'disabled':'' }}>
+                            <button type="button" class="btn btn-danger btn-sm btn-icon" title="Hapus" data-url="{{ route('admin.users.destroy',$user) }}" data-name="{{ $user->name }}" onclick="confirmDelete(this.dataset.url, this.dataset.name)" {{ $user->id===auth()->id()?'disabled':'' }}>
                                 <iconify-icon icon="fluent-emoji-flat:wastebasket" style="font-size: 16px;"></iconify-icon>
                             </button>
                             @endif
@@ -209,13 +306,79 @@
                 @endforeach
             </tbody>
         </table>
-        @endif
     </div>
 
+    <!-- Mobile Card View (<=768px) -->
+    <div class="mobile-user-grid">
+        @foreach($users as $user)
+        <div class="mobile-user-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid var(--border);">
+                        @if($user->photo)
+                        <img src="{{ Storage::disk('public')->url($user->photo) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ $user->name }}">
+                        @else
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #0B023E, #2C2458); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #fff;">
+                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                        </div>
+                        @endif
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; font-size: 14px; color: var(--text-primary);">{{ $user->name }}</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">{{ $user->email }}</div>
+                    </div>
+                </div>
+                <span class="badge-type {{ $user->is_active ? 'badge-success-custom' : 'badge-danger-custom' }}">
+                    {{ $user->is_active ? 'Aktif' : 'Off' }}
+                </span>
+            </div>
+
+            <div style="background: #f8fafc; padding: 10px 12px; border-radius: 10px; font-size: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+                <div>📞 {{ $user->phone ?? '—' }}</div>
+                <div><span class="badge-type {{ $user->role === 'admin' || $user->role === 'superadmin' ? 'badge-promo' : 'badge-info' }}">{{ ucfirst($user->role) }}</span></div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                <div style="font-size: 11px; color: var(--text-muted);">📅 {{ $user->created_at->format('d M Y') }}</div>
+                <div class="actions" style="gap: 6px;">
+                    @if($user->role === 'customer')
+                    <a href="{{ route('admin.chats.index', ['search' => $user->email]) }}" class="btn btn-sm btn-icon" style="background-color: #0B023E; color: #ffffff;" title="Chat Customer">
+                        <iconify-icon icon="lucide:message-square" style="font-size: 15px;"></iconify-icon>
+                    </a>
+                    @endif
+                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
+                        <iconify-icon icon="flat-color-icons:edit-image" style="font-size: 15px;"></iconify-icon>
+                    </a>
+                    <form method="POST" action="{{ route('admin.users.toggle', $user) }}" style="display:inline;">
+                        @csrf @method('PATCH')
+                        <button type="submit" class="btn btn-sm btn-icon {{ $user->is_active?'btn-warning':'btn-success' }}" title="{{ $user->is_active?'Nonaktifkan':'Aktifkan' }}" {{ $user->id===auth()->id()?'disabled':'' }}>
+                            <iconify-icon icon="{{ $user->is_active ? 'flat-color-icons:cancel' : 'flat-color-icons:ok' }}" style="font-size: 15px;"></iconify-icon>
+                        </button>
+                    </form>
+                    @if($user->role !== 'superadmin' || auth()->user()->role === 'superadmin')
+                    <form method="POST" action="{{ route('admin.users.reset-password', $user) }}" style="display:inline;" onsubmit="return confirm('Reset password user {{ $user->name }}?')">
+                        @csrf
+                        <button type="submit" class="btn btn-secondary btn-sm btn-icon" title="Reset Password">
+                            <iconify-icon icon="flat-color-icons:key" style="font-size: 15px;"></iconify-icon>
+                        </button>
+                    </form>
+                    @endif
+                    @if(auth()->user()->role==='superadmin')
+                    <button type="button" class="btn btn-danger btn-sm btn-icon" title="Hapus" data-url="{{ route('admin.users.destroy',$user) }}" data-name="{{ $user->name }}" onclick="confirmDelete(this.dataset.url, this.dataset.name)" {{ $user->id===auth()->id()?'disabled':'' }}>
+                        <iconify-icon icon="fluent-emoji-flat:wastebasket" style="font-size: 15px;"></iconify-icon>
+                    </button>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
     @if($users->hasPages())
-    <div class="pagination-wrap">
+    <div style="padding: 16px 20px; border-top: 1px solid #f1f5f9;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-            <span style="font-size:13px;color:var(--text-muted);">
+            <span style="font-size:12.5px;color:var(--text-muted);">
                 Menampilkan {{ $users->firstItem() }}–{{ $users->lastItem() }} dari {{ $users->total() }} pengguna
             </span>
             {{ $users->links('admin.partials.pagination') }}

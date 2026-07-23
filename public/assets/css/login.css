@@ -365,24 +365,62 @@ body::after {
      stroke: var(--text-primary);
  }
 
- /* ─── RESPONSIVE STACKING FOR MOBILE ──────────────────────── */
- @media (max-width: 768px) {
-     .login-wrap {
-         flex-direction: column !important;
-         gap: 32px !important;
-         max-width: 420px;
-     }
-     
-     .login-left {
-         margin-bottom: 8px;
-     }
+ body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-dark);
+    min-height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 30px 16px !important;
+    margin: 0 !important;
+    position: relative;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
 
-     .brand-logo {
-         max-width: 130px;
-         margin-bottom: 16px;
-     }
+/* ─── RESPONSIVE STACKING FOR MOBILE ──────────────────────── */
+@media (max-width: 768px) {
+    body {
+        padding: 24px 14px !important;
+        align-items: flex-start !important;
+    }
 
-     .brand-title {
-         font-size: 26px;
-     }
- }
+    .login-wrap {
+        flex-direction: column !important;
+        gap: 20px !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+    }
+    
+    .login-left {
+        margin-bottom: 0;
+        width: 100% !important;
+    }
+
+    .brand-logo {
+        max-width: 100px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .brand-title {
+        font-size: 24px !important;
+    }
+
+    .brand-subtitle {
+        font-size: 13px !important;
+    }
+
+    .login-right {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .login-card {
+        padding: 20px 16px !important;
+        width: 100% !important;
+        border-radius: 16px !important;
+    }
+}

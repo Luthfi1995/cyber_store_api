@@ -11,8 +11,8 @@ class OtpVerificationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $user;
-    public $otp;
+    public User $user;
+    public string $otp;
 
     public function __construct(User $user, string $otp)
     {

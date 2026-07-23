@@ -44,7 +44,7 @@ class NotificationController extends Controller
                 ];
             });
 
-        $unreadCount = UserNotification::where('user_id', $user->id)
+        $unreadCount = UserNotification::where('user_id', '=', $user->id)
             ->whereNull('read_at')
             ->count();
 
@@ -57,11 +57,11 @@ class NotificationController extends Controller
     /**
      * Mark a specific notification as read.
      */
-    public function markAsRead(Request $request, $id): JsonResponse
+    public function markAsRead(Request $request, int|string $id): JsonResponse
     {
         $user = $request->user();
-        $notification = UserNotification::where('user_id', $user->id)
-            ->where('id', $id)
+        $notification = UserNotification::where('user_id', '=', $user->id)
+            ->where('id', '=', $id)
             ->first();
 
         if ($notification && !$notification->read_at) {

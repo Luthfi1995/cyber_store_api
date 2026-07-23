@@ -39,7 +39,7 @@ class AnnouncementController extends Controller
         $announcement = Announcement::create($validated);
 
         // Broadcast notification entry to all active customers
-        $customers = User::where('is_active', true)->pluck('id');
+        $customers = User::query()->where('is_active', '=', true)->pluck('id');
         $notificationData = [];
 
         foreach ($customers as $userId) {
@@ -78,8 +78,9 @@ class AnnouncementController extends Controller
      */
     private function sendPushNotifications(Announcement $announcement)
     {
-        $fcmTokens = User::whereNotNull('fcm_token')
-            ->where('push_notifications_enabled', true)
+        $fcmTokens = User::query()
+            ->whereNotNull('fcm_token', 'and')
+            ->where('push_notifications_enabled', '=', true)
             ->pluck('fcm_token')
             ->filter()
             ->values()
