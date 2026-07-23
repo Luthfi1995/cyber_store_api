@@ -99,7 +99,7 @@ return [
 
     'key' => env('APP_KEY'),
 
-    'api_encryption_key' => env('API_ENCRYPTION_KEY'),
+    'api_encryption_key' => env('API_ENCRYPTION_KEY', 'd8405096ffd06372797fc6e3668e1a7f'),
 
     'previous_keys' => [
         ...array_filter(
