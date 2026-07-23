@@ -16,8 +16,16 @@ class ApiEncryptionMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // 1. Decrypt request if X-Encrypted header is present
-        if ($request->header('X-Encrypted') === 'true' && !$request->isMethod('GET') && !$request->isMethod('DELETE')) {
+        // 1. Decrypt request if X-Encrypted header is present.
+        // Skip decryption for multipart/form-data requests (e.g. photo uploads),
+        // because the body is form-data, not an encrypted JSON payload.
+        $isMultipart = str_contains($request->header('Content-Type', ''), 'multipart/form-data');
+
+        if ($request->header('X-Encrypted') === 'true'
+            && !$request->isMethod('GET')
+            && !$request->isMethod('DELETE')
+            && !$isMultipart
+        ) {
             $payload = $request->input('payload');
             if ($payload) {
                 $decrypted = EncryptionHelper::decrypt($payload);

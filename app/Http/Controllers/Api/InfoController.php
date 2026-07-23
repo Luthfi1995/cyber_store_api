@@ -10,7 +10,7 @@ class InfoController extends Controller
 {
     public function about(): JsonResponse
     {
-        $data = Cache::store('redis')->rememberForever('info:about', function () {
+        $data = Cache::rememberForever('info:about', function () {
             return [
                 'app_name' => 'Aplikasi Mahasiswa Baru Universitas Bina Sarana Informatika',
                 'version' => 'v1.2.0',
@@ -35,7 +35,7 @@ class InfoController extends Controller
 
     public function help(): JsonResponse
     {
-        $data = Cache::store('redis')->rememberForever('info:help', function () {
+        $data = Cache::rememberForever('info:help', function () {
             $defaultFaqs = [
                 [
                     'question' => 'Bagaimana cara mendaftar akun?',

@@ -8,6 +8,80 @@
 @endsection
 
 @section('content')
+<style>
+    .table-wrapper {
+        padding: 12px 20px;
+        overflow-x: auto;
+    }
+    .floating-card-table {
+        width: 100%;
+        border-collapse: separate !important;
+        border-spacing: 0 10px !important;
+    }
+    .floating-card-table thead th {
+        background: transparent !important;
+        border: none !important;
+        padding: 8px 16px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--text-muted);
+    }
+    .floating-card-table tbody tr {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    .floating-card-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.06);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    .floating-card-table tbody td {
+        padding: 14px 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        vertical-align: middle;
+    }
+    .floating-card-table tbody td:first-child {
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+    }
+    .floating-card-table tbody td:last-child {
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+
+    /* ─── DUKUNGAN STYLE KHUSUS MODE LIGHT (LIGHT MODE) ───────────────── */
+    [data-theme="light"] .floating-card-table tbody tr {
+        background: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
+        border: 1px solid #e2e8f0;
+    }
+    [data-theme="light"] .floating-card-table tbody tr:hover {
+        background: #f8fafc !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+        border-color: #cbd5e1;
+    }
+    [data-theme="light"] .floating-card-table tbody td {
+        border-top: 1px solid #e2e8f0 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+    [data-theme="light"] .floating-card-table tbody td:first-child {
+        border-left: 1px solid #e2e8f0 !important;
+    }
+    [data-theme="light"] .floating-card-table tbody td:last-child {
+        border-right: 1px solid #e2e8f0 !important;
+    }
+    [data-theme="light"] .floating-card-table thead th {
+        color: #64748b !important;
+        font-weight: 700;
+    }
+</style>
+
 <div class="card">
     <div class="card-header">
         <span class="card-title"><i class="bi bi-people-fill"></i> Daftar Pengguna</span>
@@ -44,7 +118,7 @@
             <p>Coba ubah filter pencarian.</p>
         </div>
         @else
-        <table>
+        <table class="floating-card-table">
             <thead>
                 <tr>
                     <th>#</th>

@@ -32,6 +32,7 @@ class User extends Authenticatable
         'push_notifications_enabled',
         'email_notifications_enabled',
         'biometric_login_enabled',
+        'fcm_token',
     ];
 
     protected $hidden = [

@@ -15,7 +15,7 @@ class BannerController extends Controller
      */
     public function index()
     {
-        $banners = Cache::store('redis')->remember('banners:active', now()->addHour(), function () {
+        $banners = Cache::remember('banners:active', now()->addHour(), function () {
             return Banner::ordered()->get()->map(function ($banner) {
                 return [
                     'id'          => $banner->id,

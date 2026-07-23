@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\MidtransCallbackController;
+use App\Http\Controllers\Api\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -74,6 +75,12 @@ Route::prefix('v1')->group(function () {
         Route::post('/chats', [ChatController::class, 'store']);
         Route::get('/chats/{chat}/messages', [ChatController::class, 'messages']);
         Route::post('/chats/{chat}/messages', [ChatController::class, 'sendMessage']);
+
+        // ── Notifications ─────────────────────────────────────────────────────
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::post('/users/fcm-token', [NotificationController::class, 'updateFcmToken']);
     });
 
     // Public Midtrans Callback Webhook

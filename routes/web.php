@@ -97,33 +97,6 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::get('/stock-movements', [StockMovementController::class, 'index'])->name('stock-movements.index');
     Route::post('/stock-movements', [StockMovementController::class, 'store'])->name('stock-movements.store');
 
-    Route::get('/list-ongkir', function () {
-        try {
-            $response = Http::timeout(5)->withHeaders([
-                // [SECURITY] API key diambil dari environment variable, tidak hardcoded
-                'key' => env('RAJAONGKIR_API_KEY')
-            ])->get('https://api.rajaongkir.com/starter/province');
-            if ($response->failed()) {
-                throw new \Exception('API request failed');
-            }
-            dd($response->json());
-        } catch (\Exception $e) {
-            dd([
-                'message' => 'Connection timed out, showing mock provinces fallback.',
-                'rajaongkir' => [
-                    'status' => ['code' => 200, 'description' => 'OK (Mocked due to Connection Timeout)'],
-                    'results' => [
-                        ['province_id' => '6', 'province' => 'DKI Jakarta'],
-                        ['province_id' => '9', 'province' => 'Jawa Barat'],
-                        ['province_id' => '10', 'province' => 'Jawa Tengah'],
-                        ['province_id' => '11', 'province' => 'Jawa Timur'],
-                        ['province_id' => '5', 'province' => 'DI Yogyakarta'],
-                    ]
-                ]
-            ]);
-        }
-    });
-
     // ── Chat Customer ────────────────────────────────────────────────────────
     Route::get('/chats', [ChatController::class, 'index'])->name('chats.index');
     Route::get('/chats/{chat}', [ChatController::class, 'show'])->name('chats.show');
@@ -132,10 +105,15 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::post('/chats/{chat}/reopen', [ChatController::class, 'reopen'])->name('chats.reopen');
     Route::get('/chats-unread-count', [ChatController::class, 'unreadCount'])->name('chats.unread-count');
 
-    // ── Chat Ulasan ──────────────────────────────────────────────────────────
+    // ── Review Chats ─────────────────────────────────────────────────────────
     Route::get('/review-chats', [App\Http\Controllers\Admin\ProductReviewController::class, 'index'])->name('review-chats.index');
     Route::get('/review-chats/{review}', [App\Http\Controllers\Admin\ProductReviewController::class, 'show'])->name('review-chats.show');
     Route::post('/review-chats/{review}/reply', [App\Http\Controllers\Admin\ProductReviewController::class, 'reply'])->name('review-chats.reply');
+
+    // ── Announcements / Push Notifications ───────────────────────────────────
+    Route::get('/announcements', [App\Http\Controllers\Admin\AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::post('/announcements', [App\Http\Controllers\Admin\AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::delete('/announcements/{announcement}', [App\Http\Controllers\Admin\AnnouncementController::class, 'destroy'])->name('announcements.destroy');
 
     // ── Cache Management ─────────────────────────────────────────────────────
     Route::post('/cache/flush-products', function () {

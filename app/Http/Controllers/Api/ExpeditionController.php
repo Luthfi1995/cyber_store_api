@@ -51,7 +51,7 @@ class ExpeditionController extends Controller
             
             $cacheKey = "rajaongkir_costs_{$originCityId}_{$destinationCityId}_{$weight}";
             
-            $rajaOngkirCosts = Cache::store('redis')->remember($cacheKey, now()->addHours(1), function () use ($originCityId, $destinationCityId, $weight, $quantity) {
+            $rajaOngkirCosts = Cache::remember($cacheKey, now()->addHours(1), function () use ($originCityId, $destinationCityId, $weight, $quantity) {
                 $costsData = [];
                 // 1. Query JNE cost
                 try {

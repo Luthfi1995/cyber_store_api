@@ -32,10 +32,13 @@ class GoogleAuthController extends Controller
         $name = null;
         $googleId = null;
 
-        // Bypassing real verification in local/testing environments when a mock token is supplied
-        if ($idToken === 'mock-google-token' && app()->environment('local', 'testing')) {
-            $email = $request->input('email', 'mockuser@ubsistore.test');
-            $name = $request->input('name', 'Mock Google User');
+        // Mock bypass is restricted to the 'testing' environment ONLY (PHPUnit automated tests).
+        // Do NOT include 'local' here — a staging/production server misconfigured with
+        // APP_ENV=local would expose this bypass to attackers, allowing account takeover
+        // without any Google verification.
+        if ($idToken === 'mock-google-token' && app()->environment('testing')) {
+            $email    = $request->input('email', 'mockuser@ubsistore.test');
+            $name     = $request->input('name', 'Mock Google User');
             $googleId = $request->input('google_id', 'mock-google-id-123456');
         } else {
             try {
@@ -96,11 +99,11 @@ class GoogleAuthController extends Controller
         }
 
         // 1. Search for user by google_id
-        $user = User::where('google_id', $googleId)->first();
+        $user = User::where('google_id', '=', $googleId)->first();
 
         if (!$user) {
             // 2. Search for user by email to link the Google ID if they registered with email previously
-            $user = User::where('email', $email)->first();
+            $user = User::where('email', '=', $email)->first();
 
             if ($user) {
                 $user->update([

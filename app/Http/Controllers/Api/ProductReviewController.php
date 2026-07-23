@@ -18,7 +18,7 @@ class ProductReviewController extends Controller
      */
     public function index(Product $product): JsonResponse
     {
-        $reviews = Cache::store('redis')->remember(
+        $reviews = Cache::remember(
             "reviews:product:{$product->id}",
             now()->addMinutes(30),
             function () use ($product) {
@@ -116,8 +116,8 @@ class ProductReviewController extends Controller
         ]);
 
         // Hapus cache review dan detail produk agar data terbaru langsung tampil
-        Cache::store('redis')->forget("reviews:product:{$product->id}");
-        Cache::store('redis')->forget("product:detail:{$product->id}");
+        Cache::forget("reviews:product:{$product->id}");
+        Cache::forget("product:detail:{$product->id}");
 
         return response()->json([
             'message' => 'Ulasan berhasil dikirim.',
@@ -149,8 +149,8 @@ class ProductReviewController extends Controller
         ]);
 
         // Hapus cache review produk agar data terbaru langsung tampil
-        Cache::store('redis')->forget("reviews:product:{$review->product_id}");
-        Cache::store('redis')->forget("product:detail:{$review->product_id}");
+        Cache::forget("reviews:product:{$review->product_id}");
+        Cache::forget("product:detail:{$review->product_id}");
 
         return response()->json([
             'message' => 'Balasan berhasil dikirim.',

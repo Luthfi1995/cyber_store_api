@@ -89,7 +89,7 @@ class CheckoutController extends Controller
             if ($destinationCityId) {
                 $originCityId = (int) \App\Models\Setting::get('store_city_id', 152);
                 $weight = $totalWeight <= 0 ? 1000 : $totalWeight;
-                
+
                 $courier = 'jne';
                 if ($expedition->code === 'pos') {
                     $courier = 'pos';
@@ -100,7 +100,7 @@ class CheckoutController extends Controller
                 }
 
                 try {
-                    $response = Http::withoutVerifying()->timeout(3)->withHeaders([
+                    $response = Http::timeout(3)->withHeaders([
                         'key' => env('RAJAONGKIR_API_KEY')
                     ])->post(env('RAJAONGKIR_BASE_URL') . '/cost', [
                         'origin' => $originCityId,
