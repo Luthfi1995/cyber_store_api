@@ -176,7 +176,8 @@ class SettingController extends Controller
 
                     $imagePath = $g['image'] ?? null;
                     if ($request->hasFile("guides.{$gIdx}.image_file")) {
-                        $stored = $file->store('guides', 'public');
+                        $uploadedFile = $request->file("guides.{$gIdx}.image_file");
+                        $stored = $uploadedFile->store('guides', 'public');
                         $imagePath = asset('storage/' . $stored);
                     }
 
