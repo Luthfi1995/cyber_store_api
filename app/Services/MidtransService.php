@@ -12,14 +12,14 @@ class MidtransService
     protected string $clientKey;
     protected string $baseUrl;
     protected string $snapBaseUrl;
-    protected bool $isProduction;
+    protected bool   $isProduction;
 
     public function __construct()
     {
-        $this->serverKey   = config('services.midtrans.server_key', env('MIDTRANS_SERVER_KEY', ''));
-        $this->clientKey   = config('services.midtrans.client_key', env('MIDTRANS_CLIENT_KEY', ''));
+        $this->serverKey   = (string) (config('services.midtrans.server_key') ?? env('MIDTRANS_SERVER_KEY') ?? '');
+        $this->clientKey   = (string) (config('services.midtrans.client_key') ?? env('MIDTRANS_CLIENT_KEY') ?? '');
         $this->isProduction = filter_var(
-            config('services.midtrans.is_production', env('MIDTRANS_IS_PRODUCTION', false)),
+            config('services.midtrans.is_production') ?? env('MIDTRANS_IS_PRODUCTION') ?? false,
             FILTER_VALIDATE_BOOLEAN
         );
 
