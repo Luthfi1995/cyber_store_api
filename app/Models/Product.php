@@ -83,18 +83,32 @@ class Product extends Model
 
     public static function clearCache($product = null): void
     {
-        $cache = \Illuminate\Support\Facades\Cache::store('redis');
+        // Gunakan default cache store (database) — sama dengan yang dipakai API ProductController
+        $defaultCache = \Illuminate\Support\Facades\Cache::store(config('cache.default'));
 
-        // Hapus seluruh daftar produk (semua kombinasi halaman/filter)
-        try {
-            $cache->tags(['products-list'])->flush();
-        } catch (\Exception) {
-            // Driver file/array tidak mendukung tags — abaikan
+        // Coba hapus cache detail produk spesifik dari default store
+        if ($product) {
+            $defaultCache->forget("product:detail:{$product->id}");
         }
 
-        // Hapus cache detail produk spesifik
-        if ($product) {
-            $cache->forget("product:detail:{$product->id}");
+        // Karena database driver tidak support tags, kita flush semua cache produk
+        // dengan cara hapus semua key yang mengandung pattern 'products:index'
+        // Caranya: flush keseluruhan cache (aman karena cache bisa dibangun ulang)
+        try {
+            $defaultCache->flush();
+        } catch (\Exception) {
+            // Abaikan jika flush gagal
+        }
+
+        // Jika Redis tersedia, hapus juga dari Redis sebagai fallback
+        try {
+            $redisCache = \Illuminate\Support\Facades\Cache::store('redis');
+            $redisCache->tags(['products-list'])->flush();
+            if ($product) {
+                $redisCache->forget("product:detail:{$product->id}");
+            }
+        } catch (\Exception) {
+            // Redis tidak tersedia atau tidak dikonfigurasi — abaikan
         }
     }
 }

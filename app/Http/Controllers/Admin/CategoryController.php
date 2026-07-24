@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
@@ -53,6 +54,9 @@ class CategoryController extends Controller
             'is_active'   => $request->boolean('is_active', true),
         ]);
 
+        // Hapus cache kategori agar Flutter app mendapat data terbaru
+        Cache::forget('categories:active');
+
         return redirect()->route('admin.categories.index')
             ->with('success', 'Kategori berhasil ditambahkan.');
     }
@@ -87,6 +91,9 @@ class CategoryController extends Controller
             'is_active'   => $request->boolean('is_active'),
         ]);
 
+        // Hapus cache kategori agar Flutter app mendapat data terbaru
+        Cache::forget('categories:active');
+
         return redirect()->route('admin.categories.index')
             ->with('success', 'Kategori berhasil diperbarui.');
     }
@@ -98,6 +105,10 @@ class CategoryController extends Controller
         }
 
         $category->delete();
+
+        // Hapus cache kategori agar Flutter app mendapat data terbaru
+        Cache::forget('categories:active');
+
         return redirect()->route('admin.categories.index')
             ->with('success', 'Kategori berhasil dihapus.');
     }
@@ -105,6 +116,10 @@ class CategoryController extends Controller
     public function toggleActive(Category $category)
     {
         $category->update(['is_active' => !$category->is_active]);
+
+        // Hapus cache kategori agar Flutter app mendapat data terbaru
+        Cache::forget('categories:active');
+
         $status = $category->is_active ? 'diaktifkan' : 'dinonaktifkan';
         return back()->with('success', "Kategori {$category->name} berhasil {$status}.");
     }

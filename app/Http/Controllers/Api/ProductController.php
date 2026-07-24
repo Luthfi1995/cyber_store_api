@@ -21,7 +21,7 @@ class ProductController extends Controller
         $searchHash = $search ? md5($search) : '';
         $cacheKey = "products:index:page_{$page}:per_page_{$perPage}:cat_{$categoryId}:search_{$searchHash}:rec_{$isRecommended}";
 
-        $products = Cache::remember($cacheKey, now()->addHours(12), function () use ($request) {
+        $products = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($request) {
             return Product::query()
                 ->with(['category', 'images'])
                 ->where('is_active', true)
@@ -38,7 +38,7 @@ class ProductController extends Controller
 
     public function show(int|string $id): JsonResponse
     {
-        $product = Cache::remember("product:detail:{$id}", now()->addHours(24), function () use ($id) {
+        $product = Cache::remember("product:detail:{$id}", now()->addMinutes(10), function () use ($id) {
             $prod = Product::with(['category', 'images'])->find($id);
             if (! $prod || ! $prod->is_active) {
                 return null;

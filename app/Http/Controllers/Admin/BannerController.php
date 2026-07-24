@@ -108,7 +108,7 @@ class BannerController extends Controller
         Banner::create($data);
 
         // Hapus cache banner agar API menampilkan data terbaru
-        Cache::store('redis')->forget('banners:active');
+        Cache::forget('banners:active');
 
         return redirect()->route('admin.banners.index')->with('success', 'Banner berhasil ditambahkan.');
     }
@@ -143,7 +143,7 @@ class BannerController extends Controller
         $banner->update($data);
 
         // Hapus cache banner agar API menampilkan data terbaru
-        Cache::store('redis')->forget('banners:active');
+        Cache::forget('banners:active');
 
         return redirect()->route('admin.banners.index')->with('success', 'Banner berhasil diperbarui.');
     }
@@ -157,7 +157,7 @@ class BannerController extends Controller
         $banner->delete();
 
         // Hapus cache banner agar API menampilkan data terbaru
-        Cache::store('redis')->forget('banners:active');
+        Cache::forget('banners:active');
 
         return redirect()->route('admin.banners.index')->with('success', 'Banner berhasil dihapus.');
     }

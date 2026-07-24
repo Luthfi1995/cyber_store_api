@@ -103,8 +103,8 @@ class ProductReviewController extends Controller
         ]);
 
         // Clear products and reviews caches
-        Cache::store('redis')->forget("reviews:product:{$review->product_id}");
-        Cache::store('redis')->forget("product:detail:{$review->product_id}");
+        Cache::forget("reviews:product:{$review->product_id}");
+        Cache::forget("product:detail:{$review->product_id}");
 
         if ($request->wantsJson()) {
             return response()->json([
