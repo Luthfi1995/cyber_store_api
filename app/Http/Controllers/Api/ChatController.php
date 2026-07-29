@@ -31,6 +31,7 @@ class ChatController extends Controller
                 return [
                     'id'           => $chat->id,
                     'subject'      => $chat->subject,
+                    'product_id'   => $chat->product_id,
                     'product_name' => $chat->product_name,
                     'status'       => $chat->status,
                     'unread_count' => $unread,

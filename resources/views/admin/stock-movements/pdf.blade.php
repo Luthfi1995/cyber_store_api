@@ -100,7 +100,7 @@
 <body>
 
     <div class="header">
-        <h1>UBSI STORE</h1>
+        <h1>{{ strtoupper(\App\Models\Setting::get('store_name', 'BSI Cyber Store')) }}</h1>
         <p>Laporan Mutasi Stok Barang</p>
     </div>
 
@@ -164,7 +164,7 @@
     </table>
 
     <div class="footer">
-        Dokumen ini dibuat otomatis oleh Sistem UBSI Store pada {{ now()->format('d M Y H:i') }}.
+        Dokumen ini dibuat otomatis oleh Sistem {{ \App\Models\Setting::get('store_name', 'BSI Cyber Store') }} pada {{ now()->format('d M Y H:i') }}.
     </div>
 
 </body>

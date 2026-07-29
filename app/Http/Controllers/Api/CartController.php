@@ -100,4 +100,20 @@ class CartController extends Controller
 
         return response()->json(['message' => 'Keranjang berhasil dikosongkan.']);
     }
+
+    public function removeBulk(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'item_ids' => ['required', 'array'],
+            'item_ids.*' => ['integer'],
+        ]);
+
+        $cart = Cart::where('user_id', $request->user()->id)->firstOrFail();
+        $cart->items()->whereIn('id', $validated['item_ids'])->delete();
+
+        return response()->json([
+            'message' => 'Items berhasil dihapus dari keranjang.',
+            'cart' => $cart->fresh()->load(['items.product.category']),
+        ]);
+    }
 }

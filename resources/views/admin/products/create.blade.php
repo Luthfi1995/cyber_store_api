@@ -25,6 +25,19 @@
                         style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);">
                         🖼️ Gambar Produk
                     </div>
+
+                    {{-- Bulk Upload Dropzone --}}
+                    <div id="bulkDropzone" class="bulk-dropzone"
+                        style="border: 2px dashed #4f46e5; background: #f8fafc; border-radius: var(--radius-md, 8px); padding: 20px; text-align: center; margin-bottom: 20px; cursor: pointer; transition: all 0.2s ease;">
+                        <input type="file" id="bulkImageInput" multiple accept="image/jpg,image/jpeg,image/png,image/webp" style="display:none;" onchange="handleBulkImageUpload(this.files)">
+                        <div style="font-size: 32px; margin-bottom: 8px;">⚡📁</div>
+                        <div style="font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 4px;">Upload Banyak Foto Sekaligus (Drag & Drop)</div>
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Pilih atau tarik hingga 6 gambar sekaligus. Foto akan otomatis mengisi Gambar 1 (Utama) hingga Gambar 6.</div>
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('bulkImageInput').click()" style="font-size: 12px; padding: 8px 16px;">
+                            📂 Pilih Banyak Foto Sekaligus
+                        </button>
+                    </div>
+
                     <div class="form-row" style="gap: 16px; margin-bottom: 20px;">
                         {{-- Gambar 1 (Utama) --}}
                         <div class="form-group" style="flex: 1; min-width: 220px;">
@@ -41,6 +54,7 @@
                                             onchange="previewPhoto(this, 'avatarPreviewWrap')">
                                         <span class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">📷 Pilih</span>
                                     </label>
+                                    <button type="button" id="resetBtn_main_photo" class="btn btn-outline-danger" style="font-size: 11px; padding: 4px 8px; margin-top: 4px; display: none;" onclick="clearPhotoSlot('main_photo', 'avatarPreviewWrap', true)">🗑️ Hapus</button>
                                     <div style="font-size:10px;color:var(--text-muted);">Maks 2MB</div>
                                 </div>
                             </div>
@@ -64,6 +78,7 @@
                                             onchange="previewPhoto(this, 'previewWrap2')">
                                         <span class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">📷 Pilih</span>
                                     </label>
+                                    <button type="button" id="resetBtn_photo_2" class="btn btn-outline-danger" style="font-size: 11px; padding: 4px 8px; margin-top: 4px; display: none;" onclick="clearPhotoSlot('photo_2', 'previewWrap2', false)">🗑️ Hapus</button>
                                     <div style="font-size:10px;color:var(--text-muted);">Maks 2MB</div>
                                 </div>
                             </div>
@@ -87,6 +102,7 @@
                                             onchange="previewPhoto(this, 'previewWrap3')">
                                         <span class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">📷 Pilih</span>
                                     </label>
+                                    <button type="button" id="resetBtn_photo_3" class="btn btn-outline-danger" style="font-size: 11px; padding: 4px 8px; margin-top: 4px; display: none;" onclick="clearPhotoSlot('photo_3', 'previewWrap3', false)">🗑️ Hapus</button>
                                     <div style="font-size:10px;color:var(--text-muted);">Maks 2MB</div>
                                 </div>
                             </div>
@@ -112,6 +128,7 @@
                                             onchange="previewPhoto(this, 'previewWrap4')">
                                         <span class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">📷 Pilih</span>
                                     </label>
+                                    <button type="button" id="resetBtn_photo_4" class="btn btn-outline-danger" style="font-size: 11px; padding: 4px 8px; margin-top: 4px; display: none;" onclick="clearPhotoSlot('photo_4', 'previewWrap4', false)">🗑️ Hapus</button>
                                     <div style="font-size:10px;color:var(--text-muted);">Maks 2MB</div>
                                 </div>
                             </div>
@@ -135,6 +152,7 @@
                                             onchange="previewPhoto(this, 'previewWrap5')">
                                         <span class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">📷 Pilih</span>
                                     </label>
+                                    <button type="button" id="resetBtn_photo_5" class="btn btn-outline-danger" style="font-size: 11px; padding: 4px 8px; margin-top: 4px; display: none;" onclick="clearPhotoSlot('photo_5', 'previewWrap5', false)">🗑️ Hapus</button>
                                     <div style="font-size:10px;color:var(--text-muted);">Maks 2MB</div>
                                 </div>
                             </div>
@@ -158,6 +176,7 @@
                                             onchange="previewPhoto(this, 'previewWrap6')">
                                         <span class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;">📷 Pilih</span>
                                     </label>
+                                    <button type="button" id="resetBtn_photo_6" class="btn btn-outline-danger" style="font-size: 11px; padding: 4px 8px; margin-top: 4px; display: none;" onclick="clearPhotoSlot('photo_6', 'previewWrap6', false)">🗑️ Hapus</button>
                                     <div style="font-size:10px;color:var(--text-muted);">Maks 2MB</div>
                                 </div>
                             </div>
@@ -371,14 +390,97 @@
                         wrap.innerHTML =
                             `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius: var(--radius-sm);">`;
                     }
+                    if (input.name) {
+                        const resetBtn = document.getElementById('resetBtn_' + input.name);
+                        if (resetBtn) resetBtn.style.display = 'inline-block';
+                    }
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
+        function clearPhotoSlot(inputName, previewId, isMain = false) {
+            const input = document.querySelector(`input[name="${inputName}"]`);
+            if (input) {
+                input.value = '';
+            }
+            const wrap = document.getElementById(previewId);
+            if (wrap) {
+                const icon = isMain ? '📦' : '📷';
+                wrap.innerHTML = `<div class="avatar-initials" style="border-radius: var(--radius-sm); font-size: 24px;">${icon}</div>`;
+            }
+            const resetBtn = document.getElementById('resetBtn_' + inputName);
+            if (resetBtn) {
+                resetBtn.style.display = 'none';
+            }
+        }
+
         let colorIndex = 0;
 
+        function handleBulkImageUpload(files) {
+            if (!files || files.length === 0) return;
+
+            const slots = [
+                { inputName: 'main_photo', previewId: 'avatarPreviewWrap' },
+                { inputName: 'photo_2', previewId: 'previewWrap2' },
+                { inputName: 'photo_3', previewId: 'previewWrap3' },
+                { inputName: 'photo_4', previewId: 'previewWrap4' },
+                { inputName: 'photo_5', previewId: 'previewWrap5' },
+                { inputName: 'photo_6', previewId: 'previewWrap6' },
+            ];
+
+            const maxFiles = Math.min(files.length, slots.length);
+
+            for (let i = 0; i < maxFiles; i++) {
+                const file = files[i];
+                const slot = slots[i];
+                const input = document.querySelector(`input[name="${slot.inputName}"]`);
+
+                if (input && file) {
+                    try {
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        input.files = dt.files;
+                        previewPhoto(input, slot.previewId);
+                    } catch (e) {
+                        console.error('DataTransfer not supported or file assignment error:', e);
+                    }
+                }
+            }
+
+            if (files.length > 6) {
+                alert('Hanya 6 gambar pertama yang diisikan ke slot yang tersedia.');
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
+            const dropzone = document.getElementById('bulkDropzone');
+            if (dropzone) {
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropzone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzone.style.background = '#e0e7ff';
+                        dropzone.style.borderColor = '#4338ca';
+                    }, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropzone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzone.style.background = '#f8fafc';
+                        dropzone.style.borderColor = '#4f46e5';
+                    }, false);
+                });
+
+                dropzone.addEventListener('drop', (e) => {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    handleBulkImageUpload(files);
+                }, false);
+            }
+
             const dataEl = document.getElementById('product-colors-data');
             const oldColors = JSON.parse(dataEl.dataset.colors || '[]');
             if (Array.isArray(oldColors)) {

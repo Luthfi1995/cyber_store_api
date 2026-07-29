@@ -25,6 +25,19 @@
                         style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);">
                         🖼️ Gambar Produk
                     </div>
+
+                    {{-- Bulk Upload Dropzone --}}
+                    <div id="bulkDropzone" class="bulk-dropzone"
+                        style="border: 2px dashed #4f46e5; background: #f8fafc; border-radius: var(--radius-md, 8px); padding: 20px; text-align: center; margin-bottom: 20px; cursor: pointer; transition: all 0.2s ease;">
+                        <input type="file" id="bulkImageInput" multiple accept="image/jpg,image/jpeg,image/png,image/webp" style="display:none;" onchange="handleBulkImageUpload(this.files)">
+                        <div style="font-size: 32px; margin-bottom: 8px;">⚡📁</div>
+                        <div style="font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 4px;">Upload Banyak Foto Sekaligus (Drag & Drop)</div>
+                        <div style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Pilih atau tarik hingga 6 gambar sekaligus. Foto akan otomatis mengisi Gambar 1 (Utama) hingga Gambar 6.</div>
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('bulkImageInput').click()" style="font-size: 12px; padding: 8px 16px;">
+                            📂 Pilih Banyak Foto Sekaligus
+                        </button>
+                    </div>
+
                     <div class="form-row" style="gap: 16px; margin-bottom: 20px;">
                         {{-- Gambar 1 (Utama) --}}
                         <div class="form-group" style="flex: 1; min-width: 220px;">
@@ -533,9 +546,80 @@
             }
         }
 
+        function handleBulkImageUpload(files) {
+            if (!files || files.length === 0) return;
+
+            const slots = [
+                { inputName: 'main_photo', inputId: 'mainPhotoInput', previewId: 'avatarPreviewWrap', removeId: 'removePhoto' },
+                { inputName: 'photo_2', inputId: 'photo2Input', previewId: 'previewWrap2', removeId: 'removePhoto2' },
+                { inputName: 'photo_3', inputId: 'photo3Input', previewId: 'previewWrap3', removeId: 'removePhoto3' },
+                { inputName: 'photo_4', inputId: 'photo4Input', previewId: 'previewWrap4', removeId: 'removePhoto4' },
+                { inputName: 'photo_5', inputId: 'photo5Input', previewId: 'previewWrap5', removeId: 'removePhoto5' },
+                { inputName: 'photo_6', inputId: 'photo6Input', previewId: 'previewWrap6', removeId: 'removePhoto6' },
+            ];
+
+            const maxFiles = Math.min(files.length, slots.length);
+
+            for (let i = 0; i < maxFiles; i++) {
+                const file = files[i];
+                const slot = slots[i];
+                const input = document.querySelector(`input[name="${slot.inputName}"]`) || document.getElementById(slot.inputId);
+
+                if (input && file) {
+                    try {
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        input.files = dt.files;
+                        input.disabled = false;
+
+                        // Uncheck remove checkbox if checked
+                        if (slot.removeId) {
+                            const removeCb = document.getElementById(slot.removeId);
+                            if (removeCb) removeCb.checked = false;
+                        }
+
+                        previewPhoto(input, slot.previewId, slot.removeId);
+                    } catch (e) {
+                        console.error('Error assigning bulk image:', e);
+                    }
+                }
+            }
+
+            if (files.length > 6) {
+                alert('Hanya 6 gambar pertama yang diisikan ke slot yang tersedia.');
+            }
+        }
+
         let colorIndex = 0;
 
         document.addEventListener("DOMContentLoaded", function() {
+            const dropzone = document.getElementById('bulkDropzone');
+            if (dropzone) {
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropzone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzone.style.background = '#e0e7ff';
+                        dropzone.style.borderColor = '#4338ca';
+                    }, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropzone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzone.style.background = '#f8fafc';
+                        dropzone.style.borderColor = '#4f46e5';
+                    }, false);
+                });
+
+                dropzone.addEventListener('drop', (e) => {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    handleBulkImageUpload(files);
+                }, false);
+            }
+
             const dataEl = document.getElementById('product-colors-data');
             const oldColors = JSON.parse(dataEl.dataset.colors || '[]');
             if (Array.isArray(oldColors)) {

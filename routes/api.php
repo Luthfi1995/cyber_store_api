@@ -54,6 +54,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/cart', [CartController::class, 'index']);
         Route::post('/cart/add', [CartController::class, 'add']);
+        Route::post('/cart/items/delete-bulk', [CartController::class, 'removeBulk']);
         Route::patch('/cart/items/{itemId}', [CartController::class, 'update']);
         Route::delete('/cart/items/{itemId}', [CartController::class, 'remove']);
         Route::delete('/cart', [CartController::class, 'clear']);

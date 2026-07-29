@@ -26,6 +26,8 @@ class CheckoutController extends Controller
             'expedition_id' => ['required', 'exists:expeditions,id'],
             'bank_code' => ['nullable', 'in:bca,bni,bri,mandiri,permata'],
             'note' => ['nullable', 'string', 'max:500'],
+            'cart_item_ids' => ['nullable', 'array'],
+            'cart_item_ids.*' => ['integer', 'exists:cart_items,id'],
         ]);
 
         $user = $request->user();
@@ -46,15 +48,23 @@ class CheckoutController extends Controller
             ->with(['items.product'])
             ->firstOrFail();
 
-        if ($cart->items->isEmpty()) {
+        $cartItems = $cart->items;
+        if (isset($validated['cart_item_ids']) && is_array($validated['cart_item_ids'])) {
+            $cartItemIds = $validated['cart_item_ids'];
+            $cartItems = $cartItems->filter(function ($item) use ($cartItemIds) {
+                return in_array($item->id, $cartItemIds);
+            });
+        }
+
+        if ($cartItems->isEmpty()) {
             return response()->json(['message' => 'Keranjang masih kosong.'], 422);
         }
 
-        $order = DB::transaction(function () use ($cart, $user, $address, $expedition, $validated, $midtransService) {
+        $order = DB::transaction(function () use ($cart, $cartItems, $user, $address, $expedition, $validated, $midtransService) {
             $subtotal = 0;
             $totalWeight = 0;
 
-            foreach ($cart->items as $item) {
+            foreach ($cartItems as $item) {
                 $product = Product::query()->where('id', $item->product_id)->lockForUpdate()->firstOrFail();
 
                 if (! $product->is_active || $product->stock < $item->quantity) {
@@ -137,11 +147,12 @@ class CheckoutController extends Controller
 
             // Fallback default jika RajaOngkir gagal
             if ($shippingCost <= 0) {
-                $totalQuantity = $cart->items->sum('quantity');
+                $totalQuantity = $cartItems->sum('quantity');
                 $shippingCost = $expedition->base_cost + max(0, $totalQuantity - 1) * 1000;
             }
 
-            $grandTotal = $subtotal + $shippingCost;
+            $serviceFee = 2000;
+            $grandTotal = $subtotal + $shippingCost + $serviceFee;
 
             $order = Order::create([
                 'invoice_number' => 'INV-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(5)),
@@ -155,7 +166,7 @@ class CheckoutController extends Controller
                 'note' => $validated['note'] ?? null,
             ]);
 
-            foreach ($cart->items as $item) {
+            foreach ($cartItems as $item) {
                 $product = Product::query()->where('id', $item->product_id)->lockForUpdate()->firstOrFail();
 
                 $order->items()->create([
@@ -199,7 +210,9 @@ class CheckoutController extends Controller
                 'location' => $address->city,
             ]);
 
-            $cart->items()->delete();
+            // Hapus hanya item-item yang di-checkout dari keranjang
+            $itemIdsToDestroy = $cartItems->pluck('id')->toArray();
+            \App\Models\CartItem::destroy($itemIdsToDestroy);
 
             return $order;
         });

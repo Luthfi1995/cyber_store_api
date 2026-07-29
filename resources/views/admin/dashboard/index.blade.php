@@ -4,7 +4,7 @@
 @section('page-title', 'Dashboard')
 @section('breadcrumb')
     <span class="breadcrumb-sep">›</span>
-    <span>Overview</span>
+    <span>Ikhtisar</span>
 @endsection
 
 @section('content')
@@ -22,38 +22,65 @@
     </div>
 </div>
 
-<!-- Stats Summary Grid -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon" style="background:#eff6ff; color:#2563eb;">👥</div>
-        <div class="stat-info">
-            <div class="stat-value">{{ number_format($stats['total_users']) }}</div>
-            <div class="stat-label">Total Pengguna</div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ $stats['total_customers'] }} Pelanggan · {{ $stats['total_admins'] }} Admin</div>
+<!-- Stats Summary Grid (Soft UI Dashboard Pro Style) -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 24px;">
+    {{-- Sales / Pendapatan Card --}}
+    <div style="background: var(--bg-card); border-radius: 1rem; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Penjualan</div>
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Bulan Ini</div>
+        </div>
+        <div style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.5px;">
+            Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}
+        </div>
+        <div style="font-size: 12px; font-weight: 700; color: #82d616; display: flex; align-items: center; gap: 4px;">
+            <span>+55%</span>
+            <span style="color: var(--text-muted); font-weight: 500;">dibanding bulan lalu</span>
         </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon" style="background:#f0fdf4; color:#16a34a;">📦</div>
-        <div class="stat-info">
-            <div class="stat-value">{{ number_format($stats['total_products']) }}</div>
-            <div class="stat-label">Total Produk</div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ $stats['active_products'] }} Aktif · {{ $stats['total_categories'] }} Kategori</div>
+
+    {{-- Customers Card --}}
+    <div style="background: var(--bg-card); border-radius: 1rem; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Pelanggan</div>
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Bulan Ini</div>
+        </div>
+        <div style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.5px;">
+            {{ number_format($stats['total_users']) }}
+        </div>
+        <div style="font-size: 12px; font-weight: 700; color: #82d616; display: flex; align-items: center; gap: 4px;">
+            <span>+12%</span>
+            <span style="color: var(--text-muted); font-weight: 500;">dibanding bulan lalu</span>
         </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon" style="background:#fffbeb; color:#d97706;">🛒</div>
-        <div class="stat-info">
-            <div class="stat-value">{{ number_format($stats['total_orders']) }}</div>
-            <div class="stat-label">Total Pesanan</div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">{{ $stats['pending_orders'] }} Pending · {{ $stats['processing_orders'] }} Diproses</div>
+
+    {{-- Orders Card --}}
+    <div style="background: var(--bg-card); border-radius: 1rem; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Pesanan</div>
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Bulan Ini</div>
+        </div>
+        <div style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.5px;">
+            {{ number_format($stats['total_orders']) }}
+        </div>
+        <div style="font-size: 12px; font-weight: 700; color: #82d616; display: flex; align-items: center; gap: 4px;">
+            <span>+8%</span>
+            <span style="color: var(--text-muted); font-weight: 500;">dibanding bulan lalu</span>
         </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon" style="background:#fdf2f8; color:#db2777;">💰</div>
-        <div class="stat-info">
-            <div class="stat-value" style="font-size: 19px;">Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}</div>
-            <div class="stat-label">Total Pendapatan</div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Dari pesanan selesai</div>
+
+    {{-- Active Products Card --}}
+    <div style="background: var(--bg-card); border-radius: 1rem; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Produk</div>
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Bulan Ini</div>
+        </div>
+        <div style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; letter-spacing: -0.5px;">
+            {{ number_format($stats['total_products']) }}
+        </div>
+        <div style="font-size: 12px; font-weight: 700; color: #82d616; display: flex; align-items: center; gap: 4px;">
+            <span>+15%</span>
+            <span style="color: var(--text-muted); font-weight: 500;">dibanding bulan lalu</span>
         </div>
     </div>
 </div>
@@ -171,11 +198,11 @@
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; font-size: 12px; color: #64748b; text-transform: uppercase;">
-                        <th style="padding: 14px 20px;">ID Order</th>
+                        <th style="padding: 14px 20px;">ID Pesanan</th>
                         <th style="padding: 14px 20px;">Pelanggan</th>
                         <th style="padding: 14px 20px;">Status Pembayaran / Pengiriman</th>
                         <th style="padding: 14px 20px;">Total Bayar</th>
-                        <th style="padding: 14px 20px;">Tanggal Order</th>
+                        <th style="padding: 14px 20px;">Tanggal Pesanan</th>
                     </tr>
                 </thead>
                 <tbody>
