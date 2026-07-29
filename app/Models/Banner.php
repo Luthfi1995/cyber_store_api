@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\EncryptsRouteKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Banner extends Model
 {
-    use HasFactory;
+    use HasFactory, EncryptsRouteKey;
 
     protected $fillable = [
         'title',
