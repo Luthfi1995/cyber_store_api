@@ -28,7 +28,7 @@
     @stack('styles')
 </head>
 
-<body>
+<body class="sidebar-collapsed">
 
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 

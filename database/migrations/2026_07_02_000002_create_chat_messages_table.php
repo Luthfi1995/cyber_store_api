@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('chat_id')->constrained('chats')->cascadeOnDelete();
             $table->enum('sender_type', ['customer', 'admin']);
             $table->foreignId('sender_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->text('message');
+            $table->longText('message');
             $table->boolean('is_read')->default(false);
             $table->timestamps();
         });

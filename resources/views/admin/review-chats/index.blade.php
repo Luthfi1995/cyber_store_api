@@ -560,12 +560,23 @@
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
     }
 
-    [data-theme="dark"] #threeDotsDropdown a {
-        color: #ffffff !important;
-    }
-
-    [data-theme="dark"] #threeDotsDropdown a:hover {
-        background: #3d4350 !important;
+    @media (max-width: 768px) {
+        .slack-chat-workspace {
+            flex-direction: column !important;
+            height: auto !important;
+            padding: 8px !important;
+        }
+        .slack-sidebar {
+            width: 100% !important;
+            max-height: 250px !important;
+        }
+        .slack-main-chat {
+            width: 100% !important;
+            min-height: 400px !important;
+        }
+        .slack-details-pane {
+            width: 100% !important;
+        }
     }
 </style>
 @endpush

@@ -278,7 +278,24 @@
             </button>
         </div>
 
-        <div style="padding: 0; overflow-x: auto;">
+        <style>
+            .desktop-table-container { display: block; }
+            .mobile-announcement-grid { display: none; padding: 16px; gap: 14px; flex-direction: column; }
+            .mobile-announcement-card {
+                background: var(--bg-card, #ffffff);
+                border: 1px solid var(--border, #e2e8f0);
+                border-radius: 14px;
+                padding: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            }
+            @media (max-width: 768px) {
+                .desktop-table-container { display: none !important; }
+                .mobile-announcement-grid { display: flex !important; }
+            }
+        </style>
+
+        <!-- Desktop Table View (>768px) -->
+        <div style="padding: 0; overflow-x: auto;" class="desktop-table-container">
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>
                     <tr style="background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; font-size: 12.5px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -297,7 +314,7 @@
                                 {{ $announcement->title }}
                             </td>
                             <td style="padding: 16px 20px; max-width: 320px; color: #475569; line-height: 1.4;">
-                                {{ Str::limit($announcement->content, 90) }}
+                                {{ \Illuminate\Support\Str::limit($announcement->content, 90) }}
                             </td>
                             <td style="padding: 16px 20px;">
                                 @if($announcement->type === 'promo')
@@ -320,7 +337,7 @@
                                 <form action="{{ route('admin.announcements.destroy', $announcement->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengumuman ini?');" style="display: inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s ease;" onmouseover="this.style.background='#dc2626'; this.style.color='#ffffff';" onmouseout="this.style.background='#fee2e2'; this.style.color='#dc2626';">
+                                    <button type="submit" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s ease;">
                                         🗑️ Hapus
                                     </button>
                                 </form>
@@ -339,11 +356,51 @@
             </table>
         </div>
 
+        <!-- Mobile Announcement Card View (<=768px) -->
+        <div class="mobile-announcement-grid">
+            @foreach($announcements as $announcement)
+            <div class="mobile-announcement-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="font-weight: 800; font-size: 14px; color: #0f172a;">
+                        📢 {{ $announcement->title }}
+                    </div>
+                    @if($announcement->type === 'promo')
+                        <span class="badge-type badge-promo">🏷️ Promo</span>
+                    @elseif($announcement->type === 'system')
+                        <span class="badge-type badge-system">⚙️ Sistem</span>
+                    @else
+                        <span class="badge-type badge-info">📢 Info</span>
+                    @endif
+                </div>
+
+                <div style="font-size: 12.5px; color: #475569; margin-bottom: 12px; line-height: 1.4;">
+                    {{ \Illuminate\Support\Str::limit($announcement->content, 120) }}
+                </div>
+
+                <div style="background: var(--bg-input, #f8fafc); padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>Jangkauan: <strong>👥 {{ number_format($announcement->user_notifications_count) }} User</strong></div>
+                    <div>📅 {{ $announcement->created_at->format('d M Y, H:i') }}</div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end;">
+                    <form action="{{ route('admin.announcements.destroy', $announcement->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengumuman ini?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">
+                            🗑️ Hapus
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
         @if($announcements->hasPages())
             <div style="padding: 20px 24px; border-top: 1px solid #f1f5f9;">
                 {{ $announcements->links() }}
             </div>
         @endif
+    </div>
     </div>
 
     {{-- Glassmorphic Modal Create Announcement --}}

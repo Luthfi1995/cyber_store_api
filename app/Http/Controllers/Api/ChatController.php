@@ -28,6 +28,11 @@ class ChatController extends Controller
                     ->where('is_read', false)
                     ->count();
 
+                $lastMsg = $chat->lastMessage?->message;
+                if ($lastMsg && (str_starts_with($lastMsg, '[IMAGE]:') || str_contains($lastMsg, 'data:image'))) {
+                    $lastMsg = '📷 [Gambar]';
+                }
+
                 return [
                     'id'           => $chat->id,
                     'subject'      => $chat->subject,
@@ -35,7 +40,7 @@ class ChatController extends Controller
                     'product_name' => $chat->product_name,
                     'status'       => $chat->status,
                     'unread_count' => $unread,
-                    'last_message' => $chat->lastMessage?->message,
+                    'last_message' => $lastMsg,
                     'last_message_at' => $chat->last_message_at?->toIso8601String(),
                     'created_at'   => $chat->created_at->toIso8601String(),
                 ];
@@ -52,7 +57,7 @@ class ChatController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'message'    => 'required|string|max:5000',
+            'message'    => 'required|string|max:10000000',
             'product_id' => 'nullable|exists:products,id',
             'subject'    => 'nullable|string|max:255',
         ]);
@@ -138,7 +143,7 @@ class ChatController extends Controller
             return response()->json(['message' => 'Chat sudah ditutup.'], 422);
         }
 
-        $request->validate(['message' => 'required|string|max:5000']);
+        $request->validate(['message' => 'required|string|max:10000000']);
 
         $message = ChatMessage::create([
             'chat_id'     => $chat->id,

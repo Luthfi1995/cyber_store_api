@@ -9,13 +9,13 @@
 @section('content')
 @php
 $statusBadgeStyles = [
-    'pending_payment' => 'background: #fffbeb; color: #d97706; border: 1px solid #fde68a;',
-    'paid'            => 'background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;',
-    'packed'          => 'background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;',
-    'shipped'         => 'background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe;',
-    'arrived'         => 'background: #ecfeff; color: #0891b2; border: 1px solid #a5f3fc;',
-    'completed'       => 'background: #82d616; color: #ffffff;',
-    'cancelled'       => 'background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;',
+'pending_payment' => 'background: #fffbeb; color: #d97706; border: 1px solid #fde68a;',
+'paid' => 'background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;',
+'packed' => 'background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;',
+'shipped' => 'background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe;',
+'arrived' => 'background: #ecfeff; color: #0891b2; border: 1px solid #a5f3fc;',
+'completed' => 'background: #82d616; color: #ffffff;',
+'cancelled' => 'background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;',
 ];
 @endphp
 
@@ -24,7 +24,7 @@ $statusBadgeStyles = [
 <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 1rem; padding: 20px; margin-bottom: 24px; box-shadow: var(--shadow);">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
         <div style="font-weight: 800; font-size: 15px; color: #991b1b; display: flex; align-items: center; gap: 8px;">
-            ⚠️ Pengajuan Pembatalan Pesanan
+            <iconify-icon icon="solar:danger-triangle-bold-duotone" style="font-size: 18px; color: #dc2626;"></iconify-icon> Pengajuan Pembatalan Pesanan
         </div>
         <span style="background: #dc2626; color: #fff; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase;">MEMBUTUHKAN TINDAKAN</span>
     </div>
@@ -40,8 +40,8 @@ $statusBadgeStyles = [
         {{-- Form Terima --}}
         <form id="approveCancelForm" method="POST" action="{{ route('admin.orders.cancel-approve', $order) }}" style="margin: 0;">
             @csrf @method('PATCH')
-            <button type="button" class="btn" style="background: linear-gradient(310deg, #ea0606, #ff3b30); color: white; border: none; font-weight: 700; border-radius: 0.5rem; padding: 8px 16px; box-shadow: 0 4px 6px -1px rgba(234,6,6,0.3);" onclick="confirmUpdate('approveCancelForm', 'Setujui Pembatalan', 'Apakah Anda yakin ingin menyetujui pembatalan pesanan ini? Stok produk akan dikembalikan otomatis.')">
-                ✅ Setujui & Batalkan
+            <button type="button" class="btn" style="background: linear-gradient(310deg, #ea0606, #ff3b30); color: white; border: none; font-weight: 700; border-radius: 0.5rem; padding: 8px 16px; box-shadow: 0 4px 6px -1px rgba(234,6,6,0.3); display: inline-flex; align-items: center; gap: 6px;" onclick="confirmUpdate('approveCancelForm', 'Setujui Pembatalan', 'Apakah Anda yakin ingin menyetujui pembatalan pesanan ini? Stok produk akan dikembalikan otomatis.')">
+                <iconify-icon icon="solar:check-read-bold" style="font-size: 16px;"></iconify-icon> Setujui & Batalkan
             </button>
         </form>
 
@@ -50,8 +50,8 @@ $statusBadgeStyles = [
             <form id="rejectCancelForm" method="POST" action="{{ route('admin.orders.cancel-reject', $order) }}" style="display: flex; gap: 8px; margin: 0;">
                 @csrf @method('PATCH')
                 <input type="text" name="reject_reason" class="form-control" placeholder="Tulis alasan penolakan..." required style="flex: 1; border-radius: 0.5rem; border-color: #fca5a5; font-size: 13px;">
-                <button type="button" class="btn" style="background: #64748b; color: white; border: none; font-weight: 700; border-radius: 0.5rem; padding: 8px 16px;" onclick="confirmUpdate('rejectCancelForm', 'Tolak Pembatalan', 'Apakah Anda yakin ingin menolak pengajuan pembatalan pesanan ini?')">
-                    ❌ Tolak
+                <button type="button" class="btn" style="background: #64748b; color: white; border: none; font-weight: 700; border-radius: 0.5rem; padding: 8px 16px; display: inline-flex; align-items: center; gap: 6px;" onclick="confirmUpdate('rejectCancelForm', 'Tolak Pembatalan', 'Apakah Anda yakin ingin menolak pengajuan pembatalan pesanan ini?')">
+                    <iconify-icon icon="solar:close-circle-bold" style="font-size: 16px;"></iconify-icon> Tolak
                 </button>
             </form>
         </div>
@@ -72,11 +72,11 @@ $statusBadgeStyles = [
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <a href="javascript:window.print();" style="background: linear-gradient(310deg, #7928CA 0%, #FF0080 100%); color: #ffffff; font-size: 11px; font-weight: 800; padding: 9px 18px; border-radius: 0.5rem; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3);">
-                INVOICE
+            <a href="javascript:window.print();" style="background: linear-gradient(310deg, #7928CA 0%, #FF0080 100%); color: #ffffff; font-size: 11px; font-weight: 800; padding: 9px 18px; border-radius: 0.5rem; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3); display: inline-flex; align-items: center; gap: 6px;">
+                <iconify-icon icon="solar:printer-bold-duotone" style="font-size: 15px;"></iconify-icon> INVOICE
             </a>
-            <a href="{{ route('admin.orders.index') }}" style="background: var(--bg-input); color: var(--text-primary); font-size: 11px; font-weight: 800; padding: 9px 16px; border-radius: 0.5rem; text-decoration: none; border: 1px solid var(--border);">
-                ← KEMBALI
+            <a href="{{ route('admin.orders.index') }}" style="background: var(--bg-input); color: var(--text-primary); font-size: 11px; font-weight: 800; padding: 9px 16px; border-radius: 0.5rem; text-decoration: none; border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px;">
+                <iconify-icon icon="solar:alt-arrow-left-bold-duotone" style="font-size: 15px;"></iconify-icon> KEMBALI
             </a>
         </div>
     </div>
@@ -87,17 +87,17 @@ $statusBadgeStyles = [
     <div style="display: flex; flex-direction: column; gap: 16px;">
         @foreach($order->items as $item)
         @php
-            $itemPhotoUrl = null;
-            if ($item->product && $item->product->main_photo) {
-                $itemPhotoUrl = str_starts_with($item->product->main_photo, 'http') ? $item->product->main_photo : \Storage::disk('public')->url($item->product->main_photo);
-            }
+        $itemPhotoUrl = null;
+        if ($item->product && $item->product->main_photo) {
+        $itemPhotoUrl = str_starts_with($item->product->main_photo, 'http') ? $item->product->main_photo : \Storage::disk('public')->url($item->product->main_photo);
+        }
         @endphp
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 12px; background: var(--bg-input); border-radius: 0.75rem; border: 1px solid var(--border);">
             <div style="display: flex; align-items: center; gap: 16px;">
                 @if($itemPhotoUrl)
                 <img src="{{ $itemPhotoUrl }}" alt="{{ $item->product_name }}" style="width: 80px; height: 80px; border-radius: 0.75rem; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; background: #fff;">
                 @else
-                <div style="width: 80px; height: 80px; border-radius: 0.75rem; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0;">📦</div>
+                <div style="width: 80px; height: 80px; border-radius: 0.75rem; background: #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><iconify-icon icon="solar:box-bold-duotone" style="font-size: 32px; color: #64748b;"></iconify-icon></div>
                 @endif
 
                 <div>
@@ -108,7 +108,10 @@ $statusBadgeStyles = [
                         @if($item->color) <span>• Warna: <strong style="color: var(--text-primary);">{{ $item->color }}</strong></span> @endif
                     </div>
                     <div style="margin-top: 6px;">
-                        <span style="{{ $statusBadgeStyles[$order->status] ?? 'background: #e2e8f0; color: #475569;' }} font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase;">
+                        <span @style([
+                            $statusBadgeStyles[$order->status] ?? 'background: #e2e8f0; color: #475569;',
+                            'font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase;'
+                            ])>
                             {{ $statusLabels[$order->status] ?? strtoupper($order->status) }}
                         </span>
                     </div>
@@ -120,9 +123,7 @@ $statusBadgeStyles = [
                     <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Subtotal</div>
                     <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Rp {{ number_format($item->total, 0, ',', '.') }}</div>
                 </div>
-                <a href="{{ route('admin.chats.index') }}" style="background: linear-gradient(310deg, #17c1e8 0%, #1198ba 100%); color: #ffffff; font-size: 11px; font-weight: 800; padding: 9px 16px; border-radius: 0.5rem; text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(23, 193, 232, 0.3);">
-                    CONTACT US
-                </a>
+
             </div>
         </div>
         @endforeach
@@ -145,8 +146,10 @@ $statusBadgeStyles = [
             @foreach($order->trackings as $i => $track)
             <div style="display: flex; gap: 16px;">
                 <div style="display: flex; flex-direction: column; align-items: center;">
-                    <div style="width: 32px; height: 32px; border-radius: 0.5rem; background: {{ $i === 0 ? 'linear-gradient(310deg, #DF0B2B 0%, #BA0924 100%)' : 'var(--bg-input)' }}; color: {{ $i === 0 ? '#ffffff' : 'var(--text-muted)' }}; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; box-shadow: {{ $i === 0 ? '0 4px 6px -1px rgba(223,11,43,0.3)' : 'none' }};">
-                        @if($i === 0) 🔔 @elseif($loop->last) 📦 @else 🚚 @endif
+                    <div @style([ 'width: 32px; height: 32px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;' , 'background: linear-gradient(310deg, #DF0B2B 0%, #BA0924 100%); color: #ffffff; box-shadow: 0 4px 6px -1px rgba(223,11,43,0.3);'=> $i === 0,
+                        'background: var(--bg-input); color: var(--text-muted); box-shadow: none;' => $i !== 0
+                        ])>
+                        @if($i === 0) <iconify-icon icon="solar:bell-bing-bold-duotone" style="font-size: 16px;"></iconify-icon> @elseif($loop->last) <iconify-icon icon="solar:box-bold-duotone" style="font-size: 16px;"></iconify-icon> @else <iconify-icon icon="solar:delivery-bold-duotone" style="font-size: 16px;"></iconify-icon> @endif
                     </div>
                     @if(!$loop->last)
                     <div style="width: 2px; flex: 1; background: var(--border); margin: 6px 0; min-height: 24px;"></div>
@@ -156,7 +159,7 @@ $statusBadgeStyles = [
                     <div style="font-size: 13.5px; font-weight: 800; color: var(--text-primary);">{{ $track->description }}</div>
                     <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">{{ $track->created_at->format('d M Y, H:i') }}</div>
                     @if($track->location)
-                    <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;">📍 {{ $track->location }}</div>
+                    <div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; display: flex; align-items: center; gap: 4px;"><iconify-icon icon="solar:map-point-wave-bold-duotone" style="font-size: 14px; color: var(--accent);"></iconify-icon> {{ $track->location }}</div>
                     @endif
                     @if($track->proof_photo)
                     <div style="margin-top: 8px;">
@@ -198,7 +201,9 @@ $statusBadgeStyles = [
                     </div>
                 </div>
                 <div>
-                    <span style="font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; {{ $order->payment->status === 'paid' ? 'background: #f0fdf4; color: #16a34a;' : 'background: #fffbeb; color: #d97706;' }}">
+                    <span @style([ 'font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; text-transform: uppercase;' , 'background: #f0fdf4; color: #16a34a;'=> $order->payment->status === 'paid',
+                        'background: #fffbeb; color: #d97706;' => $order->payment->status !== 'paid'
+                        ])>
                         {{ ucwords(str_replace('_', ' ', $order->payment->status)) }}
                     </span>
                 </div>
@@ -246,7 +251,7 @@ $statusBadgeStyles = [
                         <a href="https://www.google.com/maps/search/?api=1&query={{ $order->address->latitude }},{{ $order->address->longitude }}"
                             target="_blank"
                             style="color: var(--accent); font-size: 11px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-                            🌐 Buka Google Maps
+                            <iconify-icon icon="solar:global-bold-duotone" style="font-size: 14px;"></iconify-icon> Buka Google Maps
                         </a>
                     </div>
                 </div>
@@ -271,8 +276,8 @@ $statusBadgeStyles = [
                     <strong style="color: var(--text-primary);">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</strong>
                 </div>
                 @php
-                    $serviceFee = max(0, $order->grand_total - ($order->subtotal + $order->shipping_cost));
-                    if ($serviceFee == 0) $serviceFee = 2000;
+                $serviceFee = max(0, $order->grand_total - ($order->subtotal + $order->shipping_cost));
+                if ($serviceFee == 0) $serviceFee = 2000;
                 @endphp
                 <div style="display: flex; justify-content: space-between;">
                     <span>Biaya Layanan:</span>
@@ -306,12 +311,12 @@ $statusBadgeStyles = [
                     </select>
                 </div>
                 <div class="form-group" id="proof-photo-group" style="display: none; margin-bottom: 12px;">
-                    <label class="form-label" style="font-size: 12px; font-weight: 700;">📷 Bukti Pengiriman (Foto Kurir)</label>
+                    <label class="form-label" style="font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;"><iconify-icon icon="solar:camera-bold-duotone" style="font-size: 16px; color: var(--accent);"></iconify-icon> Bukti Pengiriman (Foto Kurir)</label>
                     <input type="file" name="proof_photo" class="form-control" accept="image/*" style="border-radius: 0.5rem; font-size: 12px;">
                     <small style="color: var(--text-muted); display: block; margin-top: 4px;">Upload foto kurir/bukti penerimaan saat paket tiba.</small>
                 </div>
-                <button type="button" class="btn" style="width: 100%; background: linear-gradient(310deg, #7928CA 0%, #FF0080 100%); color: #ffffff; border: none; font-weight: 800; font-size: 12px; border-radius: 0.5rem; padding: 10px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(236,72,153,0.3);" onclick="confirmUpdate('orderStatusForm', 'Konfirmasi Perbarui Status', 'Apakah Anda yakin ingin memperbarui status order ini?')">
-                    💾 SIMPAN STATUS
+                <button type="button" class="btn" style="width: 100%; background: linear-gradient(310deg, #7928CA 0%, #FF0080 100%); color: #ffffff; border: none; font-weight: 800; font-size: 12px; border-radius: 0.5rem; padding: 10px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(236,72,153,0.3); display: inline-flex; align-items: center; justify-content: center; gap: 6px;" onclick="confirmUpdate('orderStatusForm', 'Konfirmasi Perbarui Status', 'Apakah Anda yakin ingin memperbarui status order ini?')">
+                    <iconify-icon icon="solar:diskette-bold-duotone" style="font-size: 16px;"></iconify-icon> SIMPAN STATUS
                 </button>
             </form>
 
@@ -337,16 +342,16 @@ $statusBadgeStyles = [
                     <label class="form-label" style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">Nomor Resi Pengiriman</label>
                     <input type="text" name="resi_number" class="form-control" value="{{ $order->resi_number }}" placeholder="Masukkan nomor resi" style="border-radius: 0.5rem; font-size: 13px; padding: 8px 12px;">
                 </div>
-                <button type="button" class="btn" style="width: 100%; background: #10b981; color: #ffffff; border: none; font-weight: 800; font-size: 12px; border-radius: 0.5rem; padding: 10px; text-transform: uppercase; letter-spacing: 0.5px;" onclick="confirmUpdate('orderResiForm', 'Konfirmasi Simpan Resi', 'Apakah Anda yakin ingin menyimpan nomor resi ini?')">
-                    📋 SIMPAN RESI
+                <button type="button" class="btn" style="width: 100%; background: #10b981; color: #ffffff; border: none; font-weight: 800; font-size: 12px; border-radius: 0.5rem; padding: 10px; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;" onclick="confirmUpdate('orderResiForm', 'Konfirmasi Simpan Resi', 'Apakah Anda yakin ingin menyimpan nomor resi ini?')">
+                    <iconify-icon icon="solar:clipboard-check-bold-duotone" style="font-size: 16px;"></iconify-icon> SIMPAN RESI
                 </button>
             </form>
 
             @if($order->resi_number)
             <form method="POST" action="{{ route('admin.orders.track', $order) }}" style="margin-top: 10px;">
                 @csrf
-                <button type="submit" class="btn" style="width: 100%; background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border); font-weight: 700; font-size: 12px; border-radius: 0.5rem; padding: 8px;">
-                    🔄 Cek Resi via RajaOngkir
+                <button type="submit" class="btn" style="width: 100%; background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border); font-weight: 700; font-size: 12px; border-radius: 0.5rem; padding: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                    <iconify-icon icon="solar:restart-bold-duotone" style="font-size: 16px;"></iconify-icon> Cek Resi via RajaOngkir
                 </button>
             </form>
             @endif

@@ -44,14 +44,22 @@
         if (t) t.textContent = text || 'Memproses, harap tunggu…';
         el.style.display = 'flex';
     }
+
     function hideLoading() {
         const el = document.getElementById('globalLoadingOverlay');
         if (el) el.style.display = 'none';
     }
 
     // ─── Helper: close any modal by id ───────────────────────────
-    function _openModal(id)  { const m = document.getElementById(id); if (m) m.classList.add('open'); }
-    function _closeModal(id) { const m = document.getElementById(id); if (m) m.classList.remove('open'); }
+    function _openModal(id) {
+        const m = document.getElementById(id);
+        if (m) m.classList.add('open');
+    }
+
+    function _closeModal(id) {
+        const m = document.getElementById(id);
+        if (m) m.classList.remove('open');
+    }
 
     // ─── Delete Confirm ──────────────────────────────────────────
     function confirmDelete(url, name) {
@@ -61,7 +69,10 @@
         if (form) form.action = url;
         _openModal('confirmModal');
     }
-    function closeConfirm() { _closeModal('confirmModal'); }
+
+    function closeConfirm() {
+        _closeModal('confirmModal');
+    }
 
     // ─── Create/Tambah Confirm ───────────────────────────────────
     // formId    : id of the <form> element to submit
@@ -75,7 +86,10 @@
         if (b) b.textContent = bodyText || 'Apakah Anda yakin ingin menyimpan data baru ini?';
         _openModal('createConfirmModal');
     }
-    function closeCreateConfirm() { _closeModal('createConfirmModal'); }
+
+    function closeCreateConfirm() {
+        _closeModal('createConfirmModal');
+    }
 
     // ─── Update/Edit Confirm ─────────────────────────────────────
     function confirmUpdate(formId, title, bodyText) {
@@ -86,7 +100,10 @@
         if (b) b.textContent = bodyText || 'Apakah Anda yakin ingin menyimpan perubahan ini?';
         _openModal('updateConfirmModal');
     }
-    function closeUpdateConfirm() { _closeModal('updateConfirmModal'); }
+
+    function closeUpdateConfirm() {
+        _closeModal('updateConfirmModal');
+    }
 
     // ─── Submit the pending form (called from modal buttons) ─────
     function doFormSubmit(modalId) {
@@ -101,8 +118,13 @@
     }
 
     // ─── Logout Confirm ──────────────────────────────────────────
-    function confirmLogout()    { _openModal('logoutModal'); }
-    function closeLogoutModal() { _closeModal('logoutModal'); }
+    function confirmLogout() {
+        _openModal('logoutModal');
+    }
+
+    function closeLogoutModal() {
+        _closeModal('logoutModal');
+    }
 
     // Close modal when clicking backdrop
     document.addEventListener('click', function(e) {
@@ -165,9 +187,9 @@
         }
     }
 
-    // Initialize icons
+    // Initialize icons and ensure sidebar is closed on page load
     updateThemeIcons();
-    updateSidebarToggleIcon();
+    closeSidebar();
     window.addEventListener('resize', updateSidebarToggleIcon);
 </script>
 
@@ -177,37 +199,42 @@
         let lastUnreadCount = parseInt(document.getElementById('sidebar-chat-badge')?.innerText || '0');
 
         let audioCtx = null;
+
         function initAudioContext() {
             if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                audioCtx = new(window.AudioContext || window.webkitAudioContext)();
             }
             if (audioCtx && audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
         }
-        document.addEventListener('click', initAudioContext, { once: true });
-        document.addEventListener('keydown', initAudioContext, { once: true });
+        document.addEventListener('click', initAudioContext, {
+            once: true
+        });
+        document.addEventListener('keydown', initAudioContext, {
+            once: true
+        });
 
         function playNotificationSound() {
             try {
                 initAudioContext();
                 if (!audioCtx) return;
-                
+
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.type = 'sine';
-                
+
                 // Ring/alert melody pattern: D5 -> A5 -> F5
                 const now = audioCtx.currentTime;
                 osc.frequency.setValueAtTime(587.33, now); // D5
                 osc.frequency.setValueAtTime(880, now + 0.12); // A5
                 osc.frequency.setValueAtTime(698.46, now + 0.24); // F5
-                
+
                 gain.gain.setValueAtTime(0.12, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-                
+
                 osc.start(now);
                 osc.stop(now + 0.45);
             } catch (e) {
@@ -270,7 +297,7 @@
                     const count = parseInt(data.unread || '0');
                     if (count > lastUnreadCount) {
                         showToastNotification();
-                        
+
                         // Shake/wiggle the floating chat bubble
                         const bubble = document.getElementById('floating-chat-bubble');
                         if (bubble) {
@@ -464,12 +491,16 @@
         }
 
         function loadWidgetChats() {
-            fetch("{{ route('admin.chats.index') }}", { headers: { 'Accept': 'application/json' } })
+            fetch("{{ route('admin.chats.index') }}", {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
                 .then(res => res.json())
                 .then(data => {
                     const container = document.getElementById('widgetBody');
                     if (!container) return;
-                    
+
                     if (!data.chats || data.chats.length === 0) {
                         container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:40px; font-size:13px;">Belum ada chat masuk.</div>`;
                         return;
@@ -480,7 +511,10 @@
                         const name = chat.customer?.name || 'Customer';
                         const initials = name.substring(0, 1).toUpperCase();
                         const unreadHtml = chat.unread_count > 0 ? `<span class="widget-chat-badge">${chat.unread_count}</span>` : '';
-                        const lastMsg = chat.last_message?.message || 'Memulai percakapan...';
+                        let lastMsg = chat.last_message?.message || 'Memulai percakapan...';
+                        if (lastMsg.startsWith('[IMAGE]:') || lastMsg.includes('data:image')) {
+                            lastMsg = '📷 [Gambar]';
+                        }
                         const productHtml = chat.product_name ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px; display:flex; align-items:center; gap:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📦 ${chat.product_name}</div>` : '';
 
                         html += `
@@ -541,19 +575,26 @@
 
         function loadWidgetConversation() {
             if (!activeChatId) return;
-            fetch(`/admin/chats/${activeChatId}`, { headers: { 'Accept': 'application/json' } })
+            fetch(`/admin/chats/${activeChatId}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
                 .then(res => res.json())
                 .then(data => {
                     const msgContainer = document.getElementById('widgetMessages');
                     if (!msgContainer) return;
-                    
+
                     const wasAtBottom = msgContainer.scrollTop + msgContainer.clientHeight >= msgContainer.scrollHeight - 10;
-                    
+
                     let html = '';
                     data.messages.forEach(msg => {
                         const isSelf = msg.sender_type === 'admin';
                         const avatarChar = isSelf ? 'A' : data.chat.customer?.name?.substring(0, 1).toUpperCase() || 'C';
-                        const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const time = new Date(msg.created_at).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
 
                         let msgContent = msg.message;
                         let bubbleStyle = '';
@@ -607,7 +648,7 @@
                             </div>
                         `;
                     });
-                    
+
                     msgContainer.innerHTML = html;
                     if (wasAtBottom || msgContainer.scrollTop === 0) {
                         msgContainer.scrollTop = msgContainer.scrollHeight;
@@ -623,18 +664,20 @@
             input.value = '';
 
             fetch(`/admin/chats/${activeChatId}/reply`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                },
-                body: JSON.stringify({ message: text })
-            })
-            .then(res => res.json())
-            .then(data => {
-                loadWidgetConversation();
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    body: JSON.stringify({
+                        message: text
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    loadWidgetConversation();
+                });
         };
 
         window.playMockAudio = function(btn, duration) {
@@ -642,7 +685,7 @@
             const container = btn.parentElement;
             const bar = container.querySelector('.progress-bar-fill');
             const timeLabel = container.querySelector('.audio-time');
-            
+
             if (btn.dataset.playing === 'true') {
                 btn.dataset.playing = 'false';
                 icon.className = 'bi bi-play-fill';
@@ -651,12 +694,12 @@
                 btn.dataset.playing = 'true';
                 icon.className = 'bi bi-pause-fill';
                 let current = 0;
-                
+
                 if (parseFloat(bar.style.width || '0') >= 100) {
                     bar.style.width = '0%';
                     timeLabel.innerText = '0:00';
                 }
-                
+
                 const step = 0.1;
                 btn.intervalId = setInterval(() => {
                     current += step;
@@ -668,7 +711,7 @@
                     }
                     const pct = (current / duration) * 100;
                     bar.style.width = pct + '%';
-                    
+
                     const secs = Math.floor(current);
                     timeLabel.innerText = '0:' + String(secs).padStart(2, '0');
                 }, 100);
@@ -681,4 +724,3 @@
     })();
 </script>
 @endauth
-

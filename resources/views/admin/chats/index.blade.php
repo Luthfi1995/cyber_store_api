@@ -561,8 +561,23 @@
     [data-theme="dark"] .slack-messages-container h3 {
         color: #ffffff !important;
     }
-    [data-theme="dark"] .slack-messages-container p {
-        color: #94a3b8 !important;
+    @media (max-width: 768px) {
+        .slack-chat-workspace {
+            flex-direction: column !important;
+            height: auto !important;
+            padding: 8px !important;
+        }
+        .slack-sidebar {
+            width: 100% !important;
+            max-height: 250px !important;
+        }
+        .slack-main-chat {
+            width: 100% !important;
+            min-height: 400px !important;
+        }
+        .slack-details-pane {
+            width: 100% !important;
+        }
     }
 </style>
 @endpush
@@ -609,7 +624,11 @@
                         @if($c->product_name)
                         <span style="color:#4f6ef7;">[📦 {{ $c->product_name }}]</span>
                         @endif
+                        @if(Str::startsWith($c->lastMessage?->message ?? '', '[IMAGE]:') || Str::contains($c->lastMessage?->message ?? '', 'data:image'))
+                        📷 [Gambar]
+                        @else
                         {{ $c->lastMessage?->message ?? 'Memulai percakapan...' }}
+                        @endif
                     </div>
                 </div>
             </a>
@@ -675,7 +694,7 @@
             $bubbleStyle = '';
             if (str_starts_with($msgText, '[IMAGE]:')) {
             $base64 = substr($msgText, 8);
-            $msgContent = '<img src="' . $base64 . '" style="max-width:260px; border-radius:10px; display:block;" />';
+            $msgContent = '<img src="' . $base64 . '" style="max-width:260px; border-radius:10px; display:block; cursor:pointer;" onclick="openImageModal(this.src)" title="Klik untuk lihat gambar penuh" />';
             } elseif (str_starts_with($msgText, '[STICKER]:')) {
             $stickerUrl = substr($msgText, 10);
             $msgContent = '<img src="' . e($stickerUrl) . '" style="width:100px; height:100px; display:block;" />';
@@ -1048,6 +1067,26 @@
                 }
             }).catch(() => {});
     }, 5000);
+
+    function openImageModal(src) {
+        const modal = document.getElementById('imagePreviewModal');
+        const img = document.getElementById('imagePreviewModalImg');
+        if (modal && img) {
+            img.src = src;
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById('imagePreviewModal');
+        if (modal) modal.style.display = 'none';
+    }
 </script>
+
+<!-- Modal Image Preview -->
+<div id="imagePreviewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(6px);" onclick="closeImageModal()">
+    <img id="imagePreviewModalImg" src="" style="max-width:90vw; max-height:90vh; border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.5); object-fit:contain;">
+    <button type="button" style="position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.2); border:none; color:white; font-size:24px; border-radius:50%; width:44px; height:44px; cursor:pointer; display:flex; align-items:center; justify-content:center;" onclick="closeImageModal()">&times;</button>
+</div>
 @endpush
 @endsection

@@ -41,17 +41,34 @@
 
         {{-- ── Table ──────────────────────────────────────────────── --}}
 
-        <div class="table-wrapper">
-            @if ($banners->isEmpty())
-                <div class="empty-state">
-                    <div class="empty-state-icon">🖼️</div>
-                    <h3>Belum ada banner</h3>
-                    <p>Tambahkan banner pertama untuk ditampilkan di halaman utama aplikasi.</p>
-                    <a href="{{ route('admin.banners.create') }}" class="btn btn-primary" style="margin-top:12px;">
-                        ＋ Tambah Banner
-                    </a>
-                </div>
-            @else
+        <style>
+            .desktop-table-container { display: block; }
+            .mobile-banner-grid { display: none; padding: 16px; gap: 14px; flex-direction: column; }
+            .mobile-banner-card {
+                background: var(--bg-card, #ffffff);
+                border: 1px solid var(--border, #e2e8f0);
+                border-radius: 14px;
+                padding: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            }
+            @media (max-width: 768px) {
+                .desktop-table-container { display: none !important; }
+                .mobile-banner-grid { display: flex !important; }
+            }
+        </style>
+
+        @if ($banners->isEmpty())
+            <div class="empty-state">
+                <div class="empty-state-icon">🖼️</div>
+                <h3>Belum ada banner</h3>
+                <p>Tambahkan banner pertama untuk ditampilkan di halaman utama aplikasi.</p>
+                <a href="{{ route('admin.banners.create') }}" class="btn btn-primary" style="margin-top:12px;">
+                    ＋ Tambah Banner
+                </a>
+            </div>
+        @else
+            <!-- Desktop Table View (>768px) -->
+            <div class="table-wrapper desktop-table-container">
                 <table>
                     <thead>
                         <tr>
@@ -65,12 +82,9 @@
                     <tbody>
                         @foreach ($banners as $banner)
                             <tr>
-                                {{-- No --}}
                                 <td style="color:var(--text-muted); font-size:12px; text-align:center;">
                                     {{ $loop->iteration + ($banners->currentPage() - 1) * $banners->perPage() }}
                                 </td>
-
-                                {{-- Preview --}}
                                 <td>
                                     <div style="width:180px; height:68px; border-radius:8px;
                                                 overflow:hidden; background:var(--bg-input);
@@ -86,22 +100,18 @@
                                         @endif
                                     </div>
                                 </td>
-
-                                {{-- Judul & Deskripsi --}}
                                 <td>
                                     <div style="font-weight:600; color:var(--text-primary); margin-bottom:4px;">
                                         {{ $banner->title ?? '—' }}
                                     </div>
                                     @if ($banner->description)
                                         <div style="font-size:12px; color:var(--text-muted); line-height:1.4;">
-                                            {{ Str::limit($banner->description, 80) }}
+                                            {{ \Illuminate\Support\Str::limit($banner->description, 80) }}
                                         </div>
                                     @else
                                         <div style="font-size:12px; color:var(--text-muted);">Tidak ada deskripsi</div>
                                     @endif
                                 </td>
-
-                                {{-- Urutan --}}
                                 <td style="text-align:center;">
                                     <span style="display:inline-flex; align-items:center; justify-content:center;
                                                  width:32px; height:32px; border-radius:50%;
@@ -110,8 +120,6 @@
                                         {{ $banner->order ?? 0 }}
                                     </span>
                                 </td>
-
-                                {{-- Aksi --}}
                                 <td>
                                     <div class="actions">
                                         <a href="{{ route('admin.banners.edit', $banner) }}"
@@ -133,8 +141,47 @@
                         @endforeach
                     </tbody>
                 </table>
-            @endif
-        </div>
+            </div>
+
+            <!-- Mobile Banner Card View (<=768px) -->
+            <div class="mobile-banner-grid">
+                @foreach ($banners as $banner)
+                <div class="mobile-banner-card">
+                    <div style="width: 100%; height: 120px; border-radius: 10px; overflow: hidden; background: var(--bg-input); border: 1px solid var(--border); margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
+                        @if ($banner->image_path)
+                            <img src="{{ Storage::disk('public')->url($banner->image_path) }}" alt="{{ $banner->title ?? 'Banner' }}" style="width:100%; height:100%; object-fit:cover;">
+                        @else
+                            <span style="font-size: 32px;">🖼️</span>
+                        @endif
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <div style="font-weight: 800; font-size: 14.5px; color: var(--text-primary);">
+                            {{ $banner->title ?? 'Tanpa Judul' }}
+                        </div>
+                        <span style="font-size: 12px; padding: 2px 8px; background: var(--accent-light); color: var(--accent); border-radius: 12px; font-weight: 700;">
+                            Urutan #{{ $banner->order ?? 0 }}
+                        </span>
+                    </div>
+
+                    @if ($banner->description)
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+                        {{ \Illuminate\Support\Str::limit($banner->description, 90) }}
+                    </div>
+                    @endif
+
+                    <div style="display: flex; justify-content: flex-end; gap: 6px;">
+                        <a href="{{ route('admin.banners.edit', $banner) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
+                            <iconify-icon icon="flat-color-icons:edit-image" style="font-size: 16px;"></iconify-icon>
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm btn-icon" data-url="{{ route('admin.banners.destroy', $banner) }}" data-name="{{ $banner->title ?? 'banner ini' }}" onclick="confirmDelete(this.dataset.url, this.dataset.name)">
+                            <iconify-icon icon="fluent-emoji-flat:wastebasket" style="font-size: 16px;"></iconify-icon>
+                        </button>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @endif
 
         {{-- ── Pagination ──────────────────────────────────────────── --}}
         @if ($banners->hasPages())

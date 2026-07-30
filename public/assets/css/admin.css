@@ -368,7 +368,7 @@ body {
     width: 36px;
     height: 36px;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     transition: var(--transition);
 }
 
@@ -393,7 +393,7 @@ body {
     width: 36px;
     height: 36px;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     transition: var(--transition);
 }
 
@@ -1117,12 +1117,12 @@ textarea.form-control {
         justify-content: center;
         gap: 0;
     }
-    
+
     body.sidebar-collapsed div.sidebar-brand {
         padding: 0;
         border-bottom: none;
     }
-    
+
     body.sidebar-collapsed .sidebar-brand-text {
         display: none;
     }
@@ -1189,6 +1189,75 @@ textarea.form-control {
     body.sidebar-collapsed .user-card .logout-btn {
         display: none;
     }
+
+    /* Modern Floating Tooltip on Hover for Collapsed Sidebar Links */
+    body.sidebar-collapsed .nav-link {
+        position: relative;
+    }
+
+    body.sidebar-collapsed .nav-link[data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: calc(100% + 14px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-10px) scale(0.92);
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.96));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        padding: 7px 14px;
+        border-radius: 9px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.45), 0 8px 10px -6px rgba(0, 0, 0, 0.25);
+        transition: opacity 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.2s;
+        z-index: 999999;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    [data-theme="light"] body.sidebar-collapsed .nav-link[data-tooltip]::after {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
+        color: #ffffff;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Tooltip Arrow Indicator */
+    body.sidebar-collapsed .nav-link[data-tooltip]::before {
+        content: '';
+        position: absolute;
+        left: calc(100% + 8px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-8px);
+        border-width: 5px 6px 5px 0;
+        border-style: solid;
+        border-color: transparent rgba(15, 23, 42, 0.96) transparent transparent;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.2s;
+        z-index: 999999;
+    }
+
+    [data-theme="light"] body.sidebar-collapsed .nav-link[data-tooltip]::before {
+        border-color: transparent rgba(30, 41, 59, 0.96) transparent transparent;
+    }
+
+    body.sidebar-collapsed .nav-link[data-tooltip]:hover::after {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(-50%) translateX(0) scale(1);
+    }
+
+    body.sidebar-collapsed .nav-link[data-tooltip]:hover::before {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(-50%) translateX(0);
+    }
 }
 
 /* ─── SEARCH INPUT WRAPPER ────────────────────────────────────── */
@@ -1213,9 +1282,17 @@ textarea.form-control {
 }
 
 /* ─── UTILITY CLASSES ────────────────────────────────────────── */
-.text-danger { color: var(--danger) !important; }
-.text-warning { color: var(--warning) !important; }
-.text-success { color: var(--success) !important; }
+.text-danger {
+    color: var(--danger) !important;
+}
+
+.text-warning {
+    color: var(--warning) !important;
+}
+
+.text-success {
+    color: var(--success) !important;
+}
 
 /* ─── GLOBAL MODERN THEME UI COMPONENTS ──────────────────────────── */
 .stats-grid {
@@ -1276,7 +1353,7 @@ textarea.form-control {
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
 .notice-icon {
@@ -1362,7 +1439,8 @@ textarea.form-control {
     background: rgba(248, 250, 252, 0.8);
 }
 
-.btn-create-broadcast, .btn-primary-gradient {
+.btn-create-broadcast,
+.btn-primary-gradient {
     background: linear-gradient(135deg, #0B023E 0%, #1E1B4B 100%);
     color: #ffffff !important;
     padding: 10px 20px;
@@ -1379,7 +1457,8 @@ textarea.form-control {
     text-decoration: none;
 }
 
-.btn-create-broadcast:hover, .btn-primary-gradient:hover {
+.btn-create-broadcast:hover,
+.btn-primary-gradient:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 20px rgba(11, 2, 62, 0.3);
 }
@@ -1410,8 +1489,15 @@ textarea.form-control {
 }
 
 @keyframes modalFadeIn {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .modal-header-custom {
@@ -1496,7 +1582,9 @@ textarea.form-control {
         gap: 12px;
     }
 
-    .table-responsive, .table-wrapper, [style*="overflow-x: auto"] {
+    .table-responsive,
+    .table-wrapper,
+    [style*="overflow-x: auto"] {
         width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -1589,8 +1677,20 @@ textarea.form-control {
     }
 
     .filter-bar .form-control,
-    .filter-bar .btn {
+    .filter-bar .btn,
+    .filter-bar .search-input-wrapper {
         width: 100% !important;
+    }
+
+    .table-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        display: block !important;
+    }
+
+    .table-wrapper table {
+        min-width: 600px;
     }
 
     .floating-card-table {
@@ -1708,6 +1808,7 @@ textarea.form-control {
         opacity: 0;
         transform: translateY(-8px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

@@ -42,6 +42,19 @@
 
 
     <style>
+    .desktop-table-container { display: block; }
+    .mobile-product-grid { display: none; padding: 16px; gap: 14px; flex-direction: column; }
+    .mobile-product-card {
+        background: var(--bg-card, #ffffff);
+        border: 1px solid var(--border, #e2e8f0);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+    @media (max-width: 768px) {
+        .desktop-table-container { display: none !important; }
+        .mobile-product-grid { display: flex !important; }
+    }
     @keyframes spinCustom {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -182,123 +195,184 @@
             <p>Coba ubah filter atau tambahkan produk baru.</p>
         </div>
         @else
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="check-all" style="cursor: pointer; width: 16px; height: 16px;"></th>
-                    <th>No.</th>
-                    <th>Produk</th>
-                    <th>SKU</th>
-                    <th>Kategori</th>
-                    <th>Harga</th>
-                    <th>Stok</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($products as $product)
-                <tr>
-                    <td style="text-align: center;"><input type="checkbox" name="product_ids[]" value="{{ $product->id }}" class="product-checkbox" style="cursor: pointer; width: 16px; height: 16px;"></td>
-                    <td style="color:var(--text-muted); font-size:12px;">
-                        {{ $loop->iteration + ($products->firstItem() - 1) }}
-                    </td>
-                    <td>
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div
-                                style="width:44px; height:44px; background:var(--bg-input); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
-                                @if ($product->main_photo)
-                                <img src="{{ Storage::disk('public')->url($product->main_photo) }}"
-                                    style="width:100%; height:100%; object-fit:cover;">
-                                @else
-                                <span style="font-size:20px;">
-                                    @if ($product->category?->slug === 'topi')
-                                    🧢
-                                    @elseif($product->category?->slug === 'baju')
-                                    👕
-                                    @elseif($product->category?->slug === 'tumbler')
-                                    🥤
+        <!-- Desktop Table View (>768px) -->
+        <div class="table-wrapper desktop-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: center;"><input type="checkbox" id="check-all" style="cursor: pointer; width: 16px; height: 16px;"></th>
+                        <th>No.</th>
+                        <th>Produk</th>
+                        <th>SKU</th>
+                        <th>Kategori</th>
+                        <th>Harga</th>
+                        <th>Stok</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($products as $product)
+                    <tr>
+                        <td style="text-align: center;"><input type="checkbox" name="product_ids[]" value="{{ $product->id }}" class="product-checkbox" style="cursor: pointer; width: 16px; height: 16px;"></td>
+                        <td style="color:var(--text-muted); font-size:12px;">
+                            {{ $loop->iteration + ($products->firstItem() - 1) }}
+                        </td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div
+                                    style="width:44px; height:44px; background:var(--bg-input); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                                    @if ($product->main_photo)
+                                    <img src="{{ Storage::disk('public')->url($product->main_photo) }}"
+                                        style="width:100%; height:100%; object-fit:cover;">
                                     @else
-                                    📦
-                                    @endif
-                                </span>
-                                @endif
-                            </div>
-                            <div>
-                                <div style="font-weight:600; color:var(--text-primary);">
-                                    {{ \Illuminate\Support\Str::limit($product->name, 35) }}
-                                </div>
-                                <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
-                                    ⭐ {{ $product->rating }} · {{ $product->reviews_count }} ulasan
-                                    @if ($product->is_recommended)
-                                    <span class="badge badge-recommended"
-                                        style="margin-left:4px;">Rekomendasi</span>
+                                    <span style="font-size:20px;">
+                                        @if ($product->category?->slug === 'topi')
+                                        🧢
+                                        @elseif($product->category?->slug === 'baju')
+                                        👕
+                                        @elseif($product->category?->slug === 'tumbler')
+                                        🥤
+                                        @else
+                                        📦
+                                        @endif
+                                    </span>
                                     @endif
                                 </div>
+                                <div>
+                                    <div style="font-weight:600; color:var(--text-primary);">
+                                        {{ \Illuminate\Support\Str::limit($product->name, 35) }}
+                                    </div>
+                                    <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+                                        ⭐ {{ $product->rating }} · {{ $product->reviews_count }} ulasan
+                                        @if ($product->is_recommended)
+                                        <span class="badge badge-recommended"
+                                            style="margin-left:4px;">Rekomendasi</span>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td style="font-family:monospace; font-size:12px; color:var(--text-muted);">
-                        {{ $product->sku }}
-                    </td>
-                    <td>
-                        <span
-                            style="font-size:13px; padding:3px 10px; background:var(--accent-light); color:var(--accent); border-radius:20px; font-weight:500;">
-                            {{ $product->category?->name ?? '—' }}
-                        </span>
-                    </td>
-                    <td>
-                        <div style="font-weight:600; color:var(--text-primary);">
-                            Rp {{ number_format($product->price, 0, ',', '.') }}
-                        </div>
-                        @if ($product->original_price)
-                        <div style="font-size:11px; color:var(--text-muted); text-decoration:line-through;">
-                            Rp {{ number_format($product->original_price, 0, ',', '.') }}
-                        </div>
-                        @endif
-                    </td>
-                    <td>
-                        <span style="font-weight:600;"
-                            class="{{ $product->stock <= 5 ? 'text-danger' : ($product->stock <= 20 ? 'text-warning' : 'text-success') }}">
-                            {{ $product->stock }}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="badge {{ $product->is_active ? 'badge-active' : 'badge-inactive' }}" style="display: inline-flex; align-items: center; gap: 4px;">
-                            <iconify-icon icon="{{ $product->is_active ? 'flat-color-icons:checkmark' : 'flat-color-icons:cancel' }}" style="font-size: 13px;"></iconify-icon>
-                            {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="actions">
-                            <a href="{{ route('admin.products.edit', $product) }}"
-                                class="btn btn-secondary btn-sm btn-icon" title="Edit">
-                                <iconify-icon icon="flat-color-icons:edit-image" style="font-size: 16px;"></iconify-icon>
-                            </a>
+                        </td>
+                        <td style="font-family:monospace; font-size:12px; color:var(--text-muted);">
+                            {{ $product->sku }}
+                        </td>
+                        <td>
+                            <span
+                                style="font-size:13px; padding:3px 10px; background:var(--accent-light); color:var(--accent); border-radius:20px; font-weight:500;">
+                                {{ $product->category?->name ?? '—' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="font-weight:600; color:var(--text-primary);">
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            </div>
+                            @if ($product->original_price)
+                            <div style="font-size:11px; color:var(--text-muted); text-decoration:line-through;">
+                                Rp {{ number_format($product->original_price, 0, ',', '.') }}
+                            </div>
+                            @endif
+                        </td>
+                        <td>
+                            <span style="font-weight:600;"
+                                class="{{ $product->stock <= 5 ? 'text-danger' : ($product->stock <= 20 ? 'text-warning' : 'text-success') }}">
+                                {{ $product->stock }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {{ $product->is_active ? 'badge-active' : 'badge-inactive' }}" style="display: inline-flex; align-items: center; gap: 4px;">
+                                <iconify-icon icon="{{ $product->is_active ? 'flat-color-icons:checkmark' : 'flat-color-icons:cancel' }}" style="font-size: 13px;"></iconify-icon>
+                                {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a href="{{ route('admin.products.edit', $product) }}"
+                                    class="btn btn-secondary btn-sm btn-icon" title="Edit">
+                                    <iconify-icon icon="flat-color-icons:edit-image" style="font-size: 16px;"></iconify-icon>
+                                </a>
 
-                            {{-- Toggle Active --}}
-                            <form method="POST" action="{{ route('admin.products.toggle', $product) }}"
-                                style="display:inline;">
-                                @csrf @method('PATCH')
-                                <button type="submit"
-                                    class="btn btn-sm btn-icon {{ $product->is_active ? 'btn-warning' : 'btn-success' }}"
-                                    title="{{ $product->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
-                                    <iconify-icon icon="{{ $product->is_active ? 'flat-color-icons:cancel' : 'flat-color-icons:ok' }}" style="font-size: 16px;"></iconify-icon>
+                                <form method="POST" action="{{ route('admin.products.toggle', $product) }}"
+                                    style="display:inline;">
+                                    @csrf @method('PATCH')
+                                    <button type="submit"
+                                        class="btn btn-sm btn-icon {{ $product->is_active ? 'btn-warning' : 'btn-success' }}"
+                                        title="{{ $product->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                        <iconify-icon icon="{{ $product->is_active ? 'flat-color-icons:cancel' : 'flat-color-icons:ok' }}" style="font-size: 16px;"></iconify-icon>
+                                    </button>
+                                </form>
+
+                                <button type="button" class="btn btn-danger btn-sm btn-icon" title="Hapus"
+                                    data-url="{{ route('admin.products.destroy', $product) }}"
+                                    data-name="{{ $product->name }}"
+                                    onclick="confirmDelete(this.dataset.url, this.dataset.name)">
+                                    <iconify-icon icon="fluent-emoji-flat:wastebasket" style="font-size: 16px;"></iconify-icon>
                                 </button>
-                            </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
-                            <button type="button" class="btn btn-danger btn-sm btn-icon" title="Hapus"
-                                data-url="{{ route('admin.products.destroy', $product) }}"
-                                data-name="{{ $product->name }}"
-                                onclick="confirmDelete(this.dataset.url, this.dataset.name)">
-                                <iconify-icon icon="fluent-emoji-flat:wastebasket" style="font-size: 16px;"></iconify-icon>
-                            </button>
+        <!-- Mobile Product Card View (<=768px) -->
+        <div class="mobile-product-grid">
+            @foreach ($products as $product)
+            <div class="mobile-product-card">
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                    <div style="width: 50px; height: 50px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                        @if ($product->main_photo)
+                            <img src="{{ Storage::disk('public')->url($product->main_photo) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        @else
+                            <span style="font-size: 24px;">📦</span>
+                        @endif
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 800; font-size: 14px; color: var(--text-primary);">
+                            {{ $product->name }}
                         </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+                        <div style="font-size: 11px; color: var(--text-muted); font-family: monospace;">
+                            SKU: {{ $product->sku }}
+                        </div>
+                    </div>
+                    <span class="badge {{ $product->is_active ? 'badge-active' : 'badge-inactive' }}">
+                        {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
+                    </span>
+                </div>
+
+                <div style="background: var(--bg-input, #f8fafc); padding: 10px 12px; border-radius: 10px; font-size: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-weight: 800; color: var(--accent); font-size: 14px;">
+                            Rp {{ number_format($product->price, 0, ',', '.') }}
+                        </span>
+                    </div>
+                    <div>
+                        Stok: <span style="font-weight: 800;" class="{{ $product->stock <= 5 ? 'text-danger' : 'text-success' }}">{{ $product->stock }} Pcs</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; padding: 2px 8px; background: var(--accent-light); color: var(--accent); border-radius: 12px;">
+                        {{ $product->category?->name ?? '—' }}
+                    </span>
+                    <div class="actions" style="gap: 6px;">
+                        <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
+                            <iconify-icon icon="flat-color-icons:edit-image" style="font-size: 16px;"></iconify-icon>
+                        </a>
+                        <form method="POST" action="{{ route('admin.products.toggle', $product) }}" style="display:inline;">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn btn-sm btn-icon {{ $product->is_active ? 'btn-warning' : 'btn-success' }}">
+                                <iconify-icon icon="{{ $product->is_active ? 'flat-color-icons:cancel' : 'flat-color-icons:ok' }}" style="font-size: 16px;"></iconify-icon>
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-danger btn-sm btn-icon" data-url="{{ route('admin.products.destroy', $product) }}" data-name="{{ $product->name }}" onclick="confirmDelete(this.dataset.url, this.dataset.name)">
+                            <iconify-icon icon="fluent-emoji-flat:wastebasket" style="font-size: 16px;"></iconify-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
         @endif
     </div>
 

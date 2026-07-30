@@ -19,8 +19,11 @@ class Banner extends Model
 
     /**
      * Scope a query to order banners by the `order` column.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeOrdered($query)
+    public function scopeOrdered(\Illuminate\Database\Eloquent\Builder $query)
     {
         return $query->orderBy('order');
     }
